@@ -9,16 +9,20 @@
  */
 import {spawnSync} from 'node:child_process';
 import {mkdir, readFile, stat, writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
+import {themeIds} from '../../packages/video-kit/src/themes/registry.ts';
 
 const ROOT = process.env.MOTION_STUDIO_ROOT
   ? path.resolve(process.env.MOTION_STUDIO_ROOT)
   : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const TSX = pathToFileURL(createRequire(import.meta.url).resolve('tsx')).href;
 const COLORS = ['lime', 'cyan', 'pink', 'yellow', 'violet', 'orange', 'red'];
+const MODES = ['dark', 'light'];
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const USAGE = `Usage:
-  pnpm new:lesson <slug> "<Title>" --course <course-slug> [--chapters 4]
+  pnpm new:lesson <slug> "<Title>" --course <course-slug> [--chapters 4] [--theme <id>] [--mode dark|light]
 
 Example:
   pnpm new:lesson mvcc-and-isolation "MVCC and Isolation Levels" --course databases`;
@@ -41,6 +45,8 @@ function parseArgs(argv) {
   const positional = [];
   let course;
   let chapters = 4;
+  let theme;
+  let mode;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -52,6 +58,14 @@ function parseArgs(argv) {
       chapters = Number(argv[++i]);
     } else if (arg.startsWith('--chapters=')) {
       chapters = Number(arg.slice('--chapters='.length));
+    } else if (arg === '--theme') {
+      theme = argv[++i];
+    } else if (arg.startsWith('--theme=')) {
+      theme = arg.slice('--theme='.length);
+    } else if (arg === '--mode') {
+      mode = argv[++i];
+    } else if (arg.startsWith('--mode=')) {
+      mode = arg.slice('--mode='.length);
     } else if (arg === '--help' || arg === '-h') {
       console.log(USAGE);
       process.exit(0);
@@ -62,7 +76,7 @@ function parseArgs(argv) {
     }
   }
 
-  return {positional, course, chapters};
+  return {positional, course, chapters, theme, mode};
 }
 
 function chapterLabel(index) {
@@ -84,12 +98,12 @@ function yamlString(value) {
 function introSectionSource({title}) {
   return `import {Node, type View2D} from '@motion-canvas/2d';
 import {createRef, waitFor, type ThreadGenerator} from '@motion-canvas/core';
-import {leave, say, titleSlab} from '@motion-studio/video-kit';
+import {leave, say, titleBlock} from '@motion-studio/video-kit';
 
 // ================================================================ INTRO
 export function* introSection(view: View2D): ThreadGenerator {
   const root = createRef<Node>();
-  const title = titleSlab({text: ${tsString(title.toUpperCase())}, fontSize: 120, y: -100});
+  const title = titleBlock({text: ${tsString(title.toUpperCase())}, fontSize: 120, y: -100});
   title.opacity(0);
   view.add(<Node ref={root}>{title}</Node>);
 
@@ -142,10 +156,14 @@ ${names}
 
 function projectSource(slug) {
   return `import {makeProject} from '@motion-canvas/core';
+import {resolveProjectName, type ChaptersFile} from '@motion-studio/video-kit';
 
+import chapters from '../scenes/${slug}/chapters.json';
 import scene from '../scenes/${slug}/scene?scene';
 
-export default makeProject({scenes: [scene]});
+const lesson = chapters as ChaptersFile;
+
+export default makeProject({name: resolveProjectName(lesson.slug, lesson), scenes: [scene]});
 `;
 }
 
@@ -204,7 +222,7 @@ TODO: a small example the reader can run.
 `;
 }
 
-const {positional, course, chapters: chapterCount} = parseArgs(process.argv.slice(2));
+const {positional, course, chapters: chapterCount, theme, mode} = parseArgs(process.argv.slice(2));
 const [slug, title] = positional;
 
 if (!slug) fail(`missing <slug>\n\n${USAGE}`);
@@ -215,6 +233,12 @@ if (!course) fail(`--course <course-slug> is required\n\n${USAGE}`);
 if (!KEBAB.test(course)) fail(`course "${course}" must be kebab-case`);
 if (!Number.isInteger(chapterCount) || chapterCount < 1) {
   fail('--chapters must be a positive whole number');
+}
+if (theme !== undefined && !themeIds.includes(theme)) {
+  fail(`unknown theme "${theme}". Available: ${themeIds.join(', ')}`);
+}
+if (mode !== undefined && !MODES.includes(mode)) {
+  fail(`unknown mode "${mode}". Available: ${MODES.join(', ')}`);
 }
 
 const courseDir = path.join(ROOT, 'apps/docs/content/docs', course);
@@ -270,7 +294,13 @@ if (await exists(sceneDir)) {
   fail(`refusing to overwrite existing folder apps/studio/src/scenes/${slug}`);
 }
 
-const chaptersData = {slug, title: title.toUpperCase(), chapters};
+const chaptersData = {
+  slug,
+  title: title.toUpperCase(),
+  ...(theme !== undefined ? {theme} : {}),
+  ...(mode !== undefined ? {mode} : {}),
+  chapters,
+};
 const generated = [
   [projectFile, projectSource(slug)],
   [chaptersFile, `${JSON.stringify(chaptersData, null, 2)}\n`],
@@ -293,12 +323,12 @@ await writeFile(pageFile, lessonPageSource({slug, title, chapters}), 'utf8');
 meta.pages = [...pages, slug];
 await writeFile(metaFile, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
-const sync = spawnSync(process.execPath, [path.join(ROOT, 'tools/scripts/sync-generated.mjs')], {
+const sync = spawnSync(process.execPath, ['--import', TSX, path.join(ROOT, 'tools/scripts/sync-lessons.mjs')], {
   cwd: ROOT,
   stdio: 'inherit',
   env: process.env,
 });
-if (sync.status !== 0) fail(`sync-generated.mjs failed (exit ${sync.status})`);
+if (sync.status !== 0) fail(`sync-lessons.mjs failed (exit ${sync.status})`);
 
 const created = [
   projectFile,
@@ -319,3 +349,4 @@ console.log(`  1. Preview in the editor: http://localhost:9000/src/projects/${sl
 console.log(`     Start at a section with #s=N: http://localhost:9000/src/projects/${slug}#s=2`);
 console.log('  2. Replace the TODO captions and chapter names with real content.');
 console.log('  3. Set `status: published` in the lesson page frontmatter when done.');
+console.log(`  4. The look comes from chapters.json and video.config.json; override it with: pnpm studio --theme <id>`);

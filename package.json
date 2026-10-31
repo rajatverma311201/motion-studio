@@ -7,15 +7,21 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "studio": "node --import tsx tools/scripts/studio.mjs",
     "studio:dev": "pnpm --filter @motion-studio/studio dev",
+    "studio:light": "pnpm studio --mode light",
+    "studio:dark": "pnpm studio --mode dark",
     "studio:build": "pnpm --filter @motion-studio/studio build",
     "docs:dev": "pnpm --filter @motion-studio/docs dev",
     "docs:build": "pnpm --filter @motion-studio/docs build",
-    "sync:generated": "node tools/scripts/sync-generated.mjs",
-    "new:lesson": "node tools/scripts/new-lesson.mjs",
-    "videos:build": "pnpm sync:generated && pnpm studio:build",
+    "sync:themes": "node --import tsx tools/scripts/sync-themes.mjs",
+    "sync:lessons": "node --import tsx tools/scripts/sync-lessons.mjs",
+    "sync": "pnpm sync:themes && pnpm sync:lessons",
+    "new:lesson": "node --import tsx tools/scripts/new-lesson.mjs",
+    "new:theme": "node --import tsx tools/scripts/new-theme.mjs",
+    "videos:build": "pnpm sync && pnpm studio:build",
     "videos:watch": "pnpm --filter @motion-studio/studio exec vite build --watch",
-    "dev": "pnpm sync:generated && concurrently -k -n videos,docs -c magenta,cyan \"pnpm videos:watch\" \"pnpm docs:dev\"",
+    "dev": "pnpm sync && concurrently -k -n videos,docs -c magenta,cyan \"pnpm videos:watch\" \"pnpm docs:dev\"",
     "build": "pnpm videos:build && pnpm docs:build",
     "smoke:docs": "pnpm --filter @motion-studio/snapshots exec node docs-smoke.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
@@ -35,6 +41,7 @@
     "eslint": "^10.13.0",
     "eslint-plugin-check-file": "^3.3.2",
     "prettier": "^3.9.10",
+    "tsx": "^4.20.0",
     "typescript-eslint": "^8.72.1"
   }
 }
