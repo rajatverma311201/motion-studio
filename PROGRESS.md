@@ -44,3 +44,39 @@ dist/_virtual_settings-f3046a97.js             178.88 kB
 
 * Step 02+: add `apps/docs` (TanStack Start + Fumadocs), `packages/video-kit`, `tools/*`. `apps/docs` must not import `.tsx` from `video-kit`.
 * Build asset hashes change per build; do not hardcode them anywhere.
+
+## Step 02: screenshot baseline
+
+**What changed**
+
+* New workspace package `tools/snapshots` (`@motion-studio/snapshots`, private, `"type": "module"`, no build step) with `capture.mjs`, `compare.mjs` and `frames.json`.
+* Dependencies only `playwright ^1.49.0`, `pixelmatch ^6.0.0`, `pngjs ^7.0.0`; Chromium installed with `pnpm --filter @motion-studio/snapshots exec playwright install chromium`.
+* Root scripts `snap:capture` and `snap:compare`.
+* `frames.json`: db-indexing = 18 section-aware captures / 40 frames. db-transactions also supports `#s=N` (`transactions.tsx:2655`), so it is section-aware too: 9 sections × `[4, 12]` = 18 frames (instead of the 11 fixed-timeline frames).
+* Baseline captured to `.snapshots/baseline` (40 db-indexing + 18 db-transactions). `.snapshots` stays git-ignored; baseline PNGs are local only and must not be deleted.
+
+**How to run**
+
+```sh
+pnpm studio:dev &
+pnpm snap:capture baseline          # all projects, ~13-14 min (db-indexing ~11 min, db-transactions ~2.5 min)
+pnpm snap:capture current [slug]    # same tool, captures into .snapshots/current
+pnpm snap:compare [slug]            # diff baseline vs current, exit 1 on any failure
+```
+
+Capture uses a 2000x1150 viewport, the verified stage clip `{x: 454, y: 22, width: 1536, height: 864}`, waits 4 s after `load`, presses Space, then polls the editor timecode every 150 ms. Pages are opened and closed sequentially. A timecode that does not advance for 20 s logs `timeout at <time>` and moves on; the absolute give-up is `max(240 s, time * 3)`.
+
+Compare runs `pixelmatch` with `threshold: 0.12` and passes a frame when the diff ratio is **0.4 % or less**. Diff images go to `.snapshots/diff/<slug>/`. Sanity check on unchanged code: db-transactions 18/18 PASS, max 0.362 %. The headroom under the threshold is small, so a future FAIL close to 0.4 % still deserves a look at the diff image.
+
+**Gotchas**
+
+* The root scripts end in `--`; pnpm 12 forwards that separator literally into `process.argv`, so both CLIs strip a leading `--`.
+* `.snapshots/` is ignored; never commit baseline PNGs. Keep `.snapshots/baseline` on this machine for steps 3 to 8.
+* The studio dev server must be running on port 9000; override with `STUDIO_URL` if needed.
+
+**Checks (step 02)**
+
+* `pnpm install` -> exit 0
+* `ls .snapshots/baseline/db-indexing | wc -l` -> 40
+* `ls .snapshots/baseline/db-transactions | wc -l` -> 18
+* `pnpm snap:capture current db-transactions && pnpm snap:compare db-transactions` -> 18/18 PASS

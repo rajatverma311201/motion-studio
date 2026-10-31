@@ -7,6 +7,8 @@
   "scripts": {
     "studio:dev": "pnpm --filter @motion-studio/studio dev",
     "studio:build": "pnpm --filter @motion-studio/studio build",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "snap:capture": "pnpm --filter @motion-studio/snapshots capture --",
+    "snap:compare": "pnpm --filter @motion-studio/snapshots compare --"
   }
 }
