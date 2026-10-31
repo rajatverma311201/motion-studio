@@ -2,8 +2,9 @@
 /**
  * Capture stage frames from the Motion Canvas editor.
  *
- *   node capture.mjs <baseline|current> [slug ...]
+ *   node capture.mjs <baseline|current> [--quick] [slug ...]
  *
+ * `--quick` captures only frames marked `"quick": true` in frames.json.
  * Playback is real time, so the script plays the scene with Space and polls the
  * editor timecode until the wanted second is reached before screenshotting the
  * stage. Pages are opened one at a time on purpose: the editor rewrites .meta
@@ -22,13 +23,14 @@ const STALL_MS = 20000;
 const STUDIO_URL = process.env.STUDIO_URL ?? 'http://127.0.0.1:9000';
 const SNAPSHOT_DIR = path.resolve(HERE, '../../.snapshots');
 
-const args = process.argv.slice(2);
+const rawArgs = process.argv.slice(2);
 // The root scripts end in `--`; pnpm 12 forwards that separator literally.
-if (args[0] === '--') args.shift();
+const quick = rawArgs.includes('--quick');
+const args = rawArgs.filter(arg => arg !== '--' && arg !== '--quick');
 
 const label = args[0];
 if (label !== 'baseline' && label !== 'current') {
-  console.error('usage: node capture.mjs <baseline|current> [slug ...]');
+  console.error('usage: node capture.mjs <baseline|current> [--quick] [slug ...]');
   process.exit(2);
 }
 
@@ -39,7 +41,10 @@ if (unknown.length > 0) {
   console.error(`unknown project slug(s): ${unknown.join(', ')}`);
   process.exit(2);
 }
-const slugs = requested.length > 0 ? requested : Object.keys(frames);
+const requestedSlugs = requested.length > 0 ? requested : Object.keys(frames);
+const slugs = quick
+  ? requestedSlugs.filter(slug => frames[slug].captures.some(capture => capture.quick === true))
+  : requestedSlugs;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -85,13 +90,16 @@ async function waitForTime(page, target) {
 
 const failures = [];
 const realErrors = [];
+const runStarted = Date.now();
+let capturedFrames = 0;
 
 const browser = await chromium.launch({headless: true});
 
 for (const slug of slugs) {
   const project = frames[slug];
+  const captures = quick ? project.captures.filter(capture => capture.quick === true) : project.captures;
 
-  for (const capture of project.captures) {
+  for (const capture of captures) {
     const section = project.sectionAware ? capture.section : null;
     const sectionName = section == null ? 'all' : `s${section}`;
     const url = `${STUDIO_URL}/src/projects/${slug}` + (section == null ? '' : `#s=${section}`);
@@ -119,17 +127,20 @@ for (const slug of slugs) {
       await page.keyboard.press('Space');
 
       for (const time of capture.times) {
+        const frameStarted = Date.now();
         const result = await waitForTime(page, time);
+        const elapsed = ((Date.now() - frameStarted) / 1000).toFixed(1);
         if (!result.ok) {
           const reason = result.reason === 'stalled' ? 'timeout' : 'deadline';
           failures.push(`${slug} ${sectionName} ${reason} at ${time}`);
-          console.log(`[${label}] ${slug} ${sectionName} ${reason} at ${time}`);
+          console.log(`[${label}] ${slug} ${sectionName} ${reason} at ${time} (${elapsed}s)`);
           continue;
         }
 
         const file = path.join(outDir, `${sectionName}_t${time}.png`);
         await page.screenshot({path: file, clip: STAGE_CLIP});
-        console.log(`[${label}] ${slug} ${sectionName} t${time} ok`);
+        capturedFrames += 1;
+        console.log(`[${label}] ${slug} ${sectionName} t${time} ok (${elapsed}s)`);
       }
     } catch (error) {
       failures.push(`${slug} ${sectionName} ${String(error.message).split('\n')[0]}`);
@@ -147,7 +158,8 @@ for (const slug of slugs) {
 
 await browser.close();
 
-console.log(`[${label}] captured ${slugs.length} project(s)`);
+const totalSeconds = ((Date.now() - runStarted) / 1000).toFixed(1);
+console.log(`[${label}] captured ${capturedFrames} frame(s) in ${totalSeconds}s${quick ? ' (quick subset)' : ''}`);
 if (failures.length > 0) {
   console.log(`[${label}] ${failures.length} capture failure(s):`);
   for (const failure of failures) console.log(`  - ${failure}`);

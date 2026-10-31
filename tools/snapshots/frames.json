@@ -2,15 +2,17 @@
   "db-indexing": {
     "sectionAware": true,
     "captures": [
-      {"section": 0, "times": [5.5]},
+      {"section": 0, "times": [5.5], "quick": true},
       {"section": 1, "times": [4, 12]},
-      {"section": 2, "times": [6, 16, 24]},
-      {"section": 3, "times": [8, 20]},
+      {"section": 2, "times": [6], "quick": true},
+      {"section": 2, "times": [16, 24]},
+      {"section": 3, "times": [8], "quick": true},
+      {"section": 3, "times": [20]},
       {"section": 4, "times": [14, 28, 40]},
       {"section": 5, "times": [14, 30]},
       {"section": 6, "times": [16]},
       {"section": 7, "times": [40, 75]},
-      {"section": 8, "times": [12]},
+      {"section": 8, "times": [12], "quick": true},
       {"section": 9, "times": [40, 70, 80]},
       {"section": 10, "times": [14, 38, 52]},
       {"section": 11, "times": [14, 32, 52]},
@@ -19,7 +21,8 @@
       {"section": 14, "times": [8, 20]},
       {"section": 15, "times": [28, 38]},
       {"section": 16, "times": [9, 20, 36]},
-      {"section": 17, "times": [12, 20]}
+      {"section": 17, "times": [12], "quick": true},
+      {"section": 17, "times": [20]}
     ]
   },
   "db-transactions": {
@@ -32,7 +35,8 @@
       {"section": 4, "times": [4, 12]},
       {"section": 5, "times": [4, 12]},
       {"section": 6, "times": [4, 12]},
-      {"section": 7, "times": [4, 12]},
+      {"section": 7, "times": [12], "quick": true},
+      {"section": 7, "times": [4]},
       {"section": 8, "times": [4, 12]}
     ]
   }

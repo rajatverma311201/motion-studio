@@ -25,7 +25,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "snap:capture": "pnpm --filter @motion-studio/snapshots capture --",
-    "snap:compare": "pnpm --filter @motion-studio/snapshots compare --"
+    "snap:compare": "pnpm --filter @motion-studio/snapshots compare --",
+    "snap:quick": "pnpm snap:capture current --quick && pnpm snap:compare --quick"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
