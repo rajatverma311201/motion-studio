@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
+import {buildPlayerVariables, type PlayerMode} from './player-variables';
 import {getLesson} from './use-lessons';
 import {usePlayerReady} from './use-player-ready';
 import {videoSrc} from './video-source';
@@ -7,6 +8,10 @@ export interface VideoPlayerProps {
   slug: string;
   startSection: number;
   autoPlay?: boolean;
+  /** Theme id passed to the lesson as the `theme` variable; omitted keeps the lesson's look. */
+  theme?: string;
+  /** Mode passed to the lesson as the `mode` variable; omitted keeps the lesson's look. */
+  mode?: PlayerMode;
 }
 
 /**
@@ -19,7 +24,7 @@ function absoluteVideoSrc(slug: string): string {
   return new URL(videoSrc(slug), window.location.href).href;
 }
 
-export function VideoPlayer({slug, startSection, autoPlay = false}: VideoPlayerProps) {
+export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}: VideoPlayerProps) {
   const status = usePlayerReady();
   const [missing, setMissing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -46,7 +51,7 @@ export function VideoPlayer({slug, startSection, autoPlay = false}: VideoPlayerP
     const element = playerRef.current;
     if (!element || status !== 'ready' || missing) return;
 
-    element.setAttribute('variables', JSON.stringify({startSection}));
+    element.setAttribute('variables', buildPlayerVariables({startSection, theme, mode}));
     if (autoPlay) element.setAttribute('auto', 'true');
     element.setAttribute('src', absoluteVideoSrc(slug));
 
@@ -67,7 +72,7 @@ export function VideoPlayer({slug, startSection, autoPlay = false}: VideoPlayerP
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [slug, startSection, autoPlay, status, missing]);
+  }, [slug, startSection, autoPlay, theme, mode, status, missing]);
 
   async function copyBuildCommand() {
     try {
@@ -113,7 +118,7 @@ export function VideoPlayer({slug, startSection, autoPlay = false}: VideoPlayerP
       ) : null}
       {ready ? (
         <motion-canvas-player
-          key={`${slug}-${startSection}`}
+          key={`${slug}-${startSection}-${theme ?? ''}-${mode ?? ''}`}
           ref={playerRef}
           style={{display: 'block', width: '100%', height: '100%'}}
         />
