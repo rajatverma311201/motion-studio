@@ -37,10 +37,7 @@ const steps = [
 export const Route = createFileRoute('/')({
   component: HomePage,
   head: () => ({
-    meta: [
-      {title: pageTitle()},
-      {name: 'description', content: siteDescription},
-    ],
+    meta: [{title: pageTitle()}, {name: 'description', content: siteDescription}],
   }),
 });
 
@@ -56,8 +53,8 @@ function HomePage() {
             <span className="nb-hero-slab">LEARN HOW SOFTWARE WORKS</span>
           </h1>
           <p className="nb-hero-sub">
-            Animated explainers for the database ideas that show up in real systems. Watch the video, jump to a
-            chapter, then read the notes and run the examples.
+            Animated explainers for the database ideas that show up in real systems. Watch the video, jump to a chapter,
+            then read the notes and run the examples.
           </p>
           <div className="nb-hero-actions">
             <Link to="/docs/$" params={{_splat: ''}} className="nb-btn nb-btn-lime">

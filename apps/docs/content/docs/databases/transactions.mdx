@@ -61,12 +61,12 @@ A dirty read uses an uncommitted value that is later rolled back. A non-repeatab
 
 Read Uncommitted allows all three anomalies, Read Committed blocks dirty reads, Repeatable Read keeps read rows stable, and Serializable behaves as if transactions ran one at a time. More isolation means less concurrency, so pick the weakest safe level; PostgreSQL defaults to Read Committed and MySQL InnoDB to Repeatable Read. The table is the SQL-standard view, and PostgreSQL's Repeatable Read also blocks phantoms.
 
-| Level | Dirty read | Non-repeatable read | Phantom read |
-| --- | --- | --- | --- |
-| Read Uncommitted | possible | possible | possible |
-| Read Committed | prevented | possible | possible |
-| Repeatable Read | prevented | prevented | possible |
-| Serializable | prevented | prevented | prevented |
+| Level            | Dirty read | Non-repeatable read | Phantom read |
+| ---------------- | ---------- | ------------------- | ------------ |
+| Read Uncommitted | possible   | possible            | possible     |
+| Read Committed   | prevented  | possible            | possible     |
+| Repeatable Read  | prevented  | prevented           | possible     |
+| Serializable     | prevented  | prevented           | prevented    |
 
 ### 7. Durability · WAL
 
@@ -93,15 +93,15 @@ The four guarantees reduce to one idea: group the steps and treat them as one un
 
 ## Cheat sheet
 
-| Concept | One-line rule | When it matters |
-| --- | --- | --- |
-| Transaction | All steps happen, or none do. | Multi-statement writes. |
-| COMMIT | Makes pending changes permanent at one instant. | After the last write. |
-| ROLLBACK | Undoes every pending change. | On failure or a failed check. |
-| Atomicity | A failure anywhere undoes everything. | Crashes mid-transaction. |
-| Isolation | Concurrent transactions behave as if separate. | Two writers touching the same rows. |
-| Durability / WAL | Log flushed before COMMIT returns. | Crash recovery. |
-| Quarkus `@Transactional` | Runtime exceptions roll back; checked ones commit by default. | Service methods. |
+| Concept                  | One-line rule                                                 | When it matters                     |
+| ------------------------ | ------------------------------------------------------------- | ----------------------------------- |
+| Transaction              | All steps happen, or none do.                                 | Multi-statement writes.             |
+| COMMIT                   | Makes pending changes permanent at one instant.               | After the last write.               |
+| ROLLBACK                 | Undoes every pending change.                                  | On failure or a failed check.       |
+| Atomicity                | A failure anywhere undoes everything.                         | Crashes mid-transaction.            |
+| Isolation                | Concurrent transactions behave as if separate.                | Two writers touching the same rows. |
+| Durability / WAL         | Log flushed before COMMIT returns.                            | Crash recovery.                     |
+| Quarkus `@Transactional` | Runtime exceptions roll back; checked ones commit by default. | Service methods.                    |
 
 ## Common mistakes
 

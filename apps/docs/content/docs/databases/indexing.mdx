@@ -110,14 +110,14 @@ Six cards close the lesson: sorted copy, B-tree, B+tree, secondary, composite, a
 
 ## Cheat sheet
 
-| Concept | One-line rule | When it matters |
-| --- | --- | --- |
-| Full scan | No index reads every row and page, O(n). | Large unindexed tables. |
-| B-tree | Wide, shallow, balanced; nodes carry row pointers. | Point lookups. |
-| B+tree | Entries in linked leaves; internal nodes are signposts. | Ranges and `ORDER BY`. |
-| Secondary index | Index, then primary key, then row. | InnoDB and PostgreSQL heap lookups. |
-| Composite index | `(a, b)` serves `a` and `a + b`, not `b`. | Multi-column filters. |
-| Index cost | Every index slows writes and takes space. | Write-heavy tables. |
+| Concept         | One-line rule                                           | When it matters                     |
+| --------------- | ------------------------------------------------------- | ----------------------------------- |
+| Full scan       | No index reads every row and page, O(n).                | Large unindexed tables.             |
+| B-tree          | Wide, shallow, balanced; nodes carry row pointers.      | Point lookups.                      |
+| B+tree          | Entries in linked leaves; internal nodes are signposts. | Ranges and `ORDER BY`.              |
+| Secondary index | Index, then primary key, then row.                      | InnoDB and PostgreSQL heap lookups. |
+| Composite index | `(a, b)` serves `a` and `a + b`, not `b`.               | Multi-column filters.               |
+| Index cost      | Every index slows writes and takes space.               | Write-heavy tables.                 |
 
 ## Common mistakes
 
