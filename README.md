@@ -47,6 +47,7 @@ pnpm dev
 ```
 
 - Docs: <http://localhost:3000>
+- Themes gallery: <http://localhost:3000/themes>
 - Studio editor: <http://localhost:9000>
 
 `pnpm dev` syncs the generated lesson data, then runs the studio bundle watcher and the docs dev server together. The first build writes the player bundles into `apps/docs/public/videos`; open a lesson page after it finishes.

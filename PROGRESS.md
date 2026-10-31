@@ -15,6 +15,8 @@ Repo layout (six parts):
 
 Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 
+- Docs gallery at `/themes`: all 14 video looks, a live preview of `theme-showcase`, and copy-ready command, `chapters.json` and `video.config.json` snippets.
+
 Commands:
 
 - `pnpm dev` — sync generated data, then the studio bundle watcher and the docs dev server.

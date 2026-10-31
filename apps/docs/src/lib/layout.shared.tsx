@@ -8,6 +8,7 @@ export function baseOptions(): BaseLayoutProps {
     },
     links: [
       {type: 'main', text: 'Videos', url: '/'},
+      {type: 'main', text: 'Themes', url: '/themes'},
       {type: 'main', text: 'Docs', url: '/docs'},
     ],
   };
