@@ -60,20 +60,39 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 
 ## Commands
 
-| Command                                              | What it does                                                                     |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server. |
-| `pnpm build`                                         | `videos:build` followed by the docs production build.                            |
-| `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                             |
-| `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.      |
-| `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.         |
-| `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.           |
-| `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                    |
-| `pnpm smoke:docs`                                    | Playwright smoke test against the docs dev server on port 3000.                  |
-| `pnpm typecheck` / `pnpm lint` / `pnpm test`         | Run one check on its own.                                                        |
-| `pnpm format` / `pnpm format:check`                  | Write or verify Prettier formatting.                                             |
+| Command                                              | What it does                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server.     |
+| `pnpm build`                                         | `videos:build` followed by the docs production build.                                |
+| `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                                 |
+| `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.          |
+| `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.             |
+| `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.               |
+| `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                        |
+| `pnpm snap:themes`                                   | Capture the theme showcase in 7 themes × 2 modes and write `.snapshots/themes.html`. |
+| `pnpm smoke:docs`                                    | Playwright smoke test against the docs dev server on port 3000.                      |
+| `pnpm typecheck` / `pnpm lint` / `pnpm test`         | Run one check on its own.                                                            |
+| `pnpm format` / `pnpm format:check`                  | Write or verify Prettier formatting.                                                 |
 
 Snapshots need the studio dev server on port 9000 (`pnpm studio:dev`). The baseline lives in `.snapshots/baseline`, is git-ignored, and must be captured once on a machine before comparing.
+
+## Themes
+
+Every theme ships two variants, `dark` and `light`, and the theme and the mode are picked independently: seven themes give fourteen looks. Fonts are shared by both modes of a theme; colours, shape and HUD are per variant.
+
+| Id                | Name            | Family       | Default mode | Character                                                            |
+| ----------------- | --------------- | ------------ | ------------ | -------------------------------------------------------------------- |
+| `neubrutal`       | Neubrutal       | `neubrutal`  | dark         | Thick borders, hard offset shadows, punchy accents.                  |
+| `shadcn`          | Shadcn          | `shadcn`     | dark         | Zinc neutrals, hairline borders, calm and clean.                     |
+| `notebook`        | Notebook        | `notebooklm` | light        | Soft tonal surfaces, no outlines, rounded everything, calm blue.     |
+| `tokyo-night`     | Tokyo Night     | `dev`        | dark         | The popular editor palette; ideal for code-heavy videos.             |
+| `terminal-green`  | Terminal Green  | `dev`        | dark         | Phosphor green on near-black with a soft glow.                       |
+| `paper-editorial` | Paper Editorial | `editorial`  | light        | Warm paper, ink rules and one editorial red; a serif for titles.     |
+| `blueprint`       | Blueprint       | `dev`        | dark         | Drafting-paper look with a strong grid; light mode is a white-print. |
+
+Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, or set `theme` and `mode` in `chapters.json`. Unknown ids and modes fall back with a warning. `pnpm snap:themes` captures the `theme-showcase` lesson in all fourteen looks and writes a contact sheet to `.snapshots/themes.html`.
+
+`NotebookLM` and `shadcn` here mean **inspired-by looks** built from public design ideas (Material tonal surfaces and Google's public colour tokens; zinc neutrals, 1 px borders and Tailwind colours). No logos, wordmarks or product UI are copied. The theme names shown in the UI are `Notebook` and `Shadcn`.
 
 ## Adding a lesson
 

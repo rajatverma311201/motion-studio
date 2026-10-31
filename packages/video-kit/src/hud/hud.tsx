@@ -1,9 +1,8 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {createRef} from '@motion-canvas/core';
-import {boxStyle, colors, fonts, loadFonts, radius} from '../theme';
+import {borderWidth, boxStyle, colors, fonts, loadFonts, radius, SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../theme';
 import {getTheme} from '../themes/active-theme';
 import {withAlpha} from '../themes/color-utils';
-import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../themes/shadows';
 import type {ThemeHud} from '../themes/theme-types';
 
 /** One chapter of a lesson: its HUD label and accent colour. */
@@ -74,7 +73,7 @@ function captionBar(hud: ThemeHud): Rect {
         radius={radius(14)}
         fill={colors.surf}
         stroke={colors.border}
-        lineWidth={1.5}
+        lineWidth={borderWidth(1.5)}
       />
     ) as Rect;
   }
@@ -97,7 +96,7 @@ function captionLabelChip(hud: ThemeHud): Rect | null {
       radius={radius(10)}
       fill={outline ? colors.surf : colors.brand}
       stroke={outline ? colors.border : undefined}
-      lineWidth={outline ? 1.5 : undefined}
+      lineWidth={outline ? borderWidth(1.5) : undefined}
     >
       <Txt
         text={hud.captionLabel}
@@ -179,7 +178,7 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
         radius={radius(8)}
         fill={colors.brand}
         stroke={colors.border}
-        lineWidth={3.5}
+        lineWidth={borderWidth(3.5)}
         offsetX={-1}
       />
       <Txt
@@ -211,7 +210,7 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
           fontWeight={700}
           fontSize={20}
           letterSpacing={2}
-          fill={colors.onAccent}
+          fill={colors.onBrand}
         />
       </Rect>
       {hudState.pills}

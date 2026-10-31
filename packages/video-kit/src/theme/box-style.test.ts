@@ -4,7 +4,7 @@ import {setActiveTheme} from '../themes/active-theme';
 import {withAlpha} from '../themes/color-utils';
 import {neubrutalTheme} from '../themes/neubrutal';
 import {DEFAULT_THEME_ID, registerTheme} from '../themes/registry';
-import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../themes/shadows';
+import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from './shadows';
 import type {ElevationStyle, Theme, ThemeMode, ThemeShape} from '../themes/theme-types';
 
 function accent(): string {

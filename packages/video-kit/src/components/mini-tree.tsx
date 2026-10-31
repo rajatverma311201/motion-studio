@@ -1,5 +1,5 @@
 import {Line, Node, Rect, Txt} from '@motion-canvas/2d';
-import {boxStyle, radius} from '../theme/box-style';
+import {borderWidth, boxStyle, radius, tintedSurface} from '../theme/box-style';
 import type {ThreadGenerator} from '@motion-canvas/core';
 import {all} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
@@ -61,7 +61,7 @@ export function miniTree({cx, rootText, rows, rootColor, leafColor, rowFontSize}
       width={300}
       height={66}
       radius={radius(14)}
-      fill={colors.surf}
+      fill={tintedSurface(rootColor)}
       {...boxStyle(rootColor, 6, 3.5)}
     >
       <Txt text={rootText} fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
@@ -76,7 +76,7 @@ export function miniTree({cx, rootText, rows, rootColor, leafColor, rowFontSize}
         width={LW}
         height={LH}
         radius={radius(14)}
-        fill={colors.surf}
+        fill={tintedSurface(leafColor)}
         {...boxStyle(leafColor, 6, 3.5)}
       >
         {rs.map((t, j) => {
@@ -115,5 +115,5 @@ export function highlightStroke(r: Rect, color: string, dur = 0.2): ThreadGenera
  * yield* clearStroke(mini.rows[0][1]);
  */
 export function clearStroke(r: Rect, dur = 0.2): ThreadGenerator {
-  return all(r.stroke(colors.ink, dur), r.lineWidth(3.5, dur));
+  return all(r.stroke(colors.border, dur), r.lineWidth(borderWidth(3.5), dur));
 }

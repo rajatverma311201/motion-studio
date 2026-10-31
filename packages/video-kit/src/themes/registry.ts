@@ -1,4 +1,10 @@
+import {blueprintTheme} from './blueprint';
 import {neubrutalTheme} from './neubrutal';
+import {notebookTheme} from './notebook';
+import {paperEditorialTheme} from './paper-editorial';
+import {shadcnTheme} from './shadcn';
+import {terminalGreenTheme} from './terminal-green';
+import {tokyoNightTheme} from './tokyo-night';
 import type {Theme, ThemeMode} from './theme-types';
 
 export const DEFAULT_THEME_ID = 'neubrutal';
@@ -7,10 +13,24 @@ export const DEFAULT_MODE: ThemeMode = 'dark';
 /** Every known theme, keyed by id. Generators and tests may add more. */
 export const themes: Record<string, Theme> = {
   [neubrutalTheme.id]: neubrutalTheme,
+  [shadcnTheme.id]: shadcnTheme,
+  [notebookTheme.id]: notebookTheme,
+  [tokyoNightTheme.id]: tokyoNightTheme,
+  [terminalGreenTheme.id]: terminalGreenTheme,
+  [paperEditorialTheme.id]: paperEditorialTheme,
+  [blueprintTheme.id]: blueprintTheme,
 };
 
 /** Ids in registration order. Keeping this in step with `themes` keeps tests parameterised. */
-export const themeIds: string[] = [neubrutalTheme.id];
+export const themeIds: string[] = [
+  neubrutalTheme.id,
+  shadcnTheme.id,
+  notebookTheme.id,
+  tokyoNightTheme.id,
+  terminalGreenTheme.id,
+  paperEditorialTheme.id,
+  blueprintTheme.id,
+];
 
 /**
  * Look up a theme. Unknown ids return `undefined` so callers can apply their own fallback.

@@ -1,7 +1,34 @@
 import type {ShapeProps} from '@motion-canvas/2d';
 import {getTheme} from '../themes/active-theme';
-import {withAlpha} from '../themes/color-utils';
-import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../themes/shadows';
+import {mix, withAlpha} from '../themes/color-utils';
+import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from './shadows';
+
+/**
+ * Scale a base border width by the active theme. Zero-scale themes stay
+ * borderless; otherwise the result never drops below 1.5 px so a hairline is
+ * still visible.
+ *
+ * @example
+ * <Rect lineWidth={borderWidth(4)} />
+ */
+export function borderWidth(base: number): number {
+  const scale = getTheme().shape.borderWidthScale;
+  return scale === 0 ? 0 : Math.max(1.5, base * scale);
+}
+
+/**
+ * A surface that carries the accent when the theme's elevation does not.
+ * Hard shadows and glows already show the accent; soft and flat themes get a
+ * subtle tint instead so semantic colours do not disappear.
+ *
+ * @example
+ * <Rect fill={tintedSurface(colors.lime)} {...boxStyle(colors.lime, 6, 3.5)} />
+ */
+export function tintedSurface(accent: string): string {
+  const {shape, colors} = getTheme();
+  if (shape.elevation === 'hard' || shape.elevation === 'glow') return colors.surf;
+  return mix(colors.surf, accent, 0.22);
+}
 
 /**
  * Border + elevation for a box, according to the active theme. accent = shadow/glow colour.
@@ -9,11 +36,11 @@ import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../themes/shadows';
  * @example
  * <Rect {...boxStyle(colors.pink, 8, 4)} />
  */
-export function boxStyle(accent: string, offset = 8, borderWidth = 4): ShapeProps {
+export function boxStyle(accent: string, offset = 8, border = 4): ShapeProps {
   const theme = getTheme();
   const {shape, mode} = theme;
   const scale = shape.elevationScale;
-  const width = shape.borderWidthScale === 0 ? 0 : Math.max(1.5, borderWidth * shape.borderWidthScale);
+  const width = border === 0 ? 0 : borderWidth(border);
   const props: ShapeProps = {lineWidth: width};
   if (width > 0) props.stroke = theme.colors.border;
 

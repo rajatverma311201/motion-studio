@@ -15,7 +15,7 @@ export const neubrutalTheme: Theme = {
   id: 'neubrutal',
   name: 'Neubrutal',
   family: 'neubrutal',
-  description: 'Hard cream borders, blur-free offset shadows and a saturated palette on a near-black grid.',
+  description: 'Thick borders, hard offset shadows, punchy accents.',
   defaultMode: 'dark',
   fonts: {
     sans: SANS,

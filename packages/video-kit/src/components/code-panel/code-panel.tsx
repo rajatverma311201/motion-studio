@@ -1,5 +1,5 @@
 import {Circle, Line, Node, Rect, Txt} from '@motion-canvas/2d';
-import {boxStyle, colors, fonts, radius, withAlpha} from '../../theme';
+import {borderWidth, boxStyle, colors, fonts, radius, withAlpha} from '../../theme';
 import type {CodeLanguage} from './languages';
 import {tokenize} from './tokenizer';
 
@@ -87,7 +87,7 @@ export function codePanel(options: CodePanelOptions): CodePanel {
           [options.w / 2, -h / 2 + 64],
         ]}
         stroke={colors.ink}
-        lineWidth={4}
+        lineWidth={borderWidth(4)}
       />
       <Circle x={-options.w / 2 + 38} y={-h / 2 + 32} size={18} fill={colors.red} />
       <Circle x={-options.w / 2 + 70} y={-h / 2 + 32} size={18} fill={colors.yellow} />

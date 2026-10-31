@@ -1,5 +1,5 @@
 import {Circle, Line, Node, Rect, Txt} from '@motion-canvas/2d';
-import {boxStyle, radius} from '../theme/box-style';
+import {borderWidth, boxStyle, radius, tintedSurface} from '../theme/box-style';
 import type {SimpleSignal, ThreadGenerator} from '@motion-canvas/core';
 import {all, createSignal, easeInOutCubic, easeOutBack} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
@@ -153,7 +153,7 @@ export class TreeView {
         width={() => nodeWidth(nKeys(), this.cw)}
         height={H}
         radius={radius(14)}
-        fill={colors.surf}
+        fill={tintedSurface(this.colorOf(n.leaf))}
         {...boxStyle(this.colorOf(n.leaf), 6, 3.5)}
       />
     ) as Rect;
@@ -312,7 +312,7 @@ export class TreeView {
   *unmark(dur = 0.15): ThreadGenerator {
     const a: ThreadGenerator[] = [];
     for (const v of this.vis.values()) {
-      a.push(v.bg.stroke(colors.ink, dur), v.bg.lineWidth(3.5, dur));
+      a.push(v.bg.stroke(colors.border, dur), v.bg.lineWidth(borderWidth(3.5), dur));
       v.cells.forEach((c, i) => {
         a.push(c.fill(colors.surf2, dur), v.texts[i].fill(colors.ink, dur));
       });
@@ -331,7 +331,7 @@ export class TreeView {
   }
   /** reset every node fill to the default surface colour */
   *untint(dur = 0.2): ThreadGenerator {
-    yield* all(...[...this.vis.values()].map(v => v.bg.fill(colors.surf, dur)));
+    yield* all(...[...this.vis.values()].map(v => v.bg.fill(tintedSurface(this.colorOf(v.leaf)), dur)));
   }
   /** fade the whole tree out */
   *hide(dur = 0.4): ThreadGenerator {

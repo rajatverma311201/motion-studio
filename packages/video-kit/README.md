@@ -12,15 +12,21 @@ src/
   theme/
     colors.ts             active-theme colour Proxy + ColorName type
     fonts.ts              active-theme font Proxy + idempotent loadFonts()
-    box-style.ts          boxStyle() border/elevation + radius()
+    box-style.ts          boxStyle(), borderWidth(), tintedSurface() and radius()
     format.ts             formatNumber()
+    shadows.ts            soft-elevation shadow inks
   themes/
     theme-types.ts        Theme, ThemeVariant, ThemeColors, ResolvedTheme, ...
     color-utils.ts        parseColor(), withAlpha(), mix(), contrastRatio()
     neubrutal.ts          neubrutalTheme (dark is the original look)
+    shadcn.ts             shadcnTheme (zinc neutrals, hairline borders)
+    notebook.ts           notebookTheme (tonal surfaces, no outlines)
+    tokyo-night.ts        tokyoNightTheme (editor palette + day variant)
+    terminal-green.ts     terminalGreenTheme (phosphor glow)
+    paper-editorial.ts    paperEditorialTheme (warm paper, serif display)
+    blueprint.ts          blueprintTheme (drafting grid, white-print)
     registry.ts           themes, themeIds, getThemeById(), registerTheme()
     active-theme.ts       setActiveTheme(), getTheme(), resolveThemeSelection()
-    shadows.ts            soft-elevation shadow inks
     golden/               frozen default look for the golden test
   animation/
     pop.ts                pop()
@@ -158,6 +164,12 @@ export default defineLesson({
 
 A theme is a design language; mode is a separate choice (`dark` or `light`). The kit flattens the pair into a `ResolvedTheme` once at scene start, and every helper reads it at call time.
 
+The registry ships seven themes: `neubrutal`, `shadcn`, `notebook`, `tokyo-night`, `terminal-green`, `paper-editorial` and `blueprint`. Every theme has both variants, so the catalogue is fourteen looks. The root README has the id/name/family/default-mode table and the one-line character of each look.
+
+### Fonts and the 0.6 em rule
+
+Both modes of a theme share one Google Fonts stylesheet and one set of stacks. Every `fonts.mono` stack must advance exactly 0.6 em per glyph because `codePanel()` lays tokens out on that grid. The three mono families in the catalogue were measured with `CanvasRenderingContext2D.measureText('MMMMMMMMMM').width / 10 / fontSize`: Roboto Mono 0.6001, JetBrains Mono 0.6000, IBM Plex Mono 0.6000. Verify any replacement the same way before using it. `notebook` uses Google Sans (offered on Google Fonts at the time of writing; DM Sans is the documented fallback) with Roboto Mono.
+
 ### Types
 
 - `Theme` — id, name, family, description, `defaultMode`, shared `fonts`, and mandatory `variants.dark` / `variants.light`.
@@ -198,7 +210,9 @@ const accent = colors.lime; // WRONG: freezes the first theme forever
 
 ### boxStyle, radius, withAlpha
 
-- `boxStyle(accent, offset = 8, borderWidth = 4)` returns `ShapeProps` with the active theme's border width and elevation (`hard`, `soft`, `glow` or `none`).
+- `boxStyle(accent, offset = 8, border = 4)` returns `ShapeProps` with the active theme's border width and elevation (`hard`, `soft`, `glow` or `none`).
+- `borderWidth(base)` scales a border by `shape.borderWidthScale`; borderless themes return `0`, otherwise the result never drops below `1.5`.
+- `tintedSurface(accent)` returns `colors.surf` when the elevation already shows the accent (hard or glow) and a subtle 22 % accent tint for soft or flat themes, so a semantic colour never disappears with the shadow.
 - `radius(n)` scales a number or a 4-tuple by `shape.radiusScale`; values `>= 100` (pills) pass through.
 - `withAlpha(color, alpha)` returns a `rgba(...)` string and accepts `#rgb`, `#rrggbb`, `rgb()` and `rgba()` inputs.
 
