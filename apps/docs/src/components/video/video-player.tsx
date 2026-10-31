@@ -81,23 +81,34 @@ export function VideoPlayer({slug, startSection, autoPlay = false}: VideoPlayerP
   const ready = status === 'ready' && !missing;
 
   return (
-    <div className="nb-video-frame" role="region" aria-label={`Video: ${title}`}>
+    <div
+      className="relative aspect-video w-full overflow-hidden rounded-lg border border-fd-border bg-black"
+      role="region"
+      aria-label={`Video: ${title}`}
+    >
       {missing ? (
-        <div className="nb-video-missing" role="alert">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-fd-card p-4 text-center text-sm">
           <p>
             Video bundle not found. Run <code>pnpm videos:build</code> in the repo root.
           </p>
-          <button type="button" className="nb-video-copy" onClick={copyBuildCommand}>
-            {copied ? 'COPIED' : 'COPY COMMAND'}
+          <button
+            type="button"
+            className="rounded-md border border-fd-border bg-fd-secondary px-3 py-1.5 text-xs font-medium text-fd-secondary-foreground transition-colors hover:bg-fd-accent"
+            onClick={copyBuildCommand}
+          >
+            {copied ? 'Copied' : 'Copy command'}
           </button>
         </div>
       ) : status === 'error' ? (
-        <p className="nb-video-error" role="alert">
+        <p
+          className="absolute inset-0 flex items-center justify-center bg-fd-card p-4 text-center text-sm text-fd-error"
+          role="alert"
+        >
           Failed to load the Motion Canvas player module.
         </p>
       ) : status === 'loading' ? (
-        <div className="nb-video-skeleton">
-          <span>LOADING PLAYER...</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-fd-card text-sm text-fd-muted-foreground">
+          <span>Loading player…</span>
         </div>
       ) : null}
       {ready ? (

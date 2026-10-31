@@ -1,6 +1,3 @@
-import '@fontsource-variable/space-grotesk';
-import '@fontsource/jetbrains-mono/400.css';
-import '@fontsource/jetbrains-mono/700.css';
 import appCss from '@/styles/app.css?url';
 import {createRootRoute, HeadContent, Outlet, Scripts} from '@tanstack/react-router';
 import {RootProvider} from 'fumadocs-ui/provider/tanstack';
@@ -32,12 +29,12 @@ function RootComponent() {
 
 function RootDocument({children}: {children: ReactNode}) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body className="flex min-h-screen flex-col">
-        <RootProvider theme={{defaultTheme: 'dark', enableSystem: false, forcedTheme: 'dark'}}>{children}</RootProvider>
+        <RootProvider>{children}</RootProvider>
         <Scripts />
       </body>
     </html>

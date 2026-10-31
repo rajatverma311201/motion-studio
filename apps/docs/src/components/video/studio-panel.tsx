@@ -6,20 +6,27 @@ export interface StudioPanelProps {
 
 export function StudioPanel({slug}: StudioPanelProps) {
   return (
-    <div className="nb-studio-panel">
+    <div className="my-6 flex flex-col gap-4 rounded-lg border border-fd-border bg-fd-card p-4">
       {import.meta.env.DEV ? (
-        <div className="nb-studio-editor">
-          <a className="nb-btn nb-btn-lime" href={studioEditorUrl(slug)} target="_blank" rel="noreferrer">
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            className="rounded-md bg-fd-primary px-3 py-1.5 text-sm font-medium text-fd-primary-foreground transition-opacity hover:opacity-90"
+            href={studioEditorUrl(slug)}
+            target="_blank"
+            rel="noreferrer"
+          >
             Open in Motion Canvas editor
           </a>
-          <p className="nb-studio-hint">
+          <p className="text-xs text-fd-muted-foreground">
             Run <code>pnpm studio:dev</code> first.
           </p>
         </div>
       ) : null}
-      <details className="nb-studio-details">
-        <summary>How to render this video as an MP4</summary>
-        <ol>
+      <details>
+        <summary className="cursor-pointer text-sm font-medium text-fd-primary">
+          How to render this video as an MP4
+        </summary>
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-6 text-fd-muted-foreground">
           <li>
             Run <code>pnpm studio:dev</code>.
           </li>

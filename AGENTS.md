@@ -58,7 +58,9 @@ Package names use the scope `@motion-studio/*` (`@motion-studio/studio`, `@motio
 
 ## 5. Visual identity (must not drift)
 
-Dark neubrutalism: background `#0B0B10`, light cream borders `#F4F1EA`, hard coloured offset shadows (no blur), accent colours lime `#C6FF3D`, pink `#FF4D8D`, cyan `#3DE3FF`, yellow `#FFD23D`, violet `#9B7BFF`, orange `#FF8A3D`, red `#FF4D4D`. Fonts: Space Grotesk (text), JetBrains Mono (labels/code). Videos have no voice-over: a caption bar ("NOTE") at the bottom narrates in text. Intro titles use a **solid lime slab with dark text and a violet hard shadow**; do not go back to white text with a pink/cyan shadow.
+This identity belongs to the **videos only**. The docs site uses the stock Fumadocs look with its built-in light/dark toggle; do not add neubrutalist styling to `apps/docs`.
+
+Video identity: dark neubrutalism, background `#0B0B10`, light cream borders `#F4F1EA`, hard coloured offset shadows (no blur), accent colours lime `#C6FF3D`, pink `#FF4D8D`, cyan `#3DE3FF`, yellow `#FFD23D`, violet `#9B7BFF`, orange `#FF8A3D`, red `#FF4D4D`. Fonts: Space Grotesk (text), JetBrains Mono (labels/code). Videos have no voice-over: a caption bar ("NOTE") at the bottom narrates in text. Intro titles use a **solid lime slab with dark text and a violet hard shadow**; do not go back to white text with a pink/cyan shadow.
 
 ## 6. Commit message format (Conventional Commits)
 

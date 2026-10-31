@@ -31,21 +31,27 @@ export function ColorSwatches({theme = 'neubrutal'}: ColorSwatchesProps): ReactE
   }
 
   return (
-    <div className="nb-theme-swatches">
+    <div className="my-6 space-y-6">
       {MODES.map(mode => (
-        <section className="nb-theme-swatch-row" key={mode}>
-          <h3 className="nb-theme-swatch-title">
+        <section key={mode}>
+          <h3 className="mb-3 text-sm font-semibold">
             {entry.name} / {mode}
-            {entry.defaultMode === mode ? <span className="nb-theme-swatch-default"> default</span> : null}
+            {entry.defaultMode === mode ? (
+              <span className="ml-2 rounded-full border border-fd-border bg-fd-muted px-2 py-0.5 text-xs font-medium text-fd-muted-foreground">
+                default
+              </span>
+            ) : null}
           </h3>
-          <div className="nb-swatches">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3">
             {Object.entries(entry.variants[mode].colors).map(([name, value]) => (
-              <div className="nb-swatch" key={name}>
-                <span className="nb-swatch-color" aria-hidden="true">
-                  <span className="nb-swatch-fill" style={{backgroundColor: value}} />
-                </span>
-                <span className="nb-swatch-name">{name}</span>
-                <code className="nb-swatch-value">{value}</code>
+              <div key={name} className="flex flex-col gap-2 rounded-lg border border-fd-border bg-fd-card p-2">
+                <span
+                  className="block h-16 rounded-md border border-fd-border"
+                  style={{backgroundColor: value}}
+                  aria-hidden="true"
+                />
+                <span className="font-mono text-xs font-medium">{name}</span>
+                <code className="text-xs text-fd-muted-foreground">{value}</code>
               </div>
             ))}
           </div>

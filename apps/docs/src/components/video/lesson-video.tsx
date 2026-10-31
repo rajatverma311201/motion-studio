@@ -14,7 +14,10 @@ export function LessonVideo({slug}: LessonVideoProps) {
 
   if (!lesson) {
     return (
-      <div className="nb-video-missing nb-video-missing-lesson" role="alert">
+      <div
+        className="my-6 rounded-lg border border-fd-border bg-fd-card p-4 text-sm text-fd-muted-foreground"
+        role="alert"
+      >
         <p>
           No lesson data for <code>{slug}</code>. Run <code>pnpm sync</code> in the repo root.
         </p>
@@ -25,9 +28,9 @@ export function LessonVideo({slug}: LessonVideoProps) {
   const chapter = lesson.chapters[startSection];
 
   return (
-    <div className="nb-lesson-video">
+    <div className="lesson-video my-6">
       {startSection > 0 && chapter ? (
-        <p className="nb-video-start">
+        <p className="mb-2 text-sm text-fd-muted-foreground">
           Starting at chapter {String(startSection + 1).padStart(2, '0')}: {chapter.name}
         </p>
       ) : null}

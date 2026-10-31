@@ -7,15 +7,14 @@ export function NotFound() {
   return (
     <DocsLayout {...baseOptions()} tree={source.getPageTree()}>
       <DocsPage>
-        <p className="eyebrow">404</p>
         <DocsTitle>Page not found</DocsTitle>
         <DocsBody>
-          <div className="nb-404">
-            <p>That page does not exist. The lessons are all in the sidebar.</p>
-            <p>
-              <a href="/docs">Back to the docs</a>
-            </p>
-          </div>
+          <p>That page does not exist. The lessons are all in the sidebar.</p>
+          <p>
+            <a className="text-fd-primary underline underline-offset-4" href="/docs">
+              Back to the docs
+            </a>
+          </p>
         </DocsBody>
       </DocsPage>
     </DocsLayout>

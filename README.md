@@ -1,8 +1,8 @@
 # Motion Studio
 
-Animated software-engineering explainers. Each lesson is a Motion Canvas scene rendered to video and paired with a written page: the same argument, the code, a cheat sheet, and the edge cases. There is no voice-over; a caption bar narrates the video.
+Animated software-engineering explainers. Each lesson is a Motion Canvas scene rendered to video and paired with a recording page: voiceover notes, summary points, chapter timestamps and a copy-ready YouTube description. There is no voice-over in the render; a caption bar narrates the video. The docs site is the owner's recording companion and video tracker.
 
-This repository contains the whole pipeline: the scenes, the shared visual kit, the documentation site that plays the videos, and the tools that keep them in sync.
+This repository contains the whole pipeline: the scenes, the shared visual kit, the documentation site that plays the videos, and the tools that keep them in sync. The videos use the neubrutalist visual identity; the docs site uses the stock Fumadocs look with a light/dark toggle.
 
 ## Architecture
 

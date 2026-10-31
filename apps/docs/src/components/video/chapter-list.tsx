@@ -1,5 +1,4 @@
-import type {CSSProperties} from 'react';
-import {chapterColorVar, getLesson} from './use-lessons';
+import {getLesson} from './use-lessons';
 
 export interface ChapterListProps {
   slug: string;
@@ -12,35 +11,38 @@ export function ChapterList({slug, activeIndex, onSelect}: ChapterListProps) {
   if (!lesson) return null;
 
   return (
-    <div className="nb-chapter-nav">
-      <div className="nb-chapter-nav-head">
-        <span className="eyebrow">Jump to a chapter</span>
-        <button type="button" className="nb-chapter-play" onClick={() => onSelect(0)}>
+    <div className="my-6">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-medium text-fd-muted-foreground">Jump to a chapter</h2>
+        <button
+          type="button"
+          className="rounded-md border border-fd-border bg-fd-secondary px-3 py-1.5 text-xs font-medium text-fd-secondary-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
+          onClick={() => onSelect(0)}
+        >
           Play from the start
         </button>
       </div>
-      <ol className="nb-chapter-grid">
+      <ol className="grid gap-2 sm:grid-cols-2">
         {lesson.chapters.map((chapter, index) => {
           const active = index === activeIndex;
-          const color = chapterColorVar(chapter.color);
 
           return (
             <li key={`${index}-${chapter.name}`}>
               <button
                 type="button"
-                className={active ? 'nb-chapter is-active' : 'nb-chapter'}
-                style={{'--chapter-color': color} as CSSProperties}
+                className={`flex w-full items-start gap-3 rounded-lg border border-l-4 border-fd-border px-3 py-2 text-left text-sm transition-colors hover:bg-fd-accent ${
+                  active ? 'border-l-fd-primary bg-fd-accent' : 'border-l-transparent bg-fd-card'
+                }`}
                 aria-current={active ? 'true' : undefined}
                 data-chapter-index={index}
                 onClick={() => onSelect(index)}
               >
-                <span className="nb-chapter-index">{String(index + 1).padStart(2, '0')}</span>
-                <span className="nb-chapter-body">
-                  <span className="nb-chapter-name">
-                    <span className="nb-chapter-dot" aria-hidden="true" />
-                    {chapter.name}
-                  </span>
-                  {chapter.summary ? <span className="nb-chapter-summary">{chapter.summary}</span> : null}
+                <span className="font-mono text-xs text-fd-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{chapter.name}</span>
+                  {chapter.summary ? (
+                    <span className="mt-0.5 block text-xs leading-5 text-fd-muted-foreground">{chapter.summary}</span>
+                  ) : null}
                 </span>
               </button>
             </li>
