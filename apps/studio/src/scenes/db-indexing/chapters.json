@@ -1,6 +1,14 @@
 {
   "slug": "db-indexing",
   "title": "DB INDEXING",
+  "summaryPoints": [
+    "Why an unindexed lookup reads every row and page.",
+    "How a sorted index makes lookups logarithmic.",
+    "How B-trees stay wide, shallow and balanced.",
+    "Why B+trees win for ranges and full scans.",
+    "What secondary and composite indexes cost.",
+    "How to read EXPLAIN and spot an ignored index."
+  ],
   "chapters": [
     {
       "name": "INTRO",

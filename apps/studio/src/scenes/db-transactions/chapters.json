@@ -1,6 +1,14 @@
 {
   "slug": "db-transactions",
   "title": "DB TRANSACTIONS",
+  "summaryPoints": [
+    "Why a group of writes must be all-or-nothing.",
+    "How BEGIN, COMMIT and ROLLBACK keep a transfer consistent.",
+    "What atomicity, consistency, isolation and durability each guarantee.",
+    "How isolation levels block dirty, non-repeatable and phantom reads.",
+    "How the write-ahead log makes a commit durable.",
+    "How Quarkus @Transactional rolls back on runtime exceptions."
+  ],
   "chapters": [
     {
       "name": "INTRO",

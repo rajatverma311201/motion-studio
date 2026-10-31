@@ -1,30 +1,9 @@
 import type * as PageTree from 'fumadocs-core/page-tree';
-import lessonsData from '@/generated/lessons.json';
 import type {LessonStatus} from '@/lib/status';
+import {getStudioLesson, type StudioLesson, type StudioLook} from '@/lib/studio-data';
 import {source} from '@/lib/source';
 
 export type LessonLevel = 'beginner' | 'intermediate' | 'advanced';
-
-export interface StudioChapter {
-  name: string;
-  color: string;
-  summary?: string;
-  at?: string;
-}
-
-export interface StudioLook {
-  theme: string;
-  themeName: string;
-  mode: 'dark' | 'light';
-}
-
-export interface StudioLesson {
-  slug: string;
-  title: string;
-  chapters: StudioChapter[];
-  summaryPoints?: string[];
-  look?: StudioLook;
-}
 
 export interface Lesson {
   slug: string;
@@ -45,8 +24,6 @@ export interface Lesson {
   look?: StudioLook;
   order: number;
 }
-
-const studioLessons = lessonsData as Record<string, StudioLesson>;
 
 export function courseName(slug: string | undefined): string {
   if (!slug) return 'Lessons';
@@ -97,7 +74,7 @@ export function getLessons(): Lesson[] {
     const video = page.data.video;
     if (!video) return [];
 
-    const studio = studioLessons[video];
+    const studio = getStudioLesson(video);
 
     return [
       {
