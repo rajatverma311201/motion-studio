@@ -1,5 +1,6 @@
 import type {ThreadGenerator} from '@motion-canvas/core';
 import type {View2D} from '@motion-canvas/2d';
+import type {BuildHudOptions} from '../hud';
 import type {ColorName} from '../theme';
 
 /** One chapter as stored in chapters.json: plain data, readable by the docs app. */
@@ -27,4 +28,6 @@ export interface LessonConfig {
   chapters: ChaptersFile;
   /** One generator per chapter, same order and same length as chapters.chapters. */
   sections: ((view: View2D) => ThreadGenerator)[];
+  /** Optional HUD overrides, e.g. a fixed pill row for an older lesson. */
+  hud?: BuildHudOptions;
 }

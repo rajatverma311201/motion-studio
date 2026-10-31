@@ -283,3 +283,75 @@ None was trivially generic without changing its geometry or public options, so n
 * `LC_ALL=C find ... -name "*_*" -o -name "*[A-Z]*" | grep -v ".meta" | wc -l` -> 0
 * dev server: `/src/projects/db-indexing` -> 200, `/src/projects/db-indexing#s=9` -> 200, no errors in the log
 * `pnpm snap:compare db-indexing` -> **40/40 PASS** (threshold 0.4 %)
+
+## Step 08 working notes
+
+**Source map** (`apps/studio/src/scenes/db-transactions/transactions.tsx`, 2666 lines; old file is bigger than the prompt's 1330 estimate)
+
+| Lines | Content |
+| --- | --- |
+| 1-23 | imports |
+| 25-43 | header / section list |
+| 45-54 | Google Fonts `<link>` injection |
+| 57-78 | palette `C`, `FONT`, `MONO` |
+| 80-89 | `NB`, `fmt` |
+| 92-129 | `chip`, `chipText` |
+| 131-158 | `pop`, `shake`, `countTo` |
+| 160-182 | `bigText` |
+| 184-223 | `Lang`, SQL/Java rules, `tokenize` |
+| 225-365 | `LH`, `CODE_FS`, `CodeP`, `codePanel`, `focusLine`, `revealLines` |
+| 368-388 | `SECTIONS`, `hud` refs |
+| 390-550 | `buildHud`, `setSection`, `say`, `leave` |
+| 552-665 | `Acct`, `account`, `setTag`, `moveBal`, `totalChip`, `coin` |
+| 668-726 | 00 INTRO |
+| 729-812 | 01 THE PROBLEM |
+| 815-996 | 02 BEGIN · COMMIT · ROLLBACK |
+| 999-1340 | 03 ACID |
+| 1343-1475 | 04 `Ev`, `Anom`, `ANOMS` data |
+| 1477-1727 | 04 ISOLATION ANOMALIES |
+| 1730-1936 | 05 ISOLATION LEVELS |
+| 1939-2345 | 06 DURABILITY · WAL |
+| 2348-2566 | 07 IN CODE |
+| 2569-2648 | 08 RECAP |
+| 2650-2666 | scene runner |
+
+**Helper decisions**
+
+| Local helper | Kit equivalent | Decision |
+| --- | --- | --- |
+| palette `C` | `colors` | reuse: all 16 entries are byte-identical. Inline `#FF5C7A` (isolation table) and `#B7A0FF` (ACID disk lid) are not in the palette; keep as local literals. |
+| fonts link | `loadFonts()` | reuse; call at module scope in `scene.tsx` like step 07 so text is measured with the real fonts. |
+| `FONT`, `MONO` | `fonts.sans`, `fonts.mono` | reuse. |
+| `NB()` | `neubrutal()` | reuse (same stroke/offset algebra). |
+| `fmt()` | `formatNumber()` | keep local in `shared.ts`: the video needs `₹` + `en-IN`, the kit helper is plain `en-US`. Passed to `countTo` and the account card as a formatter. |
+| `chip`, `chipText` | `chip`, `chipText` | reuse; output is identical. |
+| `pop`, `shake` | `pop`, `shake` | reuse; identical. |
+| `countTo` | `countTo(t, from, to, dur, fmt)` | reuse with the local `fmt` formatter, so the `₹` text is unchanged. |
+| `bigText` | `titleSlab`/`titlePill` | promote to kit as `stackedTitle` (used twice: intro + recap). `titleSlab` would change the look, so the old white-with-shadow stack is preserved and recorded as a restyle follow-up. |
+| `Lang`, rules, `tokenize`, `codePanel`, `focusLine`, `revealLines` | same | reuse. The kit SQL table is a superset but the actual snippets only use keywords present in both tables; Java rules are identical. Geometry already matches step 04. |
+| `SECTIONS` | `chapters.json` + `defineLesson` | replace; 9 chapters. |
+| `buildHud` | `buildHud` | extend with optional `sectionChipX` and `pills` layout. Old geometry: chip x `-470`, pills centred at `504 + 46*i`, width 36 (active 64). Kit defaults stay `-560` and right-aligned 28/52, so db-indexing is untouched. |
+| `setSection` | `setSection` | reuse after storing the pill widths in `hudState`. |
+| `say`, `leave` | `say`, `leave` | reuse; identical. |
+| `Acct`, `account` | — | promote as `accountCard` (used 4× across sections 02 and 03). |
+| `setTag`, `moveBal` | — | keep in `shared.ts`: animation helpers tied to the account card. |
+| `totalChip`, `coin` | — | keep in `shared.ts`: lesson copy / used once. |
+| `ANOMS` | — | keep in section 05: lesson content, not a component. |
+| `panel` (durability) | — | promote as `titledPanel` (used 4×). |
+| `tile` (durability) | — | promote as `logRow` (used 7×). |
+| lane JSX (anomalies) | — | promote as `timelineLane` (used 2×). |
+| step list rows (durability) | — | candidate only: built once as a four-row list. |
+
+**Section mapping**
+
+| Old | New |
+| --- | --- |
+| `intro` | `sections/01-intro.tsx` (`introSection`) |
+| `problem` | `sections/02-the-problem.tsx` (`problemSection`) |
+| `txFix` | `sections/03-begin-commit-rollback.tsx` (`beginCommitRollbackSection`) |
+| `acid` | `sections/04-acid.tsx` (`acidSection`) |
+| `anomalies` | `sections/05-isolation-anomalies.tsx` (`isolationAnomaliesSection`) |
+| `levels` | `sections/06-isolation-levels.tsx` (`isolationLevelsSection`) |
+| `durability` | `sections/07-durability-wal.tsx` (`durabilityWalSection`) |
+| `inCode` | `sections/08-in-code.tsx` (`inCodeSection`) |
+| `recap` | `sections/09-recap.tsx` (`recapSection`) |

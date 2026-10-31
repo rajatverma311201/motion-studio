@@ -75,7 +75,7 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
   return makeScene2D(function* (view) {
     view.fill(colors.bg);
     const start = readStartSection(total);
-    buildHud(view, chapters.title, hudDefs);
+    buildHud(view, chapters.title, hudDefs, config.hud);
 
     for (let i = start; i < total; i++) {
       yield* setSection(i);

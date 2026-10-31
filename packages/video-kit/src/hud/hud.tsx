@@ -10,6 +10,26 @@ export interface SectionDef {
   color: string;
 }
 
+/** Fixed pill geometry for lessons whose HUD predates the shared right-aligned row. */
+export interface HudPillLayout {
+  /** X centre of the first pill. */
+  startX: number;
+  /** Centre-to-centre distance between pills. */
+  step: number;
+  /** Width of an inactive pill. */
+  width: number;
+  /** Width of the active pill. */
+  activeWidth: number;
+}
+
+/** Optional HUD overrides. Every field defaults to the shared layout. */
+export interface BuildHudOptions {
+  /** Left edge of the section chip. Defaults to -560. */
+  sectionChipX?: number;
+  /** Use a fixed left-to-right pill row instead of the right-aligned default. */
+  pills?: HudPillLayout;
+}
+
 /**
  * Shared HUD refs and pills. Module-level on purpose: one HUD per scene.
  * `buildHud()` resets the arrays so a second lesson in the same page is clean.
@@ -20,6 +40,8 @@ export const hudState = {
   secChip: createRef<Rect>(),
   pills: [] as Rect[],
   defs: [] as SectionDef[],
+  pillWidth: 28,
+  pillActiveWidth: 52,
 };
 
 /**
@@ -27,12 +49,15 @@ export const hudState = {
  *
  * @example
  * buildHud(view, 'DB INDEXING', [{name: 'INTRO', color: colors.lime}]);
+ * buildHud(view, 'DB TRANSACTIONS', defs, {sectionChipX: -470, pills: {startX: 504, step: 46, width: 36, activeWidth: 64}});
  */
-export function buildHud(view: View2D, title: string, defs: SectionDef[]): void {
+export function buildHud(view: View2D, title: string, defs: SectionDef[], options: BuildHudOptions = {}): void {
   hudState.pills = [];
   hudState.defs = [];
   loadFonts();
   hudState.defs = defs;
+  hudState.pillWidth = options.pills?.width ?? 28;
+  hudState.pillActiveWidth = options.pills?.activeWidth ?? 52;
 
   const grid: Line[] = [];
   for (let x = -960; x <= 960; x += 60)
@@ -65,10 +90,13 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[]): void 
 
   const n = defs.length;
   const step = 38;
+  const layout = options.pills;
+  const pillX = (i: number): number =>
+    layout ? layout.startX + i * layout.step : 904 - (n - i) * step + step / 2;
   hudState.pills = defs.map(
     (_, i) =>
       (
-        <Rect x={904 - (n - i) * step + step / 2} y={-492} width={28} height={14} radius={7} fill={colors.dim} />
+        <Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={7} fill={colors.dim} />
       ) as Rect,
   );
   view.add(
@@ -97,7 +125,7 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[]): void 
       />
       <Rect
         ref={hudState.secChip}
-        x={-560}
+        x={options.sectionChipX ?? -560}
         y={-492}
         offsetX={-1}
         layout

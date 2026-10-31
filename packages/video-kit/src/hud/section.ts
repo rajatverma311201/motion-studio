@@ -16,7 +16,7 @@ export function* setSection(i: number): ThreadGenerator {
     ...hudState.pills.map((p, j) =>
       all(
         p.fill(j < i ? 'rgba(244,241,234,0.55)' : j === i ? s.color : colors.dim, 0.3),
-        p.width(j === i ? 52 : 28, 0.3, easeOutCubic),
+        p.width(j === i ? hudState.pillActiveWidth : hudState.pillWidth, 0.3, easeOutCubic),
       ),
     ),
   );
