@@ -11,7 +11,9 @@ import {readdir, readFile, stat, writeFile, mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const ROOT = process.env.MOTION_STUDIO_ROOT
+  ? path.resolve(process.env.MOTION_STUDIO_ROOT)
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const SCENES_DIR = path.join(ROOT, 'apps/studio/src/scenes');
 const PROJECTS_DIR = path.join(ROOT, 'apps/studio/src/projects');
 const OUT_FILE = path.join(ROOT, 'apps/docs/src/generated/lessons.json');

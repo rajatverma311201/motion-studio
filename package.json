@@ -12,6 +12,7 @@
     "docs:dev": "pnpm --filter @motion-studio/docs dev",
     "docs:build": "pnpm --filter @motion-studio/docs build",
     "sync:lessons": "node tools/scripts/sync-lessons.mjs",
+    "new:lesson": "node tools/scripts/new-lesson.mjs",
     "videos:build": "pnpm sync:lessons && pnpm studio:build",
     "videos:watch": "pnpm --filter @motion-studio/studio exec vite build --watch",
     "dev": "pnpm sync:lessons && concurrently -k -n videos,docs -c magenta,cyan \"pnpm videos:watch\" \"pnpm docs:dev\"",
