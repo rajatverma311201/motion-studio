@@ -1,16 +1,6 @@
 import type {ReactElement} from 'react';
-import themesData from '@/generated/themes.json';
+import {themesJson, type ThemeMode} from '@/lib/themes';
 
-type ThemeMode = 'dark' | 'light';
-
-interface ThemeEntry {
-  id: string;
-  name: string;
-  defaultMode: ThemeMode;
-  variants: Record<ThemeMode, {colors: Record<string, string>}>;
-}
-
-const data = themesData as {defaultThemeId: string; themes: ThemeEntry[]};
 const MODES: ThemeMode[] = ['dark', 'light'];
 
 interface ColorSwatchesProps {
@@ -19,9 +9,10 @@ interface ColorSwatchesProps {
 }
 
 /** Dark and light colour rows for one theme, read from the generated theme data. */
-export function ColorSwatches({theme = data.defaultThemeId}: ColorSwatchesProps): ReactElement {
+export function ColorSwatches({theme = themesJson.defaultThemeId}: ColorSwatchesProps): ReactElement {
   const entry =
-    data.themes.find(item => item.id === theme) ?? data.themes.find(item => item.id === data.defaultThemeId);
+    themesJson.themes.find(item => item.id === theme) ??
+    themesJson.themes.find(item => item.id === themesJson.defaultThemeId);
   if (!entry) {
     return (
       <p>

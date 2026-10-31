@@ -4,8 +4,8 @@
  *
  *   node --import tsx tools/scripts/sync-themes.mjs
  *
- * The docs never import video-kit, so the colours (and nothing about shape or
- * HUD) reach it through apps/docs/src/generated/themes.json.
+ * The docs never import video-kit, so the colours, fonts and the shape and HUD
+ * summaries reach it through apps/docs/src/generated/themes.json.
  */
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -20,6 +20,30 @@ const {DEFAULT_THEME_ID, themes, themeIds} = await import(
   pathToFileURL(path.join(ROOT, 'packages/video-kit/src/themes/registry.ts')).href
 );
 
+/** First family of a CSS stack, without the quotes: `"Inter", Arial` -> `Inter`. */
+function firstFamily(stack) {
+  return stack
+    .split(',')[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, '');
+}
+
+function variantData(variant) {
+  return {
+    colors: variant.colors,
+    shape: {
+      radiusScale: variant.shape.radiusScale,
+      borderWidthScale: variant.shape.borderWidthScale,
+      elevation: variant.shape.elevation,
+    },
+    hud: {
+      captionStyle: variant.hud.captionStyle,
+      titleStyle: variant.hud.titleStyle,
+      gridVisible: variant.hud.gridVisible,
+    },
+  };
+}
+
 const data = {
   defaultThemeId: DEFAULT_THEME_ID,
   themes: themeIds.map(id => {
@@ -30,9 +54,14 @@ const data = {
       family: theme.family,
       description: theme.description,
       defaultMode: theme.defaultMode,
+      fonts: {
+        sans: firstFamily(theme.fonts.sans),
+        mono: firstFamily(theme.fonts.mono),
+        display: firstFamily(theme.fonts.display),
+      },
       variants: {
-        dark: {colors: theme.variants.dark.colors},
-        light: {colors: theme.variants.light.colors},
+        dark: variantData(theme.variants.dark),
+        light: variantData(theme.variants.light),
       },
     };
   }),

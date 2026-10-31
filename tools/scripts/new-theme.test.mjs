@@ -72,13 +72,14 @@ test('copies both variants, rewrites the identity and registers the theme', asyn
 
   const generated = JSON.parse(await read(root, 'apps/docs/src/generated/themes.json'));
   const added = generated.themes.find(item => item.id === 'midnight-purple');
+  const source = generated.themes.find(item => item.id === 'tokyo-night');
   assert.ok(added);
   assert.equal(added.name, 'Midnight Purple');
   assert.equal(added.defaultMode, 'dark');
-  assert.deepEqual(
-    added.variants.dark.colors,
-    generated.themes.find(item => item.id === 'tokyo-night').variants.dark.colors,
-  );
+  assert.deepEqual(added.fonts, source.fonts);
+  assert.deepEqual(added.variants.dark.colors, source.variants.dark.colors);
+  assert.deepEqual(added.variants.dark.shape, source.variants.dark.shape);
+  assert.deepEqual(added.variants.dark.hud, source.variants.dark.hud);
 
   assert.match(result.stdout, /Created theme "midnight-purple" from "tokyo-night"/);
   assert.match(result.stdout, /pnpm snap:themes -- --only midnight-purple/);
