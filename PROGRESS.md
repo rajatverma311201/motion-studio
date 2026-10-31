@@ -633,3 +633,91 @@ Clicking a chapter restarts playback **at that chapter and plays on until the en
 - SSR HTML: `motion-canvas-player` count 0, `LOADING PLAYER` count 1 (skeleton), editor link absent in the production build
 - Missing-bundle path: after temporarily moving `apps/docs/public/videos`, the page showed "Video bundle not found. Run `pnpm videos:build` in the repo root." with `COPY COMMAND`; bundles restored with `pnpm videos:build`
 - Screenshot `.snapshots/docs-indexing.png` (from the smoke run): framed player at chapter 06 (`B-TREE RULES`) with HUD, two-column chapter grid with chapter 06 active, and the studio panel. No error box.
+
+## Step 12: lint, lesson generator, production docs, README
+
+**What changed**
+
+- Root devDependencies `prettier`, `eslint`, `typescript-eslint`, `eslint-plugin-check-file` and `@eslint/js`; new `eslint.config.mjs` (flat config) and `.prettierignore`.
+- ESLint: `@eslint/js` recommended plus `typescript-eslint` recommended for `**/*.{ts,tsx}`; `no-explicit-any: error`; `consistent-type-imports: warn`; `check-file/filename-naming-convention` = `KEBAB_CASE` for `**/*.{ts,tsx,mjs,mdx}` with `ignoreMiddleExtensions: true`; `check-file/folder-naming-convention` = `KEBAB_CASE` for `apps/**/src/**`, `packages/**/src/**`, `tools/**`.
+- Exemptions: numbered lesson sections keep the repo convention `01-intro.tsx` (custom pattern `+([0-9])-+([a-z0-9])*(-+([a-z0-9]))`); `apps/docs/src/routes/**`, `**/*.d.ts` and `**/*.config.*` are exempt; folders starting with `_` or `$` switch the folder rule off. MDX filenames are checked with the plugin's `eslint-processor-check-file`, so no MDX parser is needed.
+- `pnpm format` formatted 11 files (AGENTS.md, PROGRESS.md, four MDX pages, three docs TSX/TS files, the studio Vite config and the kit README). **No scene file changed**, so the visual baseline was untouched. `pnpm typecheck` and `pnpm studio:build` passed afterwards.
+- Scripts: `lint`, `test` (`pnpm -r --if-present test`), `check` (typecheck -> lint -> test -> format:check), `format`, `format:check`, `new:lesson`.
+- One lint error existed: an unused `neubrutal` import in `apps/studio/src/scenes/db-transactions/sections/07-durability-wal.tsx`. Removed. The 70 `consistent-type-imports` warnings stay: the rule is deliberately `warn` (fixing them is safe but noisy, and they are not errors).
+- `tools/scripts/new-lesson.mjs`: plain Node ESM, no dependencies. Validates kebab-case slug/course, non-empty title, positive `--chapters` (default 4), an existing course folder and `meta.json`, and refuses to overwrite existing files, the scene folder, or an existing `meta.json` entry. It creates the project, `chapters.json` (INTRO, CHAPTER 2, ... with lime/cyan/pink/yellow/violet/orange/red), `scene.tsx`, numbered sections, and the MDX page from the step-10 template; appends to `meta.json` keeping order and 2-space JSON; then runs the sync script. `MOTION_STUDIO_ROOT` overrides the repo root.
+- `tools/scripts/new-lesson.test.mjs` (Node `node --test`, 5 tests) runs against a temporary minimal tree (apps, docs course, kit colors, copied sync script) and asserts the generated files, chapter names/colours, scene imports, MDX frontmatter, `meta.json` and both generated JSON files. `tools/scripts/package.json` gained `test: node --test`.
+- Real generator run: `pnpm new:lesson generator-check "Generator Check" --course databases` created 4 chapters; `pnpm typecheck`, `pnpm studio:build` and `pnpm docs:build` passed, and `curl /docs/databases/generator-check` returned **200** with the title in the HTML. Everything it generated (including the two `.meta` files written by the studio build) was removed with scoped `git clean -fd`; `meta.json` was restored with `git checkout`; `pnpm sync:generated` reported 2 lessons again. The check lesson is not committed.
+- `sync-lessons.mjs` renamed to `sync-generated.mjs`. It now also parses `packages/video-kit/src/theme/colors.ts` with `/^\s*([A-Za-z][A-Za-z0-9]*):\s*'([^']+)',?\s*$/gm` (hex and rgba) and writes `apps/docs/src/generated/palette.json` (19 colours). It honours `MOTION_STUDIO_ROOT`. All references were updated: root scripts, the generator, its test, both player error messages, `docs-smoke.mjs` and the AGENTS.md tree.
+- Docs: new root folder `content/docs/production/` with `meta.json` (`root: true`, three pages); top-level `meta.json` lists `production`. Pages: `how-videos-are-made` (pipeline, ASCII architecture tree, commands, "why two Vite versions"), `design-system` (swatches, type, rules, 17-row kit component table derived from `packages/video-kit/src/components/index.ts` and each export's JSDoc), `adding-a-lesson` (generator, `#s=N`, chapter mapping, publish, `.meta` commits, checks). `ColorSwatches` reads `@/generated/palette.json`, is registered in `getMDXComponents()`, and has swatch styles in `neubrutalism.css`.
+- `README.md`: architecture, prerequisites, quick start, command table, adding a lesson, the two-Vite rule and troubleshooting (project glob, one editor page, `.meta` commits, "Video bundle not found", fresh-clone generated data).
+- Final `## Summary` below lists every step and its commits, plus the collected tech debt and kit candidates.
+
+**Checks (step 12)**
+
+- `pnpm check` -> exit 0; `eslint .` -> 0 errors, 70 warnings; `prettier --check .` -> all files formatted
+- `pnpm test` -> docs 5/5, video-kit 32/32, tools/scripts 5/5
+- `pnpm studio:build` -> exit 0 (after the format pass)
+- `pnpm docs:build` -> exit 0
+- generator check page -> HTTP 200; production pages `how-videos-are-made`, `design-system`, `adding-a-lesson` -> all 200; design-system SSR contains 19 swatches
+- `pnpm sync:generated` -> `synced 2 lessons and 19 palette colours`
+- `git status --short` after removing the check lesson -> only the intended step-12 files
+
+**Final verification (step 12)**
+
+- `pnpm install --frozen-lockfile` -> exit 0
+- `pnpm check` -> exit 0 (typecheck, lint, tests, format:check)
+- `pnpm build` -> exit 0 (`synced 2 lessons and 19 palette colours`; `db-transactions.js`, `db-indexing.js`, docs client + SSR)
+- `pnpm snap:capture current` -> 58/58 frames captured (40 db-indexing, 18 db-transactions)
+- `pnpm snap:compare` -> **58/58 PASS**, max 0.085% on db-transactions; `db-indexing/s11_t52` needed the documented paused recapture at timecode 52:01 (0.000% match, the live capture lands after the 0.35 s fade)
+- `pnpm dev` -> `[videos] watching for file changes...` plus `[docs] VITE v8.3.5 ready ... :3000`; `pnpm smoke:docs` -> **PASS**
+- both dev processes stopped; ports 3000 and 9000 released
+
+## Summary
+
+Every commit from `git log --oneline --reverse`, grouped by step.
+
+| Step | Scope                                    | Commits                                                                                                      |
+| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 00   | Import and safety baseline               | `bfadeb8 init-proj`, `265f505 chore: baseline before monorepo restructure`                                   |
+| 01   | Monorepo bootstrap                       | `5d30f17 chore: convert repo to pnpm workspace and move motion canvas project to apps/studio`                |
+| 02   | Screenshot baseline                      | `7a2065d test: add playwright snapshot capture and compare tools`                                            |
+| 03   | video-kit foundation                     | `5a5a779 feat(video-kit): add theme, animation, hud and base components`                                     |
+| 04   | video-kit code panel                     | `a02ff56 feat(video-kit): add syntax-coloured code panel with tokenizer tests`                               |
+| 05   | video-kit tree engine                    | `3528303 feat(video-kit): add b-tree/b+tree engine, mini tree, stat card and legend`                         |
+| 06   | video-kit lesson factory                 | `7fdf57c feat(video-kit): add defineLesson factory and chapters schema`                                      |
+| 07   | db-indexing migration                    | `0956c1f`, `906b407`, `183cd17`, `25fad8e`, `fe8320d`, `70a6058`                                             |
+| 08   | db-transactions migration                | `b25a6fa`, `5325eb4`, `ba89320`, `9d36777`                                                                   |
+| 09   | docs scaffold                            | `b273eca feat(docs): scaffold tanstack start + fumadocs app with neubrutalist dark theme`                    |
+| 10   | docs content model and landing page      | `42a2c8f feat(docs): add course structure, lesson pages and landing page`                                    |
+| 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                            |
+| 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`) |
+
+### Tech debt
+
+- `apps/docs/src/generated` is git-ignored, so a fresh clone must run `pnpm sync:generated` (or `pnpm dev` / `pnpm build`) before `pnpm check`; `pnpm check` itself does not sync.
+- 70 `@typescript-eslint/consistent-type-imports` warnings remain. They are warnings by design; converting them would touch nearly every scene and kit file without changing behaviour.
+- `apps/studio/src/scenes/db-indexing/sections/01-intro.tsx` still has its local `bigText`; it can switch to `stackedTitle` with no visual change.
+- `db-transactions` sections 01 and 09 use `stackedTitle`; restyling them as `titleSlab` is a deliberate visual change and needs a new baseline.
+- `s11_t52` (db-indexing) sits on a 0.35 s fade boundary: a live capture can land one frame late, so use a paused capture at 52.01 when it reports a mismatch.
+- `TreeView` has no `dispose()`; `hide()` fades the root but leaves it attached.
+- `pnpm dev` syncs generated data once. Editing `chapters.json` rebuilds the bundle but the docs chapter cards need a restart.
+- `fmt` (`₹`, `en-IN`), `totalChip` and `coin` stay local to db-transactions; they are lesson copy, not kit API.
+- Docs build prints two cosmetic Fumadocs CSS warnings (`::highlight(fd-search)`) and the `node:fs/promises` browser-externalization warning from `fumadocs-mdx`. The build and the page work.
+- `new-lesson` requires a course folder with `meta.json`; it does not create a new course. `--chapters` only changes the skeleton, not the docs `###` note count after editing.
+- The MP4 render is manual in the editor; there is no CI job that renders or uploads a video.
+
+### Candidates for the kit
+
+Collected in steps 07 and 08; none was moved because its geometry or copy is lesson-specific.
+
+- `mkCell`: sorted-array row with the orange pointer dot (db-indexing 03).
+- `mkPage`, the level pyramid and `bar`: page/fanout diagram sized to the 1920x1080 layout (db-indexing 05).
+- comparison-table row (db-indexing 13).
+- `mkRow`: fill-bar rows for the cost scene (db-indexing 16).
+- `gotcha` panel (db-indexing 17); reusable shape, but tuned to five fixed gotchas.
+- `stepList`: the four-row durability checklist (db-transactions 07).
+- anomaly event card plus DB box pair (db-transactions 05).
+- `ruleRow`: the three in-code rule rows (db-transactions 08).
+- `formatCurrency`: `₹` with `en-IN` grouping, if a second lesson needs it.
+
+`bigText` was a candidate in step 07 and is now covered by `stackedTitle` (step 08). `totalChip`, `coin` and `ANOMS` stay local: they are lesson copy, not reusable API.
