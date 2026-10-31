@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+# pnpm 12 blocks dependency build scripts unless they are reviewed here
+# (it replaced onlyBuiltDependencies with allowBuilds). These are existing,
+# not new, dependencies whose binaries Motion Canvas needs at runtime:
+# the ffmpeg exporter and esbuild (used by Vite 4).
+allowBuilds:
+  '@ffmpeg-installer/darwin-arm64': true
+  '@ffprobe-installer/darwin-arm64': true
+  esbuild: true

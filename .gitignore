@@ -13,3 +13,15 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# Monorepo / tooling output
+.output
+.vinxi
+.tanstack
+.nitro
+*.log
+
+# generated artefacts
+apps/docs/public/videos
+apps/docs/src/generated
+.snapshots
