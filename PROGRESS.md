@@ -107,3 +107,36 @@ Compare runs `pixelmatch` with `threshold: 0.12` and passes a frame when the dif
 * import smoke via temporary `apps/studio/src/_smoke.ts` (deleted) -> studio typecheck exit 0
 * `grep -rn "from './kit'" apps/studio/src/scenes/db-indexing | wc -l` -> 6 (unchanged)
 * Kebab-case check: `LC_ALL=C find packages/video-kit/src \( -name "*[A-Z]*" -o -name "*_*" \) | wc -l` -> 0. The acceptance command without `LC_ALL=C` returns 25 on this macOS/APFS setup because BSD `find` matches the `[A-Z]` range against lowercase names under the default locale.
+
+## Step 04: video-kit code panel
+
+**What changed**
+
+* New `packages/video-kit/src/components/code-panel/` with `languages.ts`, `tokenizer.ts`, `tokenizer.test.ts`, `code-panel.tsx`, `line-focus.ts` and `index.ts`; re-exported through `components/index.ts` and therefore the package root.
+* `Lang` became `CodeLanguage`, `CodeP` became `CodePanel`, `LH` became `LINE_HEIGHT`, and `codePanel()` now takes a named `CodePanelOptions` interface. `focusLine()`, `revealLines()` and `tokenize()` kept their names and behaviour.
+* The six SQL/plan/Java rule tables were copied one to one from `db-indexing/kit.tsx`, but every colour now references `colors` from `theme` and every font reference uses `fonts.mono`; `NB` became `neubrutal`. No hex literal lives in the new folder.
+* Geometry is unchanged: `LINE_HEIGHT = 38`, default `fs = 24`, 0.6 em monospace grid, highlight bar `w - 24`, title bar `64`, padding `32`/`18`/`36`. Whitespace tokens still only advance the column and never create a `Txt`.
+* `tokenizer.test.ts` adds six Vitest cases (SQL keyword/string, leading whitespace, plan `Seq Scan`, plan cost group, SQL comment, 20-line lossless corpus across all three languages). Expected colours use `colors.*`, never hex.
+* README gained a folder-map entry, rename-table rows and a "Code panel" usage section. `apps/studio` scenes were not touched; `db-indexing/kit.tsx` still owns its copy for now.
+
+**Differences found in `db-transactions/transactions.tsx` (not migrated)**
+
+* Its `Lang` is only `'sql' | 'java'`; it has no `plan` language at all.
+* Its SQL keyword list is shorter: `BEGIN COMMIT ROLLBACK UPDATE SET WHERE SELECT FROM INSERT INTO VALUES AND COUNT`. It lacks `OR, CREATE, INDEX, UNIQUE, ON, LIKE, BETWEEN, ORDER, BY, EXPLAIN, LIMIT, LOWER` from the db-indexing table.
+* Its Java rules, `LH = 38` and code-panel geometry match the db-indexing kit exactly, except it names the default font size `CODE_FS = 24` instead of inlining it.
+* It has no `focusLine`/`revealLines` differences; only the local `CodeP`/`LH` names differ.
+
+**Follow-ups**
+
+* The original plan cost regex `^\(cost[^)]*\)` consumes everything up to the first `)`, including `rows=` and `width=` when no earlier `)` exists. Copied as-is; do not "fix" it during the migration.
+* `tokenize()` assumes every language table ends in the `[\s\S]` catch-all. Keep that invariant when adding a language, otherwise the `while` loop cannot advance.
+* `db-indexing` and `db-transactions` still use their local panels. Migrating them is a later step and must preserve the section-local `leave(root)` behaviour.
+
+**Checks (step 04)**
+
+* `pnpm --filter @motion-studio/video-kit typecheck` -> exit 0
+* `pnpm --filter @motion-studio/video-kit test` -> 8/8 tests pass (6 tokenizer + 2 existing)
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0; chunk hashes unchanged (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
+* import smoke via temporary `apps/studio/src/_smoke.ts` (deleted) -> studio typecheck exit 0
+* `grep -rn "#[0-9A-Fa-f]\{6\}" packages/video-kit/src/components/code-panel | wc -l` -> 0

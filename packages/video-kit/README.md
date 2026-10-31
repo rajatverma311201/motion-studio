@@ -22,6 +22,12 @@ src/
     label.tsx             label()
     card.tsx              card()
     title-slab.tsx        titleSlab(), titlePill()
+    code-panel/
+      languages.ts        CodeLanguage type, rule tables, LANGUAGES
+      tokenizer.ts        tokenize() (pure)
+      tokenizer.test.ts   vitest unit tests
+      code-panel.tsx      codePanel(), LINE_HEIGHT
+      line-focus.ts       focusLine(), revealLines()
   hud/
     hud.tsx               buildHud(), hudState
     section.ts            setSection()
@@ -60,3 +66,26 @@ Scenes are not part of this package. They import the barrel and keep their own s
 | `hud`                                    | `hudState`                         | `hud/hud.tsx`               |
 | `buildHud`, `setSection`, `say`, `leave` | same names                         | `hud/*`                     |
 | `bigText`                                | deleted, replaced by `titleSlab()` | `components/title-slab.tsx` |
+| `CodeP`                                  | `CodePanel`                        | `components/code-panel/`    |
+| `codePanel(o)`                           | `codePanel(options)`               | `code-panel.tsx`            |
+| `Lang`                                   | `CodeLanguage`                     | `languages.ts`              |
+| `LH`                                     | `LINE_HEIGHT`                      | `code-panel.tsx`            |
+
+## Code panel
+
+`codePanel()` returns the panel node plus the handles `focusLine()` and `revealLines()` need. Lines start hidden; reveal them, then move the highlight bar.
+
+```ts
+import {codePanel, colors, focusLine, revealLines} from '@motion-studio/video-kit';
+
+const panel = codePanel({
+  x: 0, y: 0, w: 980, title: 'users.sql',
+  code: ['CREATE INDEX idx_users_name ON users (name);', 'EXPLAIN SELECT * FROM users;'],
+  lang: 'sql', accent: colors.cyan,
+});
+view.add(panel.node);
+yield* revealLines(panel);
+yield* focusLine(panel, 1, colors.lime);
+```
+
+Supported languages are `'sql'`, `'java'` and `'plan'` (Postgres `EXPLAIN` output). `tokenize()` is pure and separately tested; import it directly when a scene needs the tokens without a panel.
