@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+*.meta
+dist
+output
+.output
+.source
+apps/docs/src/routeTree.gen.ts
+apps/docs/src/generated
+apps/docs/public/videos
+.snapshots

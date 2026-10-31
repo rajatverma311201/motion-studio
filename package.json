@@ -18,10 +18,20 @@
     "build": "pnpm videos:build && pnpm docs:build",
     "smoke:docs": "pnpm --filter @motion-studio/snapshots exec node docs-smoke.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm format:check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "snap:capture": "pnpm --filter @motion-studio/snapshots capture --",
     "snap:compare": "pnpm --filter @motion-studio/snapshots compare --"
   },
   "devDependencies": {
-    "concurrently": "^10.0.6"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.13.0",
+    "eslint-plugin-check-file": "^3.3.2",
+    "prettier": "^3.9.10",
+    "typescript-eslint": "^8.72.1"
   }
 }
