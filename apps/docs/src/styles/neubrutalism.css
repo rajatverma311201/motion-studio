@@ -1,0 +1,250 @@
+@theme {
+  --font-sans: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-fd-background: #0b0b10;
+  --color-fd-foreground: #f4f1ea;
+  --color-fd-muted: #1f1f2b;
+  --color-fd-muted-foreground: #9a99a8;
+  --color-fd-popover: #15151d;
+  --color-fd-popover-foreground: #f4f1ea;
+  --color-fd-card: #15151d;
+  --color-fd-card-foreground: #f4f1ea;
+  --color-fd-border: #2e2e3a;
+  --color-fd-primary: #c6ff3d;
+  --color-fd-primary-foreground: #0b0b10;
+  --color-fd-secondary: #1f1f2b;
+  --color-fd-secondary-foreground: #f4f1ea;
+  --color-fd-accent: #1f1f2b;
+  --color-fd-accent-foreground: #f4f1ea;
+  --color-fd-ring: #c6ff3d;
+  --color-fd-overlay: rgb(0 0 0 / 60%);
+
+  --color-fd-info: #3de3ff;
+  --color-fd-warning: #ffd23d;
+  --color-fd-error: #ff4d8d;
+  --color-fd-success: #c6ff3d;
+  --color-fd-idea: #9b7bff;
+}
+
+.dark {
+  --color-fd-background: #0b0b10;
+  --color-fd-foreground: #f4f1ea;
+  --color-fd-muted: #1f1f2b;
+  --color-fd-muted-foreground: #9a99a8;
+  --color-fd-popover: #15151d;
+  --color-fd-popover-foreground: #f4f1ea;
+  --color-fd-card: #15151d;
+  --color-fd-card-foreground: #f4f1ea;
+  --color-fd-border: #2e2e3a;
+  --color-fd-primary: #c6ff3d;
+  --color-fd-primary-foreground: #0b0b10;
+  --color-fd-secondary: #1f1f2b;
+  --color-fd-secondary-foreground: #f4f1ea;
+  --color-fd-accent: #1f1f2b;
+  --color-fd-accent-foreground: #f4f1ea;
+  --color-fd-ring: #c6ff3d;
+  --color-fd-overlay: rgb(0 0 0 / 60%);
+}
+
+:root {
+  --nb-bg: #0b0b10;
+  --nb-surface: #15151d;
+  --nb-elevated: #1f1f2b;
+  --nb-foreground: #f4f1ea;
+  --nb-muted: #9a99a8;
+  --nb-border: #f4f1ea;
+  --nb-lime: #c6ff3d;
+  --nb-pink: #ff4d8d;
+  --nb-cyan: #3de3ff;
+  --nb-yellow: #ffd23d;
+  --nb-violet: #9b7bff;
+  --nb-orange: #ff8a3d;
+  --nb-red: #ff4d4d;
+  --nb-radius-card: 14px;
+  --nb-radius-control: 10px;
+  --nb-divider: #2e2e3a;
+  --nb-font-sans: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --nb-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Fumadocs reads these at runtime through var(), so Tailwind's theme
+     tree-shaking would otherwise drop them. */
+  --color-fd-info: #3de3ff;
+  --color-fd-warning: #ffd23d;
+  --color-fd-error: #ff4d8d;
+  --color-fd-success: #c6ff3d;
+  --color-fd-idea: #9b7bff;
+}
+
+html {
+  background: var(--nb-bg);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--nb-bg);
+  color: var(--nb-foreground);
+  font-family: var(--nb-font-sans);
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--nb-font-mono);
+}
+
+.eyebrow {
+  font-family: var(--nb-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nb-muted);
+}
+
+#nd-docs-layout h1,
+#nd-docs-layout h2,
+#nd-docs-layout h3,
+#nd-docs-layout h4 {
+  font-family: var(--nb-font-sans);
+  font-weight: 700;
+}
+
+#nd-docs-layout h1 {
+  letter-spacing: -0.02em;
+}
+
+.nb-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.nb-brand-mark {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  background: var(--nb-lime);
+  border: 2px solid var(--nb-border);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--nb-violet);
+}
+
+.nb-brand-text {
+  font-family: var(--nb-font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--nb-foreground);
+}
+
+.nb-card {
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-card);
+  box-shadow: 6px 6px 0 var(--nb-violet);
+}
+
+.nb-callout {
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-card);
+  box-shadow: 6px 6px 0 var(--callout-color, var(--nb-cyan));
+}
+
+.nb-codeblock {
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-card);
+  box-shadow: 6px 6px 0 var(--nb-lime);
+}
+
+.nb-codeblock > div[role='region'] {
+  background: var(--nb-surface);
+}
+
+#nd-docs-layout :not(pre) > code {
+  font-family: var(--nb-font-mono);
+  background: var(--nb-elevated);
+  border: 1px solid var(--nb-divider);
+  border-radius: 6px;
+  padding: 0.12em 0.34em;
+  color: var(--nb-lime);
+}
+
+#nd-sidebar {
+  background: var(--nb-surface);
+}
+
+#nd-sidebar a[data-active='true'],
+#nd-sidebar-mobile a[data-active='true'] {
+  background: var(--nb-lime);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-control);
+  color: var(--nb-bg);
+  box-shadow: 4px 4px 0 var(--nb-bg);
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+}
+
+#nd-sidebar a[data-active='true']:hover,
+#nd-sidebar-mobile a[data-active='true']:hover {
+  background: var(--nb-lime);
+  color: var(--nb-bg);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--nb-bg);
+}
+
+[data-search-full] {
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-control);
+  box-shadow: 4px 4px 0 var(--nb-cyan);
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+}
+
+[data-search-full]:hover {
+  background: var(--nb-elevated);
+  color: var(--nb-foreground);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--nb-cyan);
+}
+
+.nb-404 {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-card);
+  box-shadow: 6px 6px 0 var(--nb-pink);
+}
+
+.nb-404 a {
+  color: var(--nb-lime);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-sidebar a[data-active='true'],
+  #nd-sidebar-mobile a[data-active='true'],
+  [data-search-full] {
+    transition: none;
+  }
+
+  #nd-sidebar a[data-active='true']:hover,
+  #nd-sidebar-mobile a[data-active='true']:hover {
+    transform: none;
+    box-shadow: 4px 4px 0 var(--nb-bg);
+  }
+
+  [data-search-full]:hover {
+    transform: none;
+    box-shadow: 4px 4px 0 var(--nb-cyan);
+  }
+}

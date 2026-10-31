@@ -1,0 +1,30 @@
+---
+title: Welcome
+description: Animated software-engineering explainers, with lessons and previews.
+---
+
+<p className="eyebrow">Motion Studio</p>
+
+This is the documentation side of Motion Studio. Each lesson is an animated
+explainer, and every lesson will get a page here with its sections, previews,
+and notes.
+
+<Callout title="What is coming next" type="info">
+  The lesson tree is filled in from the scene folders. Until then, this page is
+  the only entry so the layout, search, and theme can be checked.
+</Callout>
+
+## The plan
+
+- **Lessons** are grouped by topic and shown in the sidebar.
+- **Pages** are MDX, so they can hold code, callouts, cards, and previews.
+- **Search** is wired through a small server route over the same page tree.
+
+<Cards>
+  <Card title="Indexing" description="How databases find rows fast." />
+  <Card title="Transactions" description="Atomicity, isolation, and durability." />
+</Cards>
+
+```bash
+pnpm docs:dev
+```

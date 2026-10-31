@@ -19,6 +19,7 @@ dist
 .vinxi
 .tanstack
 .nitro
+.source
 *.log
 
 # generated artefacts

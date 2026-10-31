@@ -437,3 +437,67 @@ None was trivially generic without changing its geometry or public options, so n
 * Restyle the transactions intro title as a `titleSlab` in a later visual pass. This step deliberately keeps `stackedTitle` so the baseline does not move.
 * db-indexing's `01-intro.tsx` still has a local `bigText`; it can switch to `stackedTitle` later with zero visual change.
 * `db-transactions` `#s=N` deep links and the player `startSection` variable work through `defineLesson`.
+
+## Step 09 notes
+
+Notes taken from the official guides before writing the app. Guide 1 is `https://fumadocs.dev/docs/manual-installation/tanstack-start`; guide 2 is the Vite MDX guide (the prompt's `/docs/mdx/vite/tanstack` URL is a 404, the real page is `https://fumadocs.dev/docs/mdx/vite`); guide 3 is `https://tanstack.com/start/latest/docs/framework/react/build-from-scratch`; guide 4 is `https://fumadocs.dev/docs/ui/theme`.
+
+* **Install command from guide 1 (Fumadocs packages):** `npm i fumadocs-core fumadocs-ui`. The TanStack Start layer is not installed by this command; guide 3 adds `npm i @tanstack/react-start @tanstack/react-router`, `npm i react react-dom`, and `npm i -D vite @vitejs/plugin-react typescript @types/react @types/react-dom @types/node`.
+* **Install command from guide 2 (MDX):** `npm i fumadocs-mdx fumadocs-core @types/mdx`. Tailwind CSS 4 needs `npm i -D tailwindcss @tailwindcss/vite` (guide 1 requires Tailwind 4 before continuing).
+* **Vite plugins required:** `fumadocsMdx()` from `fumadocs-mdx/vite`, `tailwindcss()` from `@tailwindcss/vite`, `tanstackStart()` from `@tanstack/react-start/plugin/vite`, and `viteReact()` from `@vitejs/plugin-react`. Guide 3 is explicit that the React plugin must come **after** TanStack Start's plugin. Guide 2 also says `fumadocsMdx()` goes first. Our order: `fumadocsMdx(), tailwindcss(), tanstackStart(), viteReact()`.
+* **Config files guide 2 creates:** `vite.config.ts` (plugin list), `source.config.ts` only for global MDX options, and `lib/source.ts` with `defineDocs({dir: 'content/docs'})` + `loader({baseUrl: '/docs', source: docs.toFumadocsSource()})`. Guide 3 creates `src/router.tsx` with `getRouter()`, `src/routes/__root.tsx`, and lets the plugin generate `src/routeTree.gen.ts`; guide 1 adds `src/routes/docs/$.tsx` (splat), `src/components/mdx.tsx`, `src/lib/layout.shared.tsx`, and `src/routes/api/search.ts`.
+* **Files we actually created:** `apps/docs/vite.config.ts`, `apps/docs/source.config.ts`, `apps/docs/tsconfig.json`, `src/router.tsx`, `src/routes/__root.tsx`, `src/routes/index.tsx`, `src/routes/docs/$.tsx`, `src/routes/api/search.ts`, `src/lib/source.ts`, `src/lib/layout.shared.tsx`, `src/lib/seo.ts`, `src/components/mdx.tsx`, `src/components/brand-title.tsx`, `src/components/not-found.tsx`, `src/styles/app.css`, `src/styles/neubrutalism.css`, plus `content/docs/{index.mdx,meta.json}`. `src/routeTree.gen.ts` and `.source/{server,browser,dynamic}.ts` are generated.
+* **Dev port:** 3000. Guide 3's Vite config sets `server.port: 3000`, the official Fumadocs TanStack Start example uses the same, and the TanStack guide says to open `http://localhost:3000`.
+* **Where the guides disagree (guide 1 wins):** the current Vite guide (guide 2) uses the **macro API** and says "No `source.config.ts` needed"; the collections guide still documents the config API and its `.source/server` entry. We keep `source.config.ts` for global options (the macro guide explicitly allows this) and define the collection with `defineDocs` from `fumadocs-mdx/macro`. Reason: the config API's `.source/server` imports `fumadocs-mdx/runtime/server`, which pulls `node:fs/promises` into the client bundle and breaks the browser build. Guide 1 only requires Tailwind 4 + the Vite MDX setup, so the macro is the guide-compliant choice.
+* **Styles and theme variables:** guide 1 requires `@import 'tailwindcss'; @import 'fumadocs-ui/css/neutral.css'; @import 'fumadocs-ui/css/preset.css';` in that order. Guide 4 documents the `--color-fd-*` theme variables inside `@theme` (and the `.dark` overrides). Runtime-only variables such as `--color-fd-info/warning/error/success/idea` must also be plain `:root` custom properties, otherwise Tailwind's theme tree-shaking drops them and Callout falls back to `--color-fd-muted`.
+
+## Step 09: `apps/docs` scaffold (TanStack Start + Fumadocs, dark neubrutalist theme)
+
+**What changed**
+
+* New private workspace package `@motion-studio/docs` (`"type": "module"`, scripts `dev`, `build`, `start`, `typecheck`, `postinstall: fumadocs-mdx`). Root scripts `docs:dev` and `docs:build` added. `.source` added to `.gitignore`; `.output`, `.tanstack`, `.nitro`, `.vinxi` and `dist` were already ignored.
+* Installed versions (pnpm current, not hand-pinned): `@tanstack/react-start` 1.169.4, `@tanstack/react-router` 1.170.46, React 19.3.1, `fumadocs-core`/`fumadocs-ui` 16.17.9, `fumadocs-mdx` 15.4.10, **Vite 8.3.5**, `@vitejs/plugin-react` 6.1.2, Tailwind 4.3.3, TypeScript 7.0.2. Vite is a peer of `@tanstack/react-start`; the studio's Vite 4 is untouched.
+* App files: `vite.config.ts` (`fumadocsMdx`, `tailwindcss`, `tanstackStart`, `viteReact` in that order; `server.port: 3000`; `resolve.tsconfigPaths: true`; forces `NODE_ENV=development` for `vite dev` only), `source.config.ts` (`defineConfig()` only; collections are macro-defined in `src/lib/source.ts`), `tsconfig.json` (JSX `react-jsx`, module resolution `Bundler`, strict, `@/*` paths), `src/router.tsx`, `src/routes/__root.tsx`, `src/routes/index.tsx` (redirects to `/docs`), `src/routes/docs/$.tsx` (splat page, TOC, loader + `head`), `src/routes/api/search.ts` (`createFromSource(source).GET`), `src/lib/source.ts` (macro collection + loader), `src/lib/layout.shared.tsx`, `src/lib/seo.ts`, `src/components/mdx.tsx`, `src/components/brand-title.tsx`, `src/components/not-found.tsx`.
+* Content: `content/docs/index.mdx` (title `Welcome`, short intro, one info Callout, two Cards, one code block) and `content/docs/meta.json` (`{"title": "Motion Studio", "pages": ["index"]}`).
+* Branding: nav title is a 22 px lime square (2 px cream border, 8 px radius, violet hard shadow) followed by `MOTION STUDIO` in JetBrains Mono 700 with `letter-spacing: 0.12em`. Pages use `pageTitle()` from `src/lib/seo.ts` (`%s | Motion Studio`) and the global description. Root provider forces `defaultTheme: 'dark'`, `forcedTheme: 'dark'`, `enableSystem: false`; `themeSwitch: {enabled: false}` is set in `baseOptions()`.
+* 404: both the root route and `/docs/$` use `notFoundComponent: NotFound`, which renders a styled `DocsPage` with the eyebrow, title, and a pink-shadow `.nb-404` panel. `/docs/does-not-exist` returns HTTP 404.
+* Search: `/api/search` is a TanStack Start server route returning `createFromSource(source).GET(request)`; the sidebar search box and the dialog work against it.
+
+**Design tokens**
+
+* File: `apps/docs/src/styles/neubrutalism.css`, imported from `app.css` after `fumadocs-ui/css/preset.css`.
+* Tokens: `--nb-bg #0B0B10`, `--nb-surface #15151D`, `--nb-elevated #1F1F2B`, `--nb-foreground #F4F1EA`, `--nb-muted #9A99A8`, `--nb-border #F4F1EA`, accents lime `#C6FF3D`, pink `#FF4D8D`, cyan `#3DE3FF`, yellow `#FFD23D`, violet `#9B7BFF`, orange `#FF8A3D`, red `#FF4D4D`.
+* Fumadocs maps the same values to `--color-fd-background/foreground/card/muted/primary/...`; `--color-fd-border` is a dark divider (`#2E2E3A`) so not every divider gets the cream 2 px border. Cards, callouts, code blocks, the search box and the active sidebar item get the cream border explicitly.
+* Components: `.nb-card` (14 px radius, violet 6 px hard shadow), `.nb-callout` (14 px, shadow colour from Fumadocs' `--callout-color`: info cyan, warn yellow, error pink, success lime, idea violet), `.nb-codeblock` (14 px, lime 6 px), `[data-search-full]` (10 px, cyan 4 px), `#nd-sidebar a[data-active='true']` (lime background, dark text, cream 2 px border, 4 px dark shadow; hover translate(-2,-2) + 6 px shadow, 80 ms transition). `.eyebrow` is mono uppercase, 0.12em, muted. `prefers-reduced-motion: reduce` removes the transform and transition.
+
+**How to add a page**
+
+1. Create `apps/docs/content/docs/<slug>.mdx` with frontmatter `title` (required) and `description`.
+2. Add `<slug>` to the `pages` array in `apps/docs/content/docs/meta.json` to control sidebar order.
+3. The page is served at `/docs/<slug>`. Nested folders work the same way and need their own `meta.json`.
+4. MDX gets Fumadocs defaults plus the neubrutalist wrappers in `src/components/mdx.tsx`. Callouts, cards, code blocks and `.eyebrow` are already styled; no extra imports are needed for `Callout`, `Cards`/`Card` or fenced code.
+
+**Gotchas**
+
+* This shell exports `NODE_ENV=production`. Vite dev then resolved React's production `jsx-dev-runtime`, whose `jsxDEV` export is `undefined`, and every SSR request failed with `(0, __vite_ssr_import_0__.jsxDEV) is not a function`. `vite.config.ts` now sets `process.env.NODE_ENV = 'development'` for `vite dev` only (`command === 'serve' && !isPreview`), so the plain `pnpm docs:dev` command works here. The production build path is untouched.
+* pnpm 12 reports `Agent skills awaiting approval: @tanstack/react-router, @tanstack/react-start`. Nothing was blocked (install, dev and build all work); run `pnpm approve` if you want to review them.
+* The CSS build prints two cosmetic warnings about `::highlight(fd-search)` coming from Fumadocs' own preset. They are not from this app and do not fail the build.
+* `postinstall: fumadocs-mdx` regenerates `.source` (the config API entry files). The app itself reads the macro collection from `src/lib/source.ts`; `.source` stays ignored.
+* `src/routeTree.gen.ts` is generated by TanStack Router and is committed so `tsc --noEmit` works on a fresh clone before the first dev/build.
+
+**Checks (step 09)**
+
+* `pnpm install` -> exit 0
+* `pnpm --filter @motion-studio/docs typecheck` -> exit 0
+* `pnpm --filter @motion-studio/docs build` -> exit 0 (client + SSR bundles in `apps/docs/dist`, ignored)
+* `pnpm typecheck` -> exit 0 (docs, video-kit, studio)
+* `pnpm studio:build` -> exit 0; studio chunk hashes unchanged (`db-transactions-2b53349d.js`, `db-indexing-e0b5c923.js`)
+* `pnpm docs:dev` -> `VITE v8.3.5 ready`, `http://localhost:3000/`
+* `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/docs` -> 200
+* `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/docs/does-not-exist` -> 404
+* `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/search?query=indexing` -> 200
+* Playwright screenshot of `/docs` at 1440x1000: background `rgb(11,11,16)`, body/h1 font `Space Grotesk Variable`, active sidebar `rgb(198,255,61)`, card shadow `rgb(155,123,255) 6px 6px 0px`, callout shadow `rgb(61,227,255) 6px 6px 0px`, code block shadow `rgb(198,255,61) 6px 6px 0px`; no console errors.
+* Active-item hover measured: `matrix(1,0,0,1,-2,-2)` and `6px 6px 0`; with reduced motion: `none` and `4px 4px 0`, transition `0s`.
+* `grep -rn "video-kit" apps/docs/src apps/docs/package.json | wc -l` -> 0
+* `grep -n '"vite"' apps/docs/package.json` -> `"vite": "^8.3.5"`
+* File names: only `src/routeTree.gen.ts` (generated) and `src/routes/__root.tsx` (framework route) are not kebab-case; both are allowed exceptions.
