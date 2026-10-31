@@ -3,14 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@12.16.1",
-  "engines": {"node": ">=22.12"},
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "studio:dev": "pnpm --filter @motion-studio/studio dev",
     "studio:build": "pnpm --filter @motion-studio/studio build",
     "docs:dev": "pnpm --filter @motion-studio/docs dev",
     "docs:build": "pnpm --filter @motion-studio/docs build",
+    "sync:lessons": "node tools/scripts/sync-lessons.mjs",
+    "videos:build": "pnpm sync:lessons && pnpm studio:build",
+    "videos:watch": "pnpm --filter @motion-studio/studio exec vite build --watch",
+    "dev": "pnpm sync:lessons && concurrently -k -n videos,docs -c magenta,cyan \"pnpm videos:watch\" \"pnpm docs:dev\"",
+    "build": "pnpm videos:build && pnpm docs:build",
+    "smoke:docs": "pnpm --filter @motion-studio/snapshots exec node docs-smoke.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
     "snap:capture": "pnpm --filter @motion-studio/snapshots capture --",
     "snap:compare": "pnpm --filter @motion-studio/snapshots compare --"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
   }
 }

@@ -564,3 +564,73 @@ Notes taken from the official guides before writing content. Two URLs in the pro
 * Playwright at 1440x1100: landing cards 2, card shadow changes `8px` -> `11px` on hover, no horizontal overflow on `/`, `/docs/databases`, `/docs/databases/indexing`; sidebar shows the "Databases" tab/dropdown and the links Course overview -> Transactions -> Indexing -> Glossary; zero page/console errors.
 * `LC_ALL=C find apps/docs/content apps/docs/src -name "*[A-Z]*" -not -path "*/routes/*" | wc -l` -> 1, the generated `src/routeTree.gen.ts` (step 09 exception). Without `LC_ALL=C`, BSD `find` matches everything on this macOS/APFS setup (known since step 03).
 * Word counts: `wc -w` -> indexing 1100, transactions 1064.
+
+## Step 11: video player, chapters, build pipeline, one-command dev
+
+**What changed**
+
+* `apps/studio/vite.config.ts`: build output now goes straight into the docs app (`../docs/public/videos`, `emptyOutDir: true`) with `entryFileNames: "projects/[name].js"` and `chunkFileNames: "chunks/[name]-[hash].js"`. Plugins and `resolve.dedupe` unchanged.
+* New `tools/scripts` package (`@motion-studio/scripts`, private, `"type": "module"`, no dependencies) with `sync-lessons.mjs`: finds every `apps/studio/src/scenes/*/chapters.json`, validates it with plain JS, and writes the slug-keyed `apps/docs/src/generated/lessons.json` (sorted, 2-space, trailing newline).
+* Root scripts `sync:lessons`, `videos:build`, `videos:watch`, `dev`, `build`, `smoke:docs`; `concurrently ^10.0.6` is the only root devDependency.
+* `apps/docs` now depends on `@motion-canvas/player@^3.17.2` **and** `@motion-canvas/core@^3.17.2` (see gotchas) and has `src/types/motion-canvas-player.d.ts` for the custom element in JSX.
+* New `src/components/video/` files replacing the step-10 stubs: `video-source.ts`, `use-lessons.ts`, `use-player-ready.ts`, `video-player.tsx`, `chapter-list.tsx`, `studio-panel.tsx`, `lesson-video.tsx`, `lesson-chapters.tsx`. `getMDXComponents()` still registers only `LessonVideo` and `LessonChapters`; the MDX content did not change.
+* `neubrutalism.css`: 16:9 frame (2 px cream border, 14 px radius, `8px 8px 0` lime shadow, `#0B0B10` background), skeleton/error/missing states, two-column chapter grid, static chapter cards, studio panel and reduced-motion overrides. The old `.nb-video*`/`.nb-chapters` stub rules were removed.
+* `tools/snapshots/docs-smoke.mjs` (Playwright already in that package) and root script `smoke:docs`.
+
+**Verified build output (task 1)**
+
+```
+pnpm studio:build
+apps/docs/public/videos/projects/src/projects/db-indexing.js
+apps/docs/public/videos/projects/src/projects/db-transactions.js
+apps/docs/public/videos/chunks/_virtual_settings-2a06651c.js
+```
+
+Entry pattern: **`/videos/projects/src/projects/<slug>.js`**. The project bundles import chunks with a relative `../../../chunks/...`, so the layout works as-is. `videoSrc()` returns exactly that public path. The entry name is `src/projects/<slug>`, not just `<slug>`.
+
+**How dev works**
+
+`pnpm dev` = `pnpm sync:lessons` once, then `concurrently -k` runs:
+
+* `videos:watch`: `vite build --watch` in `apps/studio` (Vite 4), writing into `apps/docs/public/videos`.
+* `docs:dev`: Vite 8 on `http://localhost:3000`.
+
+Both ready lines were verified: `[videos] watching for file changes...` / `[videos] built in ...` and `[docs] VITE v8.3.5 ready ... 3000`. Touching `apps/studio/src/scenes/db-indexing/sections/01-intro.tsx` while the watcher ran produced a real rebuild (`build started... ✓ 0 modules transformed ... built in 606ms`), so `chokidar-cli` was not needed.
+
+Caveat: `sync:lessons` runs once. Editing `chapters.json` during `pnpm dev` rebuilds the video bundle (it is in the Vite graph) but the docs chapter list needs a restart of `pnpm dev` to regenerate `lessons.json`.
+
+**How production works**
+
+`pnpm build` = `videos:build` (sync + studio build) then `docs:build`. The build prints and writes:
+
+* `apps/docs/dist/client` (static assets, including a copy of `public/videos`)
+* `apps/docs/dist/server` (SSR entry)
+
+Locally: `pnpm docs:build && pnpm --filter @motion-studio/docs start` serves the built app with `vite preview` on `http://localhost:4173`. The player `src` is made absolute against `window.location.href`, so it works on any deployment origin.
+
+**Known limitation**
+
+Clicking a chapter restarts playback **at that chapter and plays on until the end**; there is no seek/pause-at-chapter API in the player. Clicking the already-active chapter does not restart it because the remount key is `${slug}-${startSection}` (per spec); "Play from the start" only restarts when the section is not already 0.
+
+**Decisions / gotchas**
+
+* **React 19 vs read-only custom-element getters.** React 19 sets `src`, `width`, `height`, `auto` as properties when the property exists. The player defines them as getters without setters, so JSX props threw `Cannot set property width`. The element now gets `ref={playerRef}` plus `style`, and all attributes are set with `setAttribute()` in an effect. `width`/`height` are applied only after `element.state === 'ready'`: the player's `attributeChangedCallback` calls `player.configure()` and throws while `player` is still null (verified: two pageerrors if set too early).
+* **Vite 8 rewrites dynamic imports.** Even with the player's `/* @vite-ignore */`, Vite 8 wraps `import(url)` in `__vite__injectQuery(url, 'import')`. A relative `/videos/...` therefore became `?import`, and Vite refuses to transform public files (`should not be imported from source code`). Passing an absolute same-origin URL makes `injectQuery()` return it untouched. This is why `absoluteVideoSrc()` exists.
+* **`@motion-canvas/player` is missing its runtime dep.** Its `package.json` lists `@motion-canvas/core` only under `devDependencies`, so `apps/docs` could not resolve `@motion-canvas/core` and the player module failed. Added `@motion-canvas/core@^3.17.2` to `apps/docs` (still no `@motion-studio/video-kit` import).
+* **Generated JSON is a hard prerequisite.** `lessons.json` is git-ignored, so on a fresh clone run `pnpm videos:build` (or `pnpm sync:lessons`) before `pnpm --filter @motion-studio/docs typecheck`/`build`; the root scripts always do it.
+* **Acceptance grep caveat.** The literal `grep -rn "video-kit" apps/docs | grep -v node_modules` returns **2 after a build**: both hits are generated bundles (`apps/docs/public/videos/chunks/...` and the copy in `dist/client/videos/chunks/...`) that contain the kit's `video-kit-fonts` element id from `loadFonts()`. No docs source imports the kit: `grep -rn "video-kit" apps/docs/src apps/docs/package.json apps/docs/content` -> 0.
+
+**Checks (step 11)**
+
+* `pnpm videos:build` -> exit 0, prints `synced 2 lessons`, `built in 1.15s`
+* `ls apps/docs/public/videos/projects/src/projects` -> `db-indexing.js db-transactions.js`
+* `pnpm --filter @motion-studio/docs typecheck` -> exit 0
+* `pnpm typecheck` -> exit 0 (studio, video-kit, docs)
+* `pnpm --filter @motion-studio/docs test` -> 5/5 tests pass
+* `pnpm docs:build` -> exit 0 (`dist/client` + `dist/server`)
+* `pnpm docs:dev` -> ready on `:3000`; `pnpm smoke:docs` -> **PASS**
+* Production preview (`vite preview` on `:4173`): `DOCS_URL=http://127.0.0.1:4173 pnpm smoke:docs` -> **PASS**
+* `pnpm dev` -> both watcher and docs ready lines; `touch` on a scene -> rebuild logged; ports released afterwards
+* SSR HTML: `motion-canvas-player` count 0, `LOADING PLAYER` count 1 (skeleton), editor link absent in the production build
+* Missing-bundle path: after temporarily moving `apps/docs/public/videos`, the page showed "Video bundle not found. Run `pnpm videos:build` in the repo root." with `COPY COMMAND`; bundles restored with `pnpm videos:build`
+* Screenshot `.snapshots/docs-indexing.png` (from the smoke run): framed player at chapter 06 (`B-TREE RULES`) with HUD, two-column chapter grid with chapter 06 active, and the studio panel. No error box.

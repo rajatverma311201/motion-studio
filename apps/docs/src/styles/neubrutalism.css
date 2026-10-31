@@ -411,45 +411,268 @@ samp {
   line-height: 1.5;
 }
 
-.nb-video {
+.nb-lesson-video {
+  margin: 1.5rem 0;
+}
+
+.nb-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--nb-bg);
+  border: 2px solid var(--nb-border);
+  border-radius: 14px;
+  box-shadow: 8px 8px 0 var(--nb-lime);
+}
+
+.nb-video-frame motion-canvas-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.nb-video-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--nb-bg);
+  color: var(--nb-muted);
+  font-family: var(--nb-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.nb-video-error,
+.nb-video-missing {
+  position: absolute;
+  inset: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  margin: 1.5rem 0;
+  gap: 0.9rem;
   padding: 1rem;
   background: var(--nb-surface);
-  border: 2px solid var(--nb-border);
-  border-radius: var(--nb-radius-card);
-  box-shadow: 8px 8px 0 var(--nb-lime);
+  border: 2px solid var(--nb-red);
+  border-radius: var(--nb-radius-control);
+  font-family: var(--nb-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
   text-align: center;
 }
 
-.nb-video-label {
+.nb-video-error {
+  color: var(--nb-red);
+}
+
+.nb-video-missing {
+  color: var(--nb-foreground);
+}
+
+.nb-video-missing code {
+  color: var(--nb-lime);
+}
+
+.nb-video-missing-lesson {
+  position: static;
+  margin: 1.5rem 0;
+}
+
+.nb-video-copy,
+.nb-chapter-play {
+  padding: 0.5rem 0.85rem;
+  background: var(--nb-elevated);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-control);
   color: var(--nb-foreground);
   font-family: var(--nb-font-mono);
-  font-size: clamp(0.8rem, 2vw, 1.05rem);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+}
+
+.nb-video-copy:hover,
+.nb-chapter-play:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--nb-cyan);
+}
+
+.nb-video-copy:focus-visible,
+.nb-chapter-play:focus-visible,
+.nb-chapter:focus-visible,
+.nb-studio-details summary:focus-visible {
+  outline: 2px solid var(--nb-cyan);
+  outline-offset: 2px;
+}
+
+.nb-video-start {
+  margin: 0 0 0.75rem;
+  color: var(--nb-lime);
+  font-family: var(--nb-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nb-chapter-nav {
+  margin: 1.5rem 0;
+}
+
+.nb-chapter-nav-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.nb-chapter-grid,
+.nb-chapter-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nb-chapter {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--nb-surface);
+  border: 2px solid transparent;
+  border-radius: var(--nb-radius-control);
+  color: var(--nb-foreground);
+  text-align: left;
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease,
+    border-color 80ms ease;
+}
+
+.nb-chapter:hover,
+.nb-chapter.is-active {
+  border-color: var(--nb-border);
+}
+
+.nb-chapter.is-active {
+  box-shadow: 6px 6px 0 var(--chapter-color, var(--nb-lime));
+}
+
+.nb-chapter-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-control);
+  box-shadow: 4px 4px 0 var(--chapter-color, var(--nb-violet));
+}
+
+.nb-chapter-index {
+  flex: none;
+  color: var(--chapter-color, var(--nb-lime));
+  font-family: var(--nb-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.nb-chapter-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nb-chapter-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--nb-foreground);
+  font-family: var(--nb-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.nb-chapter-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  background: var(--chapter-color, var(--nb-lime));
+  border: 1px solid var(--nb-border);
+  border-radius: 999px;
+}
+
+.nb-chapter-summary {
+  color: var(--nb-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.nb-studio-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: var(--nb-surface);
+  border: 2px solid var(--nb-border);
+  border-radius: var(--nb-radius-card);
+  box-shadow: 6px 6px 0 var(--nb-violet);
+}
+
+.nb-studio-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.nb-studio-hint {
+  color: var(--nb-muted);
+  font-family: var(--nb-font-mono);
+  font-size: 0.75rem;
+}
+
+.nb-studio-details summary {
+  cursor: pointer;
+  color: var(--nb-lime);
+  font-family: var(--nb-font-mono);
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-}
-
-.nb-video-note {
-  color: var(--nb-muted);
-  font-family: var(--nb-font-mono);
-  font-size: 0.75rem;
-}
-
-.nb-chapters {
-  margin: 1rem 0;
-  color: var(--nb-muted);
-  font-family: var(--nb-font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.nb-studio-details ol {
+  margin: 0.85rem 0 0;
+  padding-left: 1.4rem;
+  color: var(--nb-muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.nb-studio-details code {
+  color: var(--nb-foreground);
+}
+
+@media (min-width: 900px) {
+  .nb-chapter-grid,
+  .nb-chapter-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -457,7 +680,10 @@ samp {
   #nd-sidebar-mobile a[data-active='true'],
   [data-search-full],
   .nb-btn,
-  .nb-lesson-card {
+  .nb-lesson-card,
+  .nb-chapter,
+  .nb-video-copy,
+  .nb-chapter-play {
     transition: none;
   }
 
@@ -469,7 +695,10 @@ samp {
 
   [data-search-full]:hover,
   .nb-btn:hover,
-  .nb-lesson-card:hover {
+  .nb-lesson-card:hover,
+  .nb-chapter:hover,
+  .nb-video-copy:hover,
+  .nb-chapter-play:hover {
     transform: none;
   }
 

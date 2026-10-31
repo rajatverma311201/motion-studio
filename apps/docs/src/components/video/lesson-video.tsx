@@ -1,12 +1,39 @@
+import {useState} from 'react';
+import {ChapterList} from './chapter-list';
+import {StudioPanel} from './studio-panel';
+import {getLesson} from './use-lessons';
+import {VideoPlayer} from './video-player';
+
 export interface LessonVideoProps {
   slug: string;
 }
 
 export function LessonVideo({slug}: LessonVideoProps) {
+  const [startSection, setStartSection] = useState(0);
+  const lesson = getLesson(slug);
+
+  if (!lesson) {
+    return (
+      <div className="nb-video-missing nb-video-missing-lesson" role="alert">
+        <p>
+          No lesson data for <code>{slug}</code>. Run <code>pnpm sync:lessons</code> in the repo root.
+        </p>
+      </div>
+    );
+  }
+
+  const chapter = lesson.chapters[startSection];
+
   return (
-    <div className="nb-video" role="img" aria-label={`Video preview for ${slug}`}>
-      <span className="nb-video-label">VIDEO PREVIEW: {slug}</span>
-      <span className="nb-video-note">The player is wired up in step 11.</span>
+    <div className="nb-lesson-video">
+      {startSection > 0 && chapter ? (
+        <p className="nb-video-start">
+          Starting at chapter {String(startSection + 1).padStart(2, '0')}: {chapter.name}
+        </p>
+      ) : null}
+      <VideoPlayer slug={slug} startSection={startSection} autoPlay={startSection > 0} />
+      <ChapterList slug={slug} activeIndex={startSection} onSelect={setStartSection} />
+      <StudioPanel slug={slug} />
     </div>
   );
 }
