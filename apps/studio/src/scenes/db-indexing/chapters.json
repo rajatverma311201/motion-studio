@@ -1,0 +1,96 @@
+{
+  "slug": "db-indexing",
+  "title": "DB INDEXING",
+  "chapters": [
+    {
+      "name": "INTRO",
+      "color": "lime",
+      "summary": "Why a lookup is instant with an index and painfully slow without one."
+    },
+    {
+      "name": "FULL TABLE SCAN",
+      "color": "red",
+      "summary": "Without an index the database reads every row and every page, so cost grows linearly with the table."
+    },
+    {
+      "name": "SORTED INDEX",
+      "color": "cyan",
+      "summary": "A sorted key-plus-pointer structure enables binary search, but inserts must shift entries and rewrite pages."
+    },
+    {
+      "name": "BINARY TREES",
+      "color": "violet",
+      "summary": "A binary search tree avoids shifting but degenerates into a linked list and still costs one disk read per level."
+    },
+    {
+      "name": "PAGES AND FANOUT",
+      "color": "yellow",
+      "summary": "Packing a whole 8 KB page into each node gives a fanout near 500 and fits ten million rows in three levels."
+    },
+    {
+      "name": "B-TREE RULES",
+      "color": "violet",
+      "summary": "Sorted keys, k+1 children, range boundaries, equal leaf depth and half-full nodes keep a B-tree balanced."
+    },
+    {
+      "name": "B-TREE SEARCH",
+      "color": "cyan",
+      "summary": "A lookup reads one node per level, and a B-tree can stop early when the key sits in an internal node."
+    },
+    {
+      "name": "B-TREE INSERT",
+      "color": "lime",
+      "summary": "Inserts fill the target leaf and split full nodes upward, so the tree only grows at the root and stays balanced."
+    },
+    {
+      "name": "B-TREE VS B+TREE",
+      "color": "pink",
+      "summary": "B+tree internal nodes are signposts and real entries live in linked leaves, giving wider nodes and cheap ranges."
+    },
+    {
+      "name": "B+TREE INSERT",
+      "color": "lime",
+      "summary": "B+tree leaf splits copy the separator up and every key always stays in a leaf."
+    },
+    {
+      "name": "LOOKUP AND RANGE SCAN",
+      "color": "cyan",
+      "summary": "Point lookups follow the tree to a leaf, then range scans walk the leaf links instead of climbing back up."
+    },
+    {
+      "name": "B+TREE DELETE",
+      "color": "red",
+      "summary": "Deletes borrow from a sibling or merge thin leaves, rippling upward only when the root shrinks."
+    },
+    {
+      "name": "WHY B+TREE WINS",
+      "color": "yellow",
+      "summary": "Higher fanout, predictable lookups, linked-leaf range scans and dense full scans make the B+tree the default."
+    },
+    {
+      "name": "CLUSTERED VS SECONDARY",
+      "color": "cyan",
+      "summary": "A secondary index reaches the primary key first, so it needs a second walk unless the index covers the query."
+    },
+    {
+      "name": "COMPOSITE INDEXES",
+      "color": "violet",
+      "summary": "An index on (a, b) serves a and a+b but not b alone: equality columns come first, range columns last."
+    },
+    {
+      "name": "THE COST OF INDEXES",
+      "color": "orange",
+      "summary": "Every index adds write work and splits, and random keys leave pages partly empty, so index only what queries use."
+    },
+    {
+      "name": "EXPLAIN AND GOTCHAS",
+      "color": "red",
+      "summary": "EXPLAIN exposes the plan, and wrapped columns, leading wildcards, type mismatches, low selectivity or too many indexes hide an index."
+    },
+    {
+      "name": "RECAP",
+      "color": "lime",
+      "summary": "Indexes turn linear scans into logarithmic lookups, but they cost writes and must be proven with EXPLAIN."
+    }
+  ]
+}

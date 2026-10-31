@@ -1,5 +1,5 @@
 import {makeProject} from '@motion-canvas/core';
 
-import indexing from '../scenes/db-indexing/indexing?scene';
+import scene from '../scenes/db-indexing/scene?scene';
 
-export default makeProject({scenes: [indexing]});
+export default makeProject({scenes: [scene]});
