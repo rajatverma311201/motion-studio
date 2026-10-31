@@ -48,9 +48,82 @@ src/
     section.ts            setSection()
     caption.ts            say()
     leave.ts              leave()
+  lesson/
+    lesson-types.ts       LessonChapter, ChaptersFile, LessonSection, LessonConfig
+    chapters.ts           resolveChapters() (palette name -> hex)
+    define-lesson.ts      defineLesson(), readStartSection(), parseStartSection()
+    define-lesson.test.ts vitest unit tests
 ```
 
+The package root also ships `chapters.schema.json`, the draft-07 JSON Schema for every lesson's `chapters.json`.
+
 Every folder has an `index.ts` barrel and `src/index.ts` re-exports all of them, so consumers import from `@motion-studio/video-kit` and never from a deep path. The animation barrel also re-exports `easeInOutCubic`, `easeOutBack` and `easeOutCubic` from `@motion-canvas/core`.
+
+## Lessons
+
+A lesson lives in `apps/studio/src/scenes/<slug>/` and has one `chapters.json` matching `ChaptersFile`. That file is the single source of truth for the HUD pills and, later, the docs page. Validate it with `chapters.schema.json` (`color` must be one of `lime`, `pink`, `cyan`, `yellow`, `violet`, `orange`, `red`).
+
+`apps/studio/src/scenes/db-indexing/chapters.json`:
+
+```json
+{
+  "slug": "db-indexing",
+  "title": "DB INDEXING",
+  "chapters": [
+    {
+      "name": "INTRO",
+      "color": "lime",
+      "summary": "An index is a shortcut to the rows a query needs."
+    }
+  ]
+}
+```
+
+`apps/studio/src/scenes/db-indexing/01-intro.tsx`:
+
+```tsx
+import type {View2D} from '@motion-canvas/2d';
+import type {ThreadGenerator} from '@motion-canvas/core';
+import {waitFor} from '@motion-canvas/core';
+import {say} from '@motion-studio/video-kit';
+
+export function* intro(_view: View2D): ThreadGenerator {
+  yield* say('A database index is a shortcut to your rows.');
+  yield* waitFor(1);
+}
+```
+
+`apps/studio/src/scenes/db-indexing/indexing.tsx`:
+
+```tsx
+import {defineLesson, type ChaptersFile} from '@motion-studio/video-kit';
+import chapters from './chapters.json';
+import {intro} from './01-intro';
+
+export default defineLesson({
+  chapters: chapters as ChaptersFile,
+  sections: [intro],
+});
+```
+
+`apps/studio/src/projects/db-indexing.ts`:
+
+```ts
+import {makeProject} from '@motion-canvas/core';
+import indexing from '../scenes/db-indexing/indexing?scene';
+
+export default makeProject({scenes: [indexing]});
+```
+
+`defineLesson()` fills the background, builds the HUD from `chapters.json`, then runs `setSection(i)` and `sections[i](view)` from the start section to the end. It throws at definition time when `sections.length` and `chapters.chapters.length` differ, so a forgotten section fails the studio load instead of drifting silently.
+
+Start-section precedence, highest first:
+
+1. The `startSection` project/player variable: `useScene().variables.get('startSection', -1)()`, when it is an integer `>= 0`.
+2. The dev-only `#s=N` URL hash.
+3. `0`.
+
+The result is clamped into `[0, total - 1]`. The player web component passes the variable as JSON, e.g. `<motion-canvas-player variables='{"startSection": 3}'>`; the editor has no variables, so `#s=N` stays useful while authoring.
 
 ## How to add a component
 

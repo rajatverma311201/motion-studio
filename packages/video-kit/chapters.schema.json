@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://motion-studio.local/schemas/chapters.schema.json",
+  "title": "ChaptersFile",
+  "description": "The chapters.json file of one studio lesson. It is the single source of truth for the HUD pills and the docs page.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "title", "chapters"],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must equal the project file name, e.g. \"db-indexing\" for src/projects/db-indexing.ts."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Upper-case HUD title, e.g. \"DB INDEXING\"."
+    },
+    "chapters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "color"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Short upper-case label shown in the HUD pill, e.g. \"FULL TABLE SCAN\"."
+          },
+          "color": {
+            "type": "string",
+            "enum": ["lime", "pink", "cyan", "yellow", "violet", "orange", "red"],
+            "description": "Palette key resolved to hex inside the scene."
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "description": "One sentence for the docs page. Not shown in the video."
+          }
+        }
+      }
+    }
+  }
+}

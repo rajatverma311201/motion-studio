@@ -172,3 +172,49 @@ Compare runs `pixelmatch` with `threshold: 0.12` and passes a frame when the dif
 * `pnpm studio:build` -> exit 0; chunk hashes unchanged (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
 * `git diff --stat HEAD~1 -- apps/studio/src` -> empty (scenes untouched)
 
+
+## Step 06: video-kit lesson factory
+
+**What changed**
+
+* New `packages/video-kit/src/lesson/` with `lesson-types.ts`, `chapters.ts`, `define-lesson.ts`, `define-lesson.test.ts` and `index.ts`; the root barrel now re-exports it.
+* `defineLesson(config)` returns `makeScene2D(...)`: fills `colors.bg`, reads the start section, builds the HUD from `chapters.json`, then loops `setSection(i)` + `sections[i](view)` and finishes with `waitFor(0.5)`. It throws at definition time when `sections.length !== chapters.chapters.length`; the message contains the slug and both counts.
+* `readStartSection(total)` reads `useScene().variables.get('startSection', -1)()`, then the dev hash, then 0. `parseStartSection(hash, variable, total)` is exported as the pure, unit-testable core.
+* `resolveChapters(file)` maps palette keys to hex and throws on an unknown key with the bad name in the message.
+* New draft-07 schema `packages/video-kit/chapters.schema.json`; `color` is restricted to `lime, pink, cyan, yellow, violet, orange, red`.
+* README gained a "Lessons" section with a complete one-chapter lesson (`chapters.json`, `01-intro.tsx`, scene file, project file) and the start-section precedence.
+
+**`readStartSection` precedence (exact)**
+
+1. `startSection` from `useScene().variables.get('startSection', -1)()` when it is an integer `>= 0`.
+2. `location.hash` matching `/s=(\d+)/` (inside try/catch because `location` may not exist).
+3. `0`.
+
+The chosen value is clamped into `[0, total - 1]`.
+
+**Decisions / gotchas**
+
+* `apps/studio/tsconfig.json` was left untouched: it extends the Motion Canvas 2D preset, whose `@motion-canvas/core/tsconfig.project.json` already sets `"resolveJsonModule": true`.
+* JSON imports infer `color` as `string`, so the scene uses `chapters as ChaptersFile`. That cast is documented in the README example.
+* `define-lesson.test.ts` mocks `@motion-canvas/2d` with `vi.mock` before importing `define-lesson.ts`. Without it Vitest evaluates the browser-oriented 2D package and fails with `codeSignal is not a function`; the pure helper itself needs no Motion Canvas globals.
+* `resolveChapters()` is used for the HUD definitions instead of indexing `colors` directly, so a bad colour slips through neither TypeScript nor a JSON cast.
+
+**Smoke proof (throwaway, deleted before commit)**
+
+* Created `apps/studio/src/scenes/_factory-smoke/{chapters.json,scene.tsx}` (two chapters, both sections `say('hello')` + `waitFor(1)`) and `apps/studio/src/projects/_factory-smoke.ts`.
+* `pnpm --filter @motion-studio/studio typecheck` -> exit 0.
+* `pnpm studio:build` -> exit 0, chunk `_factory-smoke-68049605.js` emitted.
+* Dev server + `curl /src/projects/_factory-smoke` -> `200`.
+* Deleted the three files plus the two generated `.meta` files; `ls apps/studio/src/scenes | grep -c smoke` -> 0.
+
+**Checks (step 06)**
+
+* `pnpm --filter @motion-studio/video-kit test` -> 32/32 tests pass (11 lesson + 21 existing)
+* `pnpm --filter @motion-studio/video-kit typecheck` -> exit 0
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0; after smoke cleanup the existing chunk hashes are unchanged (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
+
+**Follow-ups**
+
+* `db-indexing/indexing.tsx` and `db-transactions/transactions.tsx` still use their hand-written section loops; migrating them is a later step and must preserve each section's own root/`leave(root)` cleanup.
+* The docs app can read `chapters.json` directly; keep `slug` equal to the project file name.
