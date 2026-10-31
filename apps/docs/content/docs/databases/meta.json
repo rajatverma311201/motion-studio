@@ -1,0 +1,5 @@
+{
+  "title": "Databases",
+  "root": true,
+  "pages": ["index", "transactions", "indexing", "glossary"]
+}

@@ -501,3 +501,66 @@ Notes taken from the official guides before writing the app. Guide 1 is `https:/
 * `grep -rn "video-kit" apps/docs/src apps/docs/package.json | wc -l` -> 0
 * `grep -n '"vite"' apps/docs/package.json` -> `"vite": "^8.3.5"`
 * File names: only `src/routeTree.gen.ts` (generated) and `src/routes/__root.tsx` (framework route) are not kebab-case; both are allowed exceptions.
+
+## Step 10 notes
+
+Notes taken from the official guides before writing content. Two URLs in the prompt are stale in the current site:
+
+* `https://fumadocs.dev/docs/ui/page-conventions` and `https://fumadocs.dev/docs/ui/navigation/sidebar` both return **404** (the live site redirects to `www.fumadocs.dev` and no longer has those paths). The current guide is `https://fumadocs.dev/docs/headless/page-conventions` ("Page Slugs & Page Tree"); the archived v14 page `https://v14.fumadocs.dev/docs/ui/page-conventions` still documents the same conventions.
+* `https://fumadocs.dev/docs/ui/markdown` is **404**. The current Markdown guide is `https://fumadocs.dev/docs/markdown`.
+* The live `meta.json` keys (headless guide): `title`, `icon`, `pages`, `defaultOpen`, `collapsible`, `pagesIndex`. `root: true` marks a folder as a root; Fumadocs UI renders root folders as **layout tabs** (`https://fumadocs.dev/docs/headless/page-conventions`, and the v14 UI page). In Fumadocs UI 16.17.9 the sidebar tab is a dropdown (`SidebarTabsDropdown`), not a horizontal tab strip.
+* Root-tab activation detail (verified in `fumadocs-ui` source): `getLayoutTabs()` links a tab to `folder.index?.url ?? firstPageChild.url`, but `isLayoutTabActive()` searches only `folder.children`. `pagesIndex` alone attaches `folder.index` but does **not** make the tab active on the index URL; the index page must be a child. `apps/docs/content/docs/databases/meta.json` therefore lists `"index"` first in `pages` (a small deviation from the prompt's exact list, needed for the course-overview sidebar).
+* Frontmatter schema: the macro guide says `source.config.ts` is only for global options and collection options live in the `defineDocs` macro call (`https://fumadocs.dev/docs/mdx/macro`, `https://fumadocs.dev/docs/mdx/collections`). The default schema is `pageSchema` from `fumadocs-core/source/schema` (Zod 4); extend it with `pageSchema.extend({...})` and pass it as `docs: {schema}` in `src/lib/source.ts`.
+* MDX components: `defaultMdxComponents` already includes `Card`, `Cards`, `Callout`, `pre`, and the heading components. `Tabs`/`Tab` come from `fumadocs-ui/components/tabs`; `Steps`/`Step` come from `fumadocs-ui/components/steps`. Register them in `getMDXComponents()` (`https://fumadocs.dev/docs/ui/components`).
+* Markdown behaviour used here: frontmatter `title` becomes the page `h1`; headings are auto-anchored and feed the right-hand TOC; `Callout` types are `info`, `warn`, `error`, `success`, `idea`; fenced code blocks get Shiki highlighting and a copy button (`https://fumadocs.dev/docs/markdown`).
+
+## Step 10: docs content model, course structure, landing page
+
+**What changed**
+
+* Content tree (`apps/docs/content/docs`): `meta.json`, `index.mdx` (Welcome), `databases/meta.json`, `databases/index.mdx` (course overview), `databases/transactions.mdx`, `databases/indexing.mdx`, `databases/glossary.mdx`. Five MDX files in total; the glossary is an extra reference page (see "Deviations").
+* `databases/meta.json` is `{"title":"Databases","root":true,"pages":["index","transactions","indexing","glossary"]}`. `index` is listed so the "Databases" tab is active on `/docs/databases`; the lessons stay in the required order, Transactions then Indexing.
+* Frontmatter schema in `src/lib/source.ts` (macro collection): `video` (slug regex), `duration`, `level` (`beginner|intermediate|advanced`, default `beginner`), `tags` (string array, default `[]`), `status` (`draft|published`, default `published`). `pageSchema` from `fumadocs-core/source/schema` is extended with `zod` 4.6.7.
+* Lesson pages follow the requested template exactly: `LessonVideo`, `What you will learn`, `Chapters` (`LessonChapters`), `The idea in one minute`, `Chapter notes` (18 and 9 `###` sections in video order), `Cheat sheet`, `Common mistakes` (warn callouts), `Try it yourself`, `Go deeper` (verified links). Both pages are within 700-1100 words by `wc -w` (indexing 1100, transactions 1064, including frontmatter and code fences).
+* New stubs `src/components/video/lesson-video.tsx` (16:9 cream border, lime hard shadow, mono label + step-11 note) and `lesson-chapters.tsx` (mono `CHAPTERS: <slug>`). Registered in `getMDXComponents()` together with `Tabs`, `Tab`, `Steps`, `Step`.
+* `src/lib/lessons.ts`: `filterPublished()`, `sortLessons()` and `getLessons()`. `getLessons()` maps `source.getPages()` to `Lesson` (`slug`, `url`, `title`, `description`, `course`, `video`, `duration`, `level`, `tags`). Draft lessons and pages without `video` are filtered out. There is no date field, so `sortLessons()` sorts by title (deterministic and unit-tested).
+* `src/lib/lessons.test.ts` + `vitest.config.ts`: Vitest 5.0.5, 5 tests for the pure filter/sort functions. `test` script added to `apps/docs/package.json`; `zod` and `vitest` installed.
+* `src/routes/index.tsx` replaces the redirect with the landing page: hero slab (`LEARN HOW SOFTWARE WORKS`, lime slab, dark text, violet hard shadow), two buttons, latest-lessons grid (1/2/3 columns, shadow colour cycles lime/pink/cyan/yellow/violet/orange, chips for duration/level/first two tags), and three "How it works" cards. Uses `HomeLayout` + `baseOptions()` with Docs/Databases nav links.
+* `src/styles/neubrutalism.css`: landing, button, card, chip, step, video and chapters styles; hover transforms and a reduced-motion override.
+
+**How to add a lesson manually (until step 12's generator)**
+
+1. Create the Motion Canvas scene folder in `apps/studio/src/scenes/<video-slug>/` with `chapters.json`, `scene.tsx`, and numbered `sections/*.tsx`; register the project in `apps/studio/src/projects/<video-slug>.ts`.
+2. Create `apps/docs/content/docs/databases/<page-slug>.mdx` with frontmatter:
+   `title`, `description`, `video: <video-slug>`, `duration`, `level`, `tags`, `status`.
+   The `video` value must match the studio project slug.
+3. Add `<page-slug>` to `apps/docs/content/docs/databases/meta.json` under `pages` (or add a new folder with its own `meta.json`).
+4. Copy the lesson template: `<LessonVideo slug="<video-slug>" />`, `<LessonChapters slug="<video-slug>" />`, and the eight `##` headings. Keep one `###` per chapter in video order.
+5. Run `pnpm --filter @motion-studio/docs typecheck`, `test`, `build`. Published pages with a `video` appear on the landing page automatically; set `status: draft` to keep one out of the grid while its URL still works.
+
+**Deviations / decisions**
+
+* The schema lives in `src/lib/source.ts`, not `source.config.ts`, because this app defines its collection with the macro API (the macro guide says collection options belong in the macro call; `source.config.ts` keeps only global options).
+* `databases/meta.json` lists `index` plus the glossary, unlike the prompt's two-item list. Without `index`, the root tab is inactive on `/docs/databases` and the sidebar shows the root tree (Welcome/Databases), which looked broken. With `index`, the course overview is active and the lessons remain in the required order.
+* `glossary.mdx` is a fifth page, added to satisfy the acceptance check `find apps/docs/content -name "*.mdx" | wc -l # >= 5` (the stated four-file tree only produces four).
+* The landing page sorts cards by title because the frontmatter schema has no date. "Latest lessons" is therefore alphabetical until a date/order field is added.
+* The video previews are stubs; `VIDEO PREVIEW: <slug>` and the step-11 sentence are intentionally visible.
+
+**Facts to double-check**
+
+* Durations are presentational: indexing uses `12 min` from the prompt's template; transactions uses `4 min`, rounded from the prompt's "about 3.5 minutes". Neither is measured from the rendered video.
+* Levels are editorial: transactions is `beginner`, indexing is `intermediate`.
+* Numbers such as "fanout near 500", "ten million rows in three levels", "about 70% full", and the EXPLAIN costs are the video's illustrative examples; the plan output is explicitly labelled "illustrative PostgreSQL-style output". The pages keep the hedging ("around", "about") but do not repeat "illustrative" beside every number.
+* The extra glossary page and the `index` entry in `databases/meta.json` are structural choices, not lesson content.
+
+**Checks (step 10)**
+
+* `pnpm --filter @motion-studio/docs typecheck` -> exit 0
+* `pnpm --filter @motion-studio/docs test` -> 5/5 tests pass
+* `pnpm --filter @motion-studio/docs build` -> exit 0 (client + SSR). One warning remains: `node:fs/promises` externalized for the browser from `fumadocs-mdx/dist/runtime/server.js`; the app renders and the browser has no console errors. The two `::highlight(fd-search)` CSS warnings are Fumadocs preset warnings from step 09.
+* `find apps/docs/content -name "*.mdx" | wc -l` -> 5
+* `grep -c "<LessonVideo" apps/docs/content/docs/databases/*.mdx` -> indexing 1, transactions 1 (other pages 0)
+* Dev server: `/`, `/docs`, `/docs/databases`, `/docs/databases/indexing`, `/docs/databases/transactions`, `/docs/databases/glossary` -> all 200
+* Playwright at 1440x1100: landing cards 2, card shadow changes `8px` -> `11px` on hover, no horizontal overflow on `/`, `/docs/databases`, `/docs/databases/indexing`; sidebar shows the "Databases" tab/dropdown and the links Course overview -> Transactions -> Indexing -> Glossary; zero page/console errors.
+* `LC_ALL=C find apps/docs/content apps/docs/src -name "*[A-Z]*" -not -path "*/routes/*" | wc -l` -> 1, the generated `src/routeTree.gen.ts` (step 09 exception). Without `LC_ALL=C`, BSD `find` matches everything on this macOS/APFS setup (known since step 03).
+* Word counts: `wc -w` -> indexing 1100, transactions 1064.

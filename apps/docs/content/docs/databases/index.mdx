@@ -1,0 +1,45 @@
+---
+title: Course overview
+description: A two-lesson course on transactions and indexing, from first principles.
+---
+
+<p className="eyebrow">Course</p>
+
+Databases are where correctness and speed meet. This course starts with the guarantee that a group of writes either happens completely or not at all, then shows how a sorted tree finds one row among millions without reading the table.
+
+## What you will learn
+
+- What a transaction is, and how `BEGIN`, `COMMIT`, and `ROLLBACK` prevent half-finished work.
+- The four ACID guarantees and the three isolation anomalies they protect against.
+- How the SQL isolation levels trade concurrency for safety.
+- How a write-ahead log makes a committed transaction durable.
+- Why an index turns a linear scan into a logarithmic lookup.
+- How B-trees stay balanced, and why B+trees win for ranges.
+- Why every index costs writes, and how to check the plan with `EXPLAIN`.
+
+## Lessons
+
+<Cards>
+  <Card
+    href="/docs/databases/transactions"
+    title="1. DB Transactions"
+    description="All-or-nothing for a bank transfer, ACID, isolation levels, and the write-ahead log."
+  />
+  <Card
+    href="/docs/databases/indexing"
+    title="2. DB Indexing"
+    description="Full table scans, binary search, B-trees, B+trees, secondary and composite indexes."
+  />
+  <Card
+    href="/docs/databases/glossary"
+    title="Glossary"
+    description="The terms from both lessons, defined in one place."
+  />
+</Cards>
+
+## Suggested order
+
+1. **Transactions** (about 4 minutes). Start here: atomicity, isolation, and durability explain what the database promises before it promises to be fast.
+2. **Indexing** (about 12 minutes). Then look at the data structure behind a fast lookup, and the write cost you pay for it.
+
+Both lessons stand alone if you only need one. Each page has its own cheat sheet and runnable examples.

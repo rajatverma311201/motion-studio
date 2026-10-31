@@ -1,9 +1,13 @@
 import {Callout} from 'fumadocs-ui/components/callout';
 import {Card} from 'fumadocs-ui/components/card';
 import {CodeBlock, Pre} from 'fumadocs-ui/components/codeblock';
+import {Step, Steps} from 'fumadocs-ui/components/steps';
+import {Tab, Tabs} from 'fumadocs-ui/components/tabs';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type {MDXComponents} from 'mdx/types';
 import type {ComponentProps} from 'react';
+import {LessonChapters} from '@/components/video/lesson-chapters';
+import {LessonVideo} from '@/components/video/lesson-video';
 
 function withClass(base: string, className?: string): string {
   return className ? `${base} ${className}` : base;
@@ -31,6 +35,12 @@ export function getMDXComponents(components?: MDXComponents) {
     pre: NeubrutalistPre,
     Card: NeubrutalistCard,
     Callout: NeubrutalistCallout,
+    Tabs,
+    Tab,
+    Steps,
+    Step,
+    LessonVideo,
+    LessonChapters,
     ...components,
   } satisfies MDXComponents;
 }

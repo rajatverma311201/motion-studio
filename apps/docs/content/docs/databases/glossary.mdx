@@ -1,0 +1,43 @@
+---
+title: Glossary
+description: The terms used across the transactions and indexing lessons, in one place.
+---
+
+<p className="eyebrow">Reference</p>
+
+Short definitions for the vocabulary the two lessons share. Each entry links back to the lesson that explains it.
+
+## Transactions
+
+| Term | Meaning |
+| --- | --- |
+| Transaction | A group of writes that all happen or none do. |
+| `COMMIT` | Makes every pending change permanent at one instant. |
+| `ROLLBACK` | Undoes every pending change. |
+| Atomicity | A failure anywhere undoes the whole transaction. |
+| Consistency | Every commit leaves the data valid under the rules. |
+| Isolation | Concurrent transactions behave as if they were separate. |
+| Durability | A committed change survives a crash. |
+| Dirty read | Reading a value another transaction has not committed. |
+| Non-repeatable read | The same row returns a different value inside one transaction. |
+| Phantom read | A repeated range query sees a new row. |
+| WAL | Write-ahead log: records flushed before `COMMIT` returns. |
+
+Read the full story in [DB Transactions](/docs/databases/transactions).
+
+## Indexing
+
+| Term | Meaning |
+| --- | --- |
+| Index | A sorted structure of keys with pointers to rows. |
+| Fanout | The number of children per tree node. |
+| B-tree | A wide, shallow, balanced tree with keys and row pointers in every node. |
+| B+tree | A B-tree variant where all entries live in linked leaves. |
+| Clustered index | The table itself, stored in primary-key order (InnoDB). |
+| Secondary index | A separate index whose leaves hold the key plus the primary key. |
+| Covering index | An index that answers the query without a second lookup. |
+| Composite index | An index on several columns, read left to right. |
+| Leftmost prefix rule | An index on `(a, b)` serves `a` and `a + b`, not `b` alone. |
+| `EXPLAIN` | Shows the plan the database chose for a query. |
+
+Read the full story in [DB Indexing](/docs/databases/indexing).

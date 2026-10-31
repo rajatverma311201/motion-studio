@@ -1,30 +1,38 @@
 ---
 title: Welcome
-description: Animated software-engineering explainers, with lessons and previews.
+description: Animated software-engineering explainers, with lesson pages, previews, and notes.
 ---
 
 <p className="eyebrow">Motion Studio</p>
 
-This is the documentation side of Motion Studio. Each lesson is an animated
-explainer, and every lesson will get a page here with its sections, previews,
-and notes.
+Motion Studio is a small collection of animated explainers about the software ideas that are hard to picture from text alone. Each lesson is a short video with a written page beside it: the same ideas, in order, with the code and the edge cases.
 
-<Callout title="What is coming next" type="info">
-  The lesson tree is filled in from the scene folders. Until then, this page is
-  the only entry so the layout, search, and theme can be checked.
+## How to use the lessons
+
+1. **Watch the video.** No voice-over: a caption bar carries the narration.
+2. **Jump to a chapter.** Every video is split into labelled sections.
+3. **Read the notes.** Each lesson page repeats the argument and adds a cheat sheet, common mistakes, and SQL you can run.
+
+The videos are not embedded yet. The preview box at the top of each lesson is a placeholder until the player lands.
+
+<Callout title="Start with databases" type="info">
+  The first course has two lessons: transactions first, then indexing. They stand alone, but transactions gives you the vocabulary that indexing builds on.
 </Callout>
 
-## The plan
-
-- **Lessons** are grouped by topic and shown in the sidebar.
-- **Pages** are MDX, so they can hold code, callouts, cards, and previews.
-- **Search** is wired through a small server route over the same page tree.
-
 <Cards>
-  <Card title="Indexing" description="How databases find rows fast." />
-  <Card title="Transactions" description="Atomicity, isolation, and durability." />
+  <Card
+    href="/docs/databases"
+    title="Databases course"
+    description="Two lessons on how databases keep data correct and find it quickly."
+  />
+  <Card
+    href="/docs/databases/transactions"
+    title="DB Transactions"
+    description="ACID, isolation anomalies, isolation levels, and the write-ahead log."
+  />
+  <Card
+    href="/docs/databases/indexing"
+    title="DB Indexing"
+    description="From a full table scan to B-trees and B+trees, with EXPLAIN at the end."
+  />
 </Cards>
-
-```bash
-pnpm docs:dev
-```
