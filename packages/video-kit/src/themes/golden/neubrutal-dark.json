@@ -1,0 +1,83 @@
+{
+  "colors": {
+    "bg": "#0B0B10",
+    "grid": "rgba(255,255,255,0.045)",
+    "surf": "#15151D",
+    "surf2": "#1F1F2B",
+    "code": "#0F0F16",
+    "ink": "#F4F1EA",
+    "dark": "#0B0B10",
+    "lime": "#C6FF3D",
+    "pink": "#FF4D8D",
+    "cyan": "#3DE3FF",
+    "yellow": "#FFD23D",
+    "violet": "#9B7BFF",
+    "orange": "#FF8A3D",
+    "red": "#FF4D4D",
+    "mute": "#9A99A8",
+    "dim": "#3A3950",
+    "redBg": "#3A1521",
+    "limeBg": "#18301C",
+    "clear": "rgba(244,241,234,0)"
+  },
+  "newColors": {
+    "onAccent": "#0B0B10",
+    "border": "#F4F1EA",
+    "brand": "#C6FF3D",
+    "onBrand": "#0B0B10"
+  },
+  "fonts": {
+    "sans": "\"Space Grotesk\", Inter, \"Segoe UI\", sans-serif",
+    "mono": "\"JetBrains Mono\", \"SF Mono\", Menlo, Consolas, monospace",
+    "stylesheet": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+  },
+  "hud": {
+    "gridSize": 60,
+    "gridVisible": true,
+    "captionStyle": "bar",
+    "captionLabel": "NOTE",
+    "titleStyle": "slab"
+  },
+  "shape": {
+    "radiusScale": 1,
+    "borderWidthScale": 1,
+    "elevation": "hard",
+    "elevationScale": 1,
+    "defaultShadowOffset": 8,
+    "defaultBorderWidth": 4
+  },
+  "geometry": {
+    "gridExtentX": 960,
+    "gridExtentY": 540,
+    "captionBar": {
+      "y": 462,
+      "width": 1740,
+      "height": 78,
+      "radius": 20,
+      "shadowOffset": 7,
+      "borderWidth": 4
+    },
+    "captionLabelChip": {
+      "x": -800,
+      "y": 462,
+      "width": 92,
+      "height": 40,
+      "radius": 10
+    },
+    "titleSlab": {
+      "radius": 30,
+      "padding": [14, 64],
+      "shadowOffset": 18,
+      "borderWidth": 7,
+      "fontSize": 168,
+      "letterSpacing": -3
+    },
+    "titlePill": {
+      "radius": 22,
+      "padding": [8, 36],
+      "shadowOffset": 10,
+      "borderWidth": 5,
+      "fontSize": 84
+    }
+  }
+}
