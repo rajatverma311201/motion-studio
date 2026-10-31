@@ -45,8 +45,8 @@
     "captures": [
       {"section": 0, "times": [4]},
       {"section": 1, "times": [5]},
-      {"section": 2, "times": [5]},
-      {"section": 3, "times": [6]},
+      {"section": 2, "times": [5], "quick": true},
+      {"section": 3, "times": [6], "quick": true},
       {"section": 4, "times": [7]},
       {"section": 5, "times": [5]}
     ]

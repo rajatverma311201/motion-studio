@@ -61,24 +61,24 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 
 ## Commands
 
-| Command                                              | What it does                                                                         |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server.     |
-| `pnpm build`                                         | `videos:build` followed by the docs production build.                                |
-| `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                                 |
-| `pnpm studio`                                        | Start the editor. Add `--theme <id>` / `--mode dark\|light` to pick the render look. |
-| `pnpm studio:dev`                                    | Start the editor with no flags (the look still comes from the config and lesson).    |
-| `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.          |
-| `pnpm sync`                                          | Regenerate `themes.json` and `lessons.json` (themes first).                          |
-| `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.             |
-| `pnpm new:theme <id> "<Name>" --from <theme>`        | Copy an existing theme, register it and sync the docs data.                          |
-| `pnpm status`                                        | Print slug, status, duration and YouTube link for every lesson page.                 |
-| `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.               |
-| `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                        |
-| `pnpm snap:themes`                                   | Capture the theme showcase in 7 themes × 2 modes and write `.snapshots/themes.html`. |
-| `pnpm smoke:docs`                                    | Playwright smoke test against the docs dev server on port 3000.                      |
-| `pnpm typecheck` / `pnpm lint` / `pnpm test`         | Run one check on its own.                                                            |
-| `pnpm format` / `pnpm format:check`                  | Write or verify Prettier formatting.                                                 |
+| Command                                              | What it does                                                                                                                                                                                             |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server.                                                                                                                         |
+| `pnpm build`                                         | `videos:build` followed by the docs production build.                                                                                                                                                    |
+| `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                                                                                                                                                     |
+| `pnpm studio`                                        | Start the editor. Add `--theme <id>` / `--mode dark\|light` to pick the render look.                                                                                                                     |
+| `pnpm studio:dev`                                    | Start the editor with no flags (the look still comes from the config and lesson).                                                                                                                        |
+| `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.                                                                                                                              |
+| `pnpm sync`                                          | Regenerate `themes.json` and `lessons.json` (themes first).                                                                                                                                              |
+| `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.                                                                                                                                 |
+| `pnpm new:theme <id> "<Name>" --from <theme>`        | Copy an existing theme, register it and sync the docs data.                                                                                                                                              |
+| `pnpm status`                                        | Print slug, status, duration and YouTube link for every lesson page.                                                                                                                                     |
+| `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.                                                                                                                                   |
+| `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                                                                                                                                            |
+| `pnpm snap:themes`                                   | Capture two quick showcase chapters in 7 themes × 2 modes; write `.snapshots/themes.html`. Add `-- --only <id>` for one theme, `-- --mode dark\|light` for one row, or `-- --full` for all six chapters. |
+| `pnpm smoke:docs`                                    | Playwright smoke test against the docs dev server on port 3000.                                                                                                                                          |
+| `pnpm typecheck` / `pnpm lint` / `pnpm test`         | Run one check on its own.                                                                                                                                                                                |
+| `pnpm format` / `pnpm format:check`                  | Write or verify Prettier formatting.                                                                                                                                                                     |
 
 Snapshots need the studio dev server on port 9000 (`pnpm studio:dev`). The baseline lives in `.snapshots/baseline`, is git-ignored, and must be captured once on a machine before comparing.
 
@@ -96,7 +96,7 @@ Every theme ships two variants, `dark` and `light`, and the theme and the mode a
 | `paper-editorial` | Paper Editorial | `editorial`  | light        | Warm paper, ink rules and one editorial red; a serif for titles.     |
 | `blueprint`       | Blueprint       | `dev`        | dark         | Drafting-paper look with a strong grid; light mode is a white-print. |
 
-Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, set `theme` and `mode` in `chapters.json`, set the default for every video in `video.config.json`, or pass `--theme` / `--mode` to `pnpm studio`. Unknown ids and modes fall back with a warning. `pnpm snap:themes` captures the `theme-showcase` lesson in all fourteen looks and writes a contact sheet to `.snapshots/themes.html`.
+Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, set `theme` and `mode` in `chapters.json`, set the default for every video in `video.config.json`, or pass `--theme` / `--mode` to `pnpm studio`. Unknown ids and modes fall back with a warning. `pnpm snap:themes` captures the two quick chapters of the `theme-showcase` lesson (COMPONENTS and CODE) in all fourteen looks — 28 captures, about 8 to 10 minutes — and writes a contact sheet to `.snapshots/themes.html`. Add `-- --only <theme-id>` for one theme (about a minute), `-- --mode dark|light` to keep one row, or `-- --full` for all six chapters.
 
 ### Choosing a look
 

@@ -123,6 +123,19 @@ Seven themes ship with the repo. Every theme has a dark and a light variant, so 
 
 Drop either half to get the theme's default mode: `pnpm studio --theme paper-editorial` starts in light.
 
+### Theme contact sheet
+
+`pnpm snap:themes` captures the two quick chapters of `theme-showcase` (COMPONENTS and CODE) in every look and writes `.snapshots/themes.html`. That is 28 captures and takes about 8 to 10 minutes for all seven themes. The studio dev server must be running on port 9000 (`pnpm studio:dev`).
+
+```sh
+pnpm snap:themes                          # two quick chapters, every look
+pnpm snap:themes -- --only blueprint      # one theme, about a minute
+pnpm snap:themes -- --mode light          # only the light row of the sheet
+pnpm snap:themes -- --full                # all six chapters of the lesson
+```
+
+The sheet shows one block per theme with a dark and a light row. A thumbnail whose capture did not run stays greyed out.
+
 The default theme's two variants:
 
 <ColorSwatches theme="neubrutal" />

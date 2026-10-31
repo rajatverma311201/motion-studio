@@ -2,11 +2,13 @@
 /**
  * Capture theme-showcase in every theme x mode and write a contact sheet.
  *
- *   node --import tsx themes-run.mjs [--only <theme-id>]
+ *   node --import tsx themes-run.mjs [--only <theme-id>] [--mode dark|light] [--full]
  *
- * Runs the captures sequentially because the editor allows one page at a time.
- * The sheet is written to `.snapshots/themes.html`; thumbnails live in
- * `.snapshots/themes/<slug>--<theme>--<mode>/`.
+ * By default only the chapters marked `"quick": true` in frames.json are
+ * captured (COMPONENTS and CODE); `--full` captures all six. `--mode` keeps one
+ * row of the sheet. Runs the captures sequentially because the editor allows
+ * one page at a time. The sheet is written to `.snapshots/themes.html`;
+ * thumbnails live in `.snapshots/themes/<slug>--<theme>--<mode>/`.
  */
 import {spawnSync} from 'node:child_process';
 import {existsSync} from 'node:fs';
@@ -31,28 +33,36 @@ const chapters = JSON.parse(
 const rawArgs = process.argv.slice(2).filter(arg => arg !== '--');
 const onlyIndex = rawArgs.indexOf('--only');
 const only = onlyIndex === -1 ? undefined : rawArgs[onlyIndex + 1];
+const modeIndex = rawArgs.indexOf('--mode');
+const mode = modeIndex === -1 ? undefined : rawArgs[modeIndex + 1];
+const full = rawArgs.includes('--full');
+const USAGE = 'usage: node --import tsx themes-run.mjs [--only <theme-id>] [--mode dark|light] [--full]';
 
 if (onlyIndex !== -1 && only === undefined) {
-  console.error('usage: node --import tsx themes-run.mjs [--only <theme-id>]');
+  console.error(USAGE);
   process.exit(2);
 }
 if (only !== undefined && !themeIds.includes(only)) {
   console.error(`unknown theme "${only}"; known ids: ${themeIds.join(', ')}`);
   process.exit(2);
 }
+if (modeIndex !== -1 && !MODES.includes(mode)) {
+  console.error(`unknown mode "${mode}"; use dark or light`);
+  process.exit(2);
+}
 
 const selected = only === undefined ? themeIds : [only];
+const modes = mode === undefined ? MODES : [mode];
+const shown = frames.map((capture, index) => ({capture, index})).filter(({capture}) => full || capture.quick === true);
 const failures = [];
 
 for (const id of selected) {
-  for (const mode of MODES) {
-    console.log(`[themes] capturing ${themes[id].name} / ${mode}`);
-    const result = spawnSync(
-      process.execPath,
-      ['--import', 'tsx', CAPTURE, 'themes', SLUG, '--theme', id, '--mode', mode],
-      {cwd: HERE, stdio: 'inherit'},
-    );
-    if (result.status !== 0) failures.push(`${id}/${mode}`);
+  for (const selectedMode of modes) {
+    console.log(`[themes] capturing ${themes[id].name} / ${selectedMode}`);
+    const args = ['--import', 'tsx', CAPTURE, 'themes', SLUG, '--theme', id, '--mode', selectedMode];
+    if (!full) args.push('--quick');
+    const result = spawnSync(process.execPath, args, {cwd: HERE, stdio: 'inherit'});
+    if (result.status !== 0) failures.push(`${id}/${selectedMode}`);
   }
 }
 
@@ -76,10 +86,12 @@ function figure(themeId, mode, capture, index) {
 }
 
 function row(themeId, mode, label) {
-  return `<div class="row"><div class="row-label">${label}</div>${frames
-    .map((capture, index) => figure(themeId, mode, capture, index))
+  return `<div class="row"><div class="row-label">${label}</div>${shown
+    .map(({capture, index}) => figure(themeId, mode, capture, index))
     .join('')}</div>`;
 }
+
+const MODE_LABELS = {dark: 'Dark', light: 'Light'};
 
 const blocks = selected
   .map(themeId => {
@@ -87,8 +99,7 @@ const blocks = selected
     return `<section class="theme">
   <h2>${escapeHtml(theme.name)}</h2>
   <p class="family">${escapeHtml(theme.family)} · ${escapeHtml(theme.id)}</p>
-  ${row(themeId, 'dark', 'Dark')}
-  ${row(themeId, 'light', 'Light')}
+  ${modes.map(mode => row(themeId, mode, MODE_LABELS[mode])).join('\n  ')}
 </section>`;
   })
   .join('\n');
@@ -119,7 +130,7 @@ const html = `<!doctype html>
   }
   .theme h2 { margin: 0; font-size: 18px; }
   .family { margin: 3px 0 12px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #9a99a8; }
-  .row { display: grid; grid-template-columns: 64px repeat(6, minmax(0, 1fr)); gap: 10px; align-items: start; margin-top: 10px; }
+  .row { display: grid; grid-template-columns: 64px repeat(${shown.length}, minmax(0, 1fr)); gap: 10px; align-items: start; margin-top: 10px; }
   .row-label { padding-top: 5px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #9a99a8; }
   figure { margin: 0; }
   img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid #2c2c38; border-radius: 6px; background: #0b0b10; }
@@ -136,7 +147,9 @@ ${blocks}
 
 await writeFile(SHEET, html, 'utf8');
 console.log(
-  `[themes] wrote ${path.relative(ROOT, SHEET)} (${selected.length} theme(s) x 2 modes x ${frames.length} chapters)`,
+  `[themes] wrote ${path.relative(ROOT, SHEET)} (${selected.length} theme(s) x ${modes.length} mode(s) x ${
+    shown.length
+  } chapter(s)${full ? '' : ', quick'})`,
 );
 
 if (failures.length > 0) {
