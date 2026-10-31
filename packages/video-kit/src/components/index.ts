@@ -24,3 +24,27 @@ export {statCard, type StatCard} from './stat-card';
 export {timelineLane, type TimelineLaneOptions} from './timeline-lane';
 export {titledPanel, type TitledPanelOptions} from './titled-panel';
 export {titleBlock, titlePill, type TitleBlockOptions, type TitlePillOptions} from './title-block';
+export {
+  flyAlong,
+  highlightRow,
+  lamp,
+  lampOn,
+  memoryPanel,
+  memoryRowY,
+  phaseTracker,
+  registerBox,
+  setCell,
+  setRegister,
+  valuePacket,
+  writeCell,
+  writeRegister,
+  type Lamp,
+  type LampOptions,
+  type MemoryPanel,
+  type MemoryPanelOptions,
+  type PhaseTracker,
+  type PhaseTrackerOptions,
+  type RegisterBox,
+  type RegisterBoxOptions,
+  type WriteRegisterOptions,
+} from './cpu';

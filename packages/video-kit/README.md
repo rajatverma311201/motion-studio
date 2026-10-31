@@ -46,12 +46,29 @@ src/
     legend.tsx            indexLegend()
     bullet-row.tsx        bulletRow()
     mini-tree.tsx         miniTree(), highlightStroke(), clearStroke()
+    cpu/
+      register-box.tsx    registerBox(), writeRegister(), setRegister()
+      memory-panel.tsx    memoryPanel(), setCell(), writeCell(), highlightRow()
+      memory-geometry.ts  memoryRowY() (pure)
+      memory-geometry.test.ts  row geometry unit tests
+      lamp.tsx            lamp(), lampOn()
+      value-packet.tsx    valuePacket(), flyAlong()
+      phase-tracker.tsx   phaseTracker()
     code-panel/
       languages.ts        CodeLanguage type, rule tables, LANGUAGES
       tokenizer.ts        tokenize() (pure)
       tokenizer.test.ts   vitest unit tests
       code-panel.tsx      codePanel(), LINE_HEIGHT
       line-focus.ts       focusLine(), revealLines()
+  cpu/
+    cpu-types.ts          RegName, Phase, Mnemonic, CpuState, MicroStep, InstructionTrace, ToyProgram
+    isa.ts                OPCODES, encode(), decodeByte(), disassemble(), assemble()
+    format.ts             formatBits(), toHex()
+    cpu.ts                emptyState(), memoryImage(), loadedState(), stepInstruction(), runProgram(), totalTicks(), stateAfterStep()
+    programs.ts           ADD_PROGRAM, COUNTDOWN_PROGRAM
+    cpu.test.ts           trace, wrap, purity, illegal-opcode tests
+    isa.test.ts           round-trip and assembler tests
+    format.test.ts        binary and hex tests
   tree/
     tree-types.ts         Key, TNode, Snap, Step, SearchStep
     snapshot.ts           snapOf(), leavesOf()
@@ -323,6 +340,60 @@ yield * focusLine(panel, 1, colors.lime);
 ```
 
 Supported languages are `'sql'`, `'java'` and `'plan'` (Postgres `EXPLAIN` output). `tokenize()` is pure and separately tested; import it directly when a scene needs the tokens without a panel.
+
+## TinyCPU model and primitives
+
+`src/cpu/` is a pure, tested model of the toy CPU used by the instruction-cycle lesson. It has no Motion Canvas imports: the scene animates the states, so the animation can never disagree with the rules.
+
+```ts
+import {
+  ADD_PROGRAM,
+  formatBits,
+  loadedState,
+  runProgram,
+  stateAfterStep,
+  stepInstruction,
+} from '@motion-studio/video-kit';
+
+const start = loadedState(ADD_PROGRAM); // PC = 4, memory holds the program
+const trace = stepInstruction(start); // LOAD 12, F1..E3
+trace.steps.map(step => step.id); // ['F1','F2','F3','F4','D1','E1','E2','E3']
+stateAfterStep(trace, 'D1').pc; // 5, after fetch, before execute
+runProgram(start).final.acc; // 8
+formatBits(5, 8); // '00000101'
+```
+
+`memoryImage(program)` returns the 16 bytes; `assemble()` and `disassemble()` convert between mnemonics and bytes; `totalTicks(traces)` counts micro-steps. Every `CpuState` handed back is a fresh object and a fresh `mem` array, so freezing the input is safe.
+
+The visual primitives in `components/cpu/` compose the lesson machine:
+
+```tsx
+const mem = memoryPanel({x: 610, y: -5, accent: colors.cyan});
+const pc = registerBox({name: 'PC', bits: 4, color: colors.lime, x: -380, y: -255});
+const tracker = phaseTracker({x: -380, y: -360});
+const packet = valuePacket(formatBits(5, 8), colors.pink);
+view.add(mem.node);
+view.add(pc.node);
+view.add(tracker.node);
+view.add(packet);
+
+yield * tracker.set('fetch');
+yield * writeRegister(pc, 5, {hint: 'next: 5'});
+yield * highlightRow(mem, 12, colors.cyan, true);
+yield * lampOn(mem.header.read, true);
+yield *
+  flyAlong(
+    packet,
+    [
+      [-250, -255],
+      [250, -255],
+      [250, 228],
+    ],
+    0.7,
+  );
+```
+
+`memoryRowY(panelY, rows, i)` is pure geometry and separately tested. `lamp()` returns a handle with both an animated `set()` and an instant `setNow()`; use the latter when a scene jumps the machine to a known state.
 
 ## Tree engine
 
