@@ -2,6 +2,7 @@ import type {ThreadGenerator} from '@motion-canvas/core';
 import type {View2D} from '@motion-canvas/2d';
 import type {BuildHudOptions} from '../hud';
 import type {ColorName} from '../theme';
+import type {ThemeMode} from '../themes/theme-types';
 
 /** One chapter as stored in chapters.json: plain data, readable by the docs app. */
 export interface LessonChapter {
@@ -16,6 +17,10 @@ export interface LessonChapter {
 export interface ChaptersFile {
   slug: string; // must equal the project file name, e.g. "db-indexing"
   title: string; // "DB INDEXING"  (HUD title)
+  /** Optional theme id. Unknown ids are skipped with a console.warn. */
+  theme?: string;
+  /** Optional theme mode; the theme's defaultMode wins when omitted. */
+  mode?: ThemeMode;
   chapters: LessonChapter[];
 }
 

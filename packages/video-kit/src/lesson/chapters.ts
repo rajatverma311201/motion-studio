@@ -8,7 +8,7 @@ export type ResolvedChapter = Omit<LessonChapter, 'color'> & {color: string};
  * Resolve every chapter colour name to its palette hex value.
  *
  * @example
- * const hudDefs = resolveChapters(chapters); // [{name: 'INTRO', color: '#C6FF3D'}]
+ * const hudDefs = resolveChapters(chapters); // [{name: 'INTRO', color: colors.lime}]
  */
 export function resolveChapters(file: ChaptersFile): ResolvedChapter[] {
   return file.chapters.map(chapter => {

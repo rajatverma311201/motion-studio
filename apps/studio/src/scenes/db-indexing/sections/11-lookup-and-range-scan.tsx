@@ -6,12 +6,13 @@ import {
   fonts,
   indexLegend,
   leave,
-  neubrutal,
   playSearch,
   pop,
   say,
   searchPlan,
   statCard,
+  boxStyle,
+  radius,
 } from '@motion-studio/video-kit';
 import {finalSnap} from '../shared';
 
@@ -28,9 +29,9 @@ export function* lookupAndRangeScanSection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[8, 18]}
-      radius={12}
+      radius={radius(12)}
       fill={colors.code}
-      {...neubrutal(colors.cyan, 5, 3.5)}
+      {...boxStyle(colors.cyan, 5, 3.5)}
     >
       <Txt
         ref={q}

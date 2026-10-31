@@ -1,5 +1,6 @@
 import {ThreadGenerator, all, easeOutCubic} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
+import {withAlpha} from '../themes/color-utils';
 import {hudState} from './hud';
 
 /**
@@ -15,7 +16,7 @@ export function* setSection(i: number): ThreadGenerator {
     hudState.secChip().fill(s.color, 0.25),
     ...hudState.pills.map((p, j) =>
       all(
-        p.fill(j < i ? 'rgba(244,241,234,0.55)' : j === i ? s.color : colors.dim, 0.3),
+        p.fill(j < i ? withAlpha(colors.ink, 0.55) : j === i ? s.color : colors.dim, 0.3),
         p.width(j === i ? hudState.pillActiveWidth : hudState.pillWidth, 0.3, easeOutCubic),
       ),
     ),

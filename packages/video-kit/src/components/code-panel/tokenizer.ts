@@ -1,3 +1,4 @@
+import {colors} from '../../theme';
 import {LANGUAGES, type CodeLanguage} from './languages';
 
 /** A `[text, colour]` pair. Joining the texts of a line always returns the line. */
@@ -16,10 +17,10 @@ export function tokenize(line: string, lang: CodeLanguage): Token[] {
   const out: Token[] = [];
   let rest = line;
   while (rest.length) {
-    for (const [re, col] of rules) {
+    for (const [re, key] of rules) {
       const m = re.exec(rest);
       if (m) {
-        out.push([m[0], col]);
+        out.push([m[0], colors[key]]);
         rest = rest.slice(m[0].length);
         break;
       }

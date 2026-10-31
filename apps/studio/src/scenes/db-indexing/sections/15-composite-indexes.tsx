@@ -1,6 +1,19 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, sequence, waitFor} from '@motion-canvas/core';
-import {chip, chipText, colors, fonts, label, leave, neubrutal, pop, say, shake} from '@motion-studio/video-kit';
+import {
+  chip,
+  chipText,
+  colors,
+  fonts,
+  label,
+  leave,
+  pop,
+  say,
+  shake,
+  boxStyle,
+  radius,
+  withAlpha,
+} from '@motion-studio/video-kit';
 
 // ================================================================ COMPOSITE INDEX
 export function* compositeIndexesSection(view: View2D): ThreadGenerator {
@@ -27,7 +40,7 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
           y={-300 + i * 42}
           width={560}
           height={38}
-          radius={9}
+          radius={radius(9)}
           fill={colors.surf}
           stroke={colors.dim}
           lineWidth={2.5}
@@ -55,9 +68,9 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[10, 20]}
-      radius={14}
+      radius={radius(14)}
       fill={colors.code}
-      {...neubrutal(colors.pink, 7, 4)}
+      {...boxStyle(colors.pink, 7, 4)}
       opacity={0}
     >
       <Txt ref={q} text="" fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.ink} />
@@ -112,7 +125,7 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
     'Matches are contiguous in the sort order,',
     'so the tree jumps straight to them.',
   );
-  yield* paint([4, 5, 6], 'rgba(198,255,61,0.55)');
+  yield* paint([4, 5, 6], withAlpha(colors.lime, 0.55));
   yield* pop(verdict, 0.3);
   yield* waitFor(3.2);
 
@@ -125,7 +138,7 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
     'The first column narrows to the Shahs,',
     'the second picks Dev inside that group.',
   );
-  yield* paint([5], 'rgba(198,255,61,0.7)');
+  yield* paint([5], withAlpha(colors.lime, 0.7));
   yield* pop(verdict, 0.3);
   yield* waitFor(3);
 
@@ -138,7 +151,7 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
     'Matches are spread everywhere,',
     'so the database scans the entire index.',
   );
-  yield* paint([2, 5], 'rgba(255,77,77,0.55)');
+  yield* paint([2, 5], withAlpha(colors.red, 0.55));
   yield* pop(verdict, 0.3);
   yield* shake(verdict, 6, 4);
   yield* waitFor(3.4);

@@ -52,6 +52,11 @@ describe('parseStartSection', () => {
   it('ignores a hash that is not a number', () => {
     expect(parseStartSection('#s=abc', -1, 18)).toBe(0);
   });
+
+  it('keeps section parsing intact next to theme parameters', () => {
+    expect(parseStartSection('#s=3&theme=tokyo-night&mode=light', -1, 18)).toBe(3);
+    expect(parseStartSection('#theme=shadcn&mode=dark', -1, 18)).toBe(0);
+  });
 });
 
 describe('resolveChapters', () => {

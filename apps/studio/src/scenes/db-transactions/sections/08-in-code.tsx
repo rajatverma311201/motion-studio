@@ -7,11 +7,12 @@ import {
   fonts,
   focusLine,
   leave,
-  neubrutal,
   pop,
   revealLines,
   say,
   shake,
+  boxStyle,
+  radius,
 } from '@motion-studio/video-kit';
 
 // ================================================================ 07 IN CODE (Quarkus)
@@ -69,7 +70,7 @@ export function* inCodeSection(view: View2D): ThreadGenerator {
 
   const rule = (y: number, a: string, b: string, tag: string, color: string) => {
     const n = (
-      <Rect x={585} y={y} width={620} height={104} radius={20} fill={colors.surf} {...neubrutal(color, 8, 4)}>
+      <Rect x={585} y={y} width={620} height={104} radius={radius(20)} fill={colors.surf} {...boxStyle(color, 8, 4)}>
         <Txt
           x={-285}
           y={-20}
@@ -90,8 +91,15 @@ export function* inCodeSection(view: View2D): ThreadGenerator {
           fontSize={22}
           fill={colors.mute}
         />
-        <Rect x={215} width={150} height={44} radius={10} fill={color}>
-          <Txt text={tag} fontFamily={fonts.mono} fontWeight={700} fontSize={20} letterSpacing={1} fill={colors.dark} />
+        <Rect x={215} width={150} height={44} radius={radius(10)} fill={color}>
+          <Txt
+            text={tag}
+            fontFamily={fonts.mono}
+            fontWeight={700}
+            fontSize={20}
+            letterSpacing={1}
+            fill={colors.onAccent}
+          />
         </Rect>
       </Rect>
     ) as Rect;
@@ -113,9 +121,9 @@ export function* inCodeSection(view: View2D): ThreadGenerator {
       y={225}
       width={620}
       height={110}
-      radius={20}
+      radius={radius(20)}
       fill={colors.surf}
-      {...neubrutal(colors.cyan, 8, 4)}
+      {...boxStyle(colors.cyan, 8, 4)}
       opacity={0}
     >
       <Txt

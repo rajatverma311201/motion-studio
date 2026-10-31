@@ -1,6 +1,6 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, sequence, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ 05 ISOLATION LEVELS
 export function* isolationLevelsSection(view: View2D): ThreadGenerator {
@@ -13,7 +13,7 @@ export function* isolationLevelsSection(view: View2D): ThreadGenerator {
   const rows = [
     {
       name: 'READ UNCOMMITTED',
-      color: '#FF5C7A',
+      color: colors.pink,
       y: -130,
       cells: [true, true, true],
       cap: 'Read Uncommitted: no protection. All three anomalies can happen.',
@@ -52,14 +52,22 @@ export function* isolationLevelsSection(view: View2D): ThreadGenerator {
   });
   const levelCells = rows.map(r => {
     const n = (
-      <Rect x={-460} y={r.y} width={520} height={100} radius={20} fill={r.color} {...neubrutal(colors.ink, 7, 4)}>
+      <Rect
+        x={-460}
+        y={r.y}
+        width={520}
+        height={100}
+        radius={radius(20)}
+        fill={r.color}
+        {...boxStyle(colors.ink, 7, 4)}
+      >
         <Txt
           text={r.name}
           fontFamily={fonts.sans}
           fontWeight={700}
           fontSize={34}
           letterSpacing={1}
-          fill={colors.dark}
+          fill={colors.onAccent}
         />
       </Rect>
     ) as Rect;
@@ -74,7 +82,7 @@ export function* isolationLevelsSection(view: View2D): ThreadGenerator {
           y={r.y}
           width={280}
           height={84}
-          radius={16}
+          radius={radius(16)}
           fill={bad ? colors.redBg : colors.limeBg}
           stroke={bad ? colors.red : colors.lime}
           lineWidth={4}

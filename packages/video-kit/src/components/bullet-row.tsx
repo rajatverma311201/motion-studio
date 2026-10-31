@@ -1,7 +1,7 @@
 import {Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 /**
  * A rounded row card used for bullet points in the B+tree comparison scene.
@@ -12,7 +12,16 @@ import {neubrutal} from '../theme/neubrutal';
  */
 export function bulletRow(x: number, y: number, text: string, colour: string, w = 820): Rect {
   return (
-    <Rect x={x} y={y} width={w} height={62} radius={14} fill={colors.surf} {...neubrutal(colour, 6, 3.5)} opacity={0}>
+    <Rect
+      x={x}
+      y={y}
+      width={w}
+      height={62}
+      radius={radius(14)}
+      fill={colors.surf}
+      {...boxStyle(colour, 6, 3.5)}
+      opacity={0}
+    >
       <Txt
         x={-w / 2 + 30}
         offsetX={-1}

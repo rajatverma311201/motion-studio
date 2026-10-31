@@ -1,6 +1,6 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, easeOutCubic, sequence, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say, stackedTitle} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, stackedTitle, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ 00 INTRO
 export function* introSection(view: View2D): ThreadGenerator {
@@ -23,11 +23,11 @@ export function* introSection(view: View2D): ThreadGenerator {
           y={330}
           width={118}
           height={118}
-          radius={22}
+          radius={radius(22)}
           fill={cols[i]}
-          {...neubrutal(colors.ink, 7, 4)}
+          {...boxStyle(colors.ink, 7, 4)}
         >
-          <Txt text={ch} fontFamily={fonts.sans} fontWeight={700} fontSize={84} fill={colors.dark} />
+          <Txt text={ch} fontFamily={fonts.sans} fontWeight={700} fontSize={84} fill={colors.onAccent} />
         </Rect>
       ) as Rect,
   );

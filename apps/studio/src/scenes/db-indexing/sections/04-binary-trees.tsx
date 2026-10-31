@@ -1,6 +1,6 @@
 import {Circle, Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, sequence, waitFor} from '@motion-canvas/core';
-import {chip, chipText, colors, fonts, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
+import {chip, chipText, colors, fonts, leave, pop, say, boxStyle} from '@motion-studio/video-kit';
 
 // ================================================================ BINARY SEARCH TREE
 export function* binaryTreesSection(view: View2D): ThreadGenerator {
@@ -10,7 +10,7 @@ export function* binaryTreesSection(view: View2D): ThreadGenerator {
   const edgeLayer = (<Node />) as Node;
   const mk = (key: number, x: number, y: number, parent?: number) => {
     const n = (
-      <Circle x={x} y={y} size={84} fill={colors.surf} {...neubrutal(colors.violet, 6, 3.5)}>
+      <Circle x={x} y={y} size={84} fill={colors.surf} {...boxStyle(colors.violet, 6, 3.5)}>
         <Txt text={String(key)} fontFamily={fonts.mono} fontWeight={700} fontSize={30} fill={colors.ink} />
       </Circle>
     ) as Circle;
@@ -78,7 +78,7 @@ export function* binaryTreesSection(view: View2D): ThreadGenerator {
 
   yield* say('Lookup for 50: compare with 40 (go right), then 60 (go left), then 50. Three steps for 7 keys.');
   for (const k of [40, 60, 50]) {
-    yield* all(nodes.get(k)!.fill(colors.yellow, 0.2), (nodes.get(k)!.children()[0] as Txt).fill(colors.dark, 0.2));
+    yield* all(nodes.get(k)!.fill(colors.yellow, 0.2), (nodes.get(k)!.children()[0] as Txt).fill(colors.onAccent, 0.2));
     yield* waitFor(1.1);
   }
   yield* all(nodes.get(50)!.fill(colors.lime, 0.2));

@@ -10,11 +10,13 @@ import {
   label,
   leave,
   miniTree,
-  neubrutal,
   pop,
   say,
   shake,
   statCard,
+  boxStyle,
+  radius,
+  withAlpha,
 } from '@motion-studio/video-kit';
 
 // ================================================================ CLUSTERED vs SECONDARY
@@ -57,9 +59,9 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[8, 20]}
-      radius={12}
+      radius={radius(12)}
       fill={colors.code}
-      {...neubrutal(colors.pink, 6, 3.5)}
+      {...boxStyle(colors.pink, 6, 3.5)}
       opacity={0}
     >
       <Txt
@@ -116,7 +118,7 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
   yield* highlightStroke(sec.root, colors.yellow);
   yield* waitFor(0.9);
   yield* all(highlightStroke(sec.leaves[1], colors.yellow), clearStroke(sec.root));
-  yield* sec.rows[1][1].fill('rgba(198,255,61,0.35)', 0.25);
+  yield* sec.rows[1][1].fill(withAlpha(colors.lime, 0.35), 0.25);
   yield* say('We find ria@x.in, but the leaf only gives us the primary key: 42. Not the row yet.', 3);
 
   yield* say('Second walk: take that primary key and search the clustered index to reach the row.');
@@ -130,7 +132,7 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
   yield* waitFor(0.9);
   yield* all(pk.position([470, 95], 0.0001), pk.opacity(0, 0.2), clearStroke(clu.root));
   yield* highlightStroke(clu.leaves[1], colors.yellow);
-  yield* clu.rows[1][1].fill('rgba(198,255,61,0.35)', 0.25);
+  yield* clu.rows[1][1].fill(withAlpha(colors.lime, 0.35), 0.25);
   yield* shake(clu.leaves[1], 4, 3);
   yield* say('Two tree walks for one row. That is the price of looking something up through a secondary index.', 3.6);
   yield* pop(pg, 0.3);
@@ -147,7 +149,7 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
   walks.val.text('1');
   yield* say('Trick: if the query only needs columns that are in the index, the second walk disappears.');
   yield* all(highlightStroke(sec.leaves[1], colors.lime), pop(cover, 0.35));
-  yield* sec.rows[1][1].fill('rgba(198,255,61,0.35)', 0.25);
+  yield* sec.rows[1][1].fill(withAlpha(colors.lime, 0.35), 0.25);
   yield* waitFor(2.8);
   yield* say('Databases call this a covering index, or an index-only scan. Add INCLUDE columns when it pays off.', 3.6);
   yield* leave(root());

@@ -23,4 +23,4 @@ export {stackedTitle, type StackedTitleOptions} from './stacked-title';
 export {statCard, type StatCard} from './stat-card';
 export {timelineLane, type TimelineLaneOptions} from './timeline-lane';
 export {titledPanel, type TitledPanelOptions} from './titled-panel';
-export {titlePill, titleSlab, type TitlePillOptions, type TitleSlabOptions} from './title-slab';
+export {titleBlock, titlePill, type TitleBlockOptions, type TitlePillOptions} from './title-block';

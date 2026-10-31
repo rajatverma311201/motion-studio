@@ -8,11 +8,13 @@ import {
   focusLine,
   label,
   leave,
-  neubrutal,
   pop,
   revealLines,
   say,
   shake,
+  boxStyle,
+  radius,
+  withAlpha,
 } from '@motion-studio/video-kit';
 
 // ================================================================ EXPLAIN + GOTCHAS
@@ -32,9 +34,9 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[8, 20]}
-      radius={12}
+      radius={radius(12)}
       fill={colors.code}
-      {...neubrutal(colors.cyan, 6, 3.5)}
+      {...boxStyle(colors.cyan, 6, 3.5)}
     >
       <Txt
         text="EXPLAIN SELECT * FROM users WHERE email = 'ria@x.in';"
@@ -146,9 +148,9 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
       y={-20}
       width={1620}
       height={620}
-      radius={26}
+      radius={radius(26)}
       fill={colors.surf}
-      {...neubrutal(colors.orange, 10, 4)}
+      {...boxStyle(colors.orange, 10, 4)}
       opacity={0}
     >
       <Txt
@@ -161,7 +163,15 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
         letterSpacing={3}
         fill={colors.orange}
       />
-      <Rect y={-120} width={1500} height={96} radius={16} fill="rgba(255,77,77,0.14)" stroke={colors.red} lineWidth={4}>
+      <Rect
+        y={-120}
+        width={1500}
+        height={96}
+        radius={radius(16)}
+        fill={withAlpha(colors.red, 0.14)}
+        stroke={colors.red}
+        lineWidth={4}
+      >
         <Txt x={-690} offsetX={-1} text="✗" fontFamily={fonts.sans} fontWeight={700} fontSize={44} fill={colors.red} />
         <Txt
           ref={bt}
@@ -174,7 +184,15 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
           fill={colors.ink}
         />
       </Rect>
-      <Rect y={10} width={1500} height={96} radius={16} fill="rgba(198,255,61,0.12)" stroke={colors.lime} lineWidth={4}>
+      <Rect
+        y={10}
+        width={1500}
+        height={96}
+        radius={radius(16)}
+        fill={withAlpha(colors.lime, 0.12)}
+        stroke={colors.lime}
+        lineWidth={4}
+      >
         <Txt x={-690} offsetX={-1} text="✓" fontFamily={fonts.sans} fontWeight={700} fontSize={44} fill={colors.lime} />
         <Txt
           ref={gt}

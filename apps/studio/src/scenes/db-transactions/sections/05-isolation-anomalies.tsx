@@ -1,6 +1,18 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say, shake, timelineLane} from '@motion-studio/video-kit';
+import {
+  chip,
+  colors,
+  fonts,
+  leave,
+  pop,
+  say,
+  shake,
+  timelineLane,
+  boxStyle,
+  radius,
+  withAlpha,
+} from '@motion-studio/video-kit';
 
 // ================================================================ 04 ISOLATION ANOMALIES
 interface Ev {
@@ -21,124 +33,127 @@ interface Anom {
   evs: Ev[];
   verdict: string;
 }
-const ANOMS: Anom[] = [
-  {
-    name: 'DIRTY READ',
-    color: colors.pink,
-    start: '₹1,000',
-    verdict: 'DIRTY READ · T2 used a value that never existed',
-    evs: [
-      {
-        lane: 1,
-        a: 'UPDATE bal = 700',
-        b: 'not committed yet',
-        db: '₹700',
-        dbNote: 'uncommitted',
-        dbColor: colors.orange,
-        cap: 'T1 sets the balance to 700 but has not committed yet.',
-      },
-      {
-        lane: 2,
-        a: 'SELECT bal',
-        b: 'reads in-flight data',
-        result: '→ ₹700',
-        bad: true,
-        db: '₹700',
-        dbNote: 'uncommitted',
-        dbColor: colors.orange,
-        cap: 'T2 reads 700: an uncommitted value.',
-      },
-      {
-        lane: 1,
-        a: 'ROLLBACK',
-        b: 'undo the update',
-        db: '₹1,000',
-        dbNote: 'restored',
-        dbColor: colors.lime,
-        cap: 'T1 rolls back. 700 never existed, yet T2 already acted on it.',
-      },
-    ],
-  },
-  {
-    name: 'NON-REPEATABLE READ',
-    color: colors.cyan,
-    start: '₹1,000',
-    verdict: 'NON-REPEATABLE READ · same row, different value',
-    evs: [
-      {
-        lane: 1,
-        a: 'SELECT bal',
-        b: 'first read',
-        result: '→ ₹1,000',
-        db: '₹1,000',
-        dbNote: 'committed',
-        dbColor: colors.lime,
-        cap: 'T1 reads the balance: 1000.',
-      },
-      {
-        lane: 2,
-        a: 'UPDATE bal = 700',
-        b: 'then COMMIT',
-        db: '₹700',
-        dbNote: 'committed',
-        dbColor: colors.lime,
-        cap: 'T2 updates it to 700 and commits.',
-      },
-      {
-        lane: 1,
-        a: 'SELECT bal',
-        b: 'same query, same tx',
-        result: '→ ₹700',
-        bad: true,
-        db: '₹700',
-        dbNote: 'committed',
-        dbColor: colors.lime,
-        cap: 'T1 reads again inside the same transaction and gets a different answer.',
-      },
-    ],
-  },
-  {
-    name: 'PHANTOM READ',
-    color: colors.yellow,
-    start: '2 rows',
-    verdict: 'PHANTOM READ · new rows appear mid-transaction',
-    evs: [
-      {
-        lane: 1,
-        a: 'SELECT … WHERE bal > 500',
-        b: 'count matching rows',
-        result: '→ 2 rows',
-        db: '2 rows',
-        dbNote: 'match',
-        dbColor: colors.lime,
-        cap: 'T1 lists accounts with a balance over 500: 2 rows.',
-      },
-      {
-        lane: 2,
-        a: 'INSERT account (900)',
-        b: 'then COMMIT',
-        db: '3 rows',
-        dbNote: 'match',
-        dbColor: colors.lime,
-        cap: 'T2 inserts a new matching account and commits.',
-      },
-      {
-        lane: 1,
-        a: 'SELECT … WHERE bal > 500',
-        b: 'same query, same tx',
-        result: '→ 3 rows',
-        bad: true,
-        db: '3 rows',
-        dbNote: 'match',
-        dbColor: colors.lime,
-        cap: 'T1 repeats the query: a phantom row has appeared.',
-      },
-    ],
-  },
-];
+function anoms(): Anom[] {
+  return [
+    {
+      name: 'DIRTY READ',
+      color: colors.pink,
+      start: '₹1,000',
+      verdict: 'DIRTY READ · T2 used a value that never existed',
+      evs: [
+        {
+          lane: 1,
+          a: 'UPDATE bal = 700',
+          b: 'not committed yet',
+          db: '₹700',
+          dbNote: 'uncommitted',
+          dbColor: colors.orange,
+          cap: 'T1 sets the balance to 700 but has not committed yet.',
+        },
+        {
+          lane: 2,
+          a: 'SELECT bal',
+          b: 'reads in-flight data',
+          result: '→ ₹700',
+          bad: true,
+          db: '₹700',
+          dbNote: 'uncommitted',
+          dbColor: colors.orange,
+          cap: 'T2 reads 700: an uncommitted value.',
+        },
+        {
+          lane: 1,
+          a: 'ROLLBACK',
+          b: 'undo the update',
+          db: '₹1,000',
+          dbNote: 'restored',
+          dbColor: colors.lime,
+          cap: 'T1 rolls back. 700 never existed, yet T2 already acted on it.',
+        },
+      ],
+    },
+    {
+      name: 'NON-REPEATABLE READ',
+      color: colors.cyan,
+      start: '₹1,000',
+      verdict: 'NON-REPEATABLE READ · same row, different value',
+      evs: [
+        {
+          lane: 1,
+          a: 'SELECT bal',
+          b: 'first read',
+          result: '→ ₹1,000',
+          db: '₹1,000',
+          dbNote: 'committed',
+          dbColor: colors.lime,
+          cap: 'T1 reads the balance: 1000.',
+        },
+        {
+          lane: 2,
+          a: 'UPDATE bal = 700',
+          b: 'then COMMIT',
+          db: '₹700',
+          dbNote: 'committed',
+          dbColor: colors.lime,
+          cap: 'T2 updates it to 700 and commits.',
+        },
+        {
+          lane: 1,
+          a: 'SELECT bal',
+          b: 'same query, same tx',
+          result: '→ ₹700',
+          bad: true,
+          db: '₹700',
+          dbNote: 'committed',
+          dbColor: colors.lime,
+          cap: 'T1 reads again inside the same transaction and gets a different answer.',
+        },
+      ],
+    },
+    {
+      name: 'PHANTOM READ',
+      color: colors.yellow,
+      start: '2 rows',
+      verdict: 'PHANTOM READ · new rows appear mid-transaction',
+      evs: [
+        {
+          lane: 1,
+          a: 'SELECT … WHERE bal > 500',
+          b: 'count matching rows',
+          result: '→ 2 rows',
+          db: '2 rows',
+          dbNote: 'match',
+          dbColor: colors.lime,
+          cap: 'T1 lists accounts with a balance over 500: 2 rows.',
+        },
+        {
+          lane: 2,
+          a: 'INSERT account (900)',
+          b: 'then COMMIT',
+          db: '3 rows',
+          dbNote: 'match',
+          dbColor: colors.lime,
+          cap: 'T2 inserts a new matching account and commits.',
+        },
+        {
+          lane: 1,
+          a: 'SELECT … WHERE bal > 500',
+          b: 'same query, same tx',
+          result: '→ 3 rows',
+          bad: true,
+          db: '3 rows',
+          dbNote: 'match',
+          dbColor: colors.lime,
+          cap: 'T1 repeats the query: a phantom row has appeared.',
+        },
+      ],
+    },
+  ];
+}
 
 export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
   const root = createRef<Node>();
+  const ANOMS = anoms();
   const SX = [-300, 120, 540];
   const LY: Record<number, number> = {1: -200, 2: -50};
   const DBY = 120;
@@ -152,11 +167,11 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
           y={-380}
           width={440}
           height={60}
-          radius={16}
+          radius={radius(16)}
           fill={colors.surf}
           stroke={colors.dim}
           lineWidth={3}
-          shadowColor="rgba(244,241,234,0)"
+          shadowColor={withAlpha(colors.ink, 0)}
           shadowBlur={0}
           shadowOffset={[6, 6]}
         >
@@ -174,7 +189,15 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
   // lanes
   const lanes = [1, 2].map(l => timelineLane({y: LY[l], label: `T${l}`, color: l === 1 ? colors.pink : colors.cyan}));
   const dbLabel = (
-    <Rect x={-800} y={DBY} width={100} height={64} radius={14} fill={colors.surf2} {...neubrutal(colors.ink, 5, 3.5)}>
+    <Rect
+      x={-800}
+      y={DBY}
+      width={100}
+      height={64}
+      radius={radius(14)}
+      fill={colors.surf2}
+      {...boxStyle(colors.ink, 5, 3.5)}
+    >
       <Txt text="DB" fontFamily={fonts.sans} fontWeight={700} fontSize={34} fill={colors.ink} />
     </Rect>
   ) as Rect;
@@ -212,11 +235,11 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
               t.fill(an.color, 0.3),
               t.shadowColor(colors.ink, 0.3),
               t.stroke(colors.ink, 0.3),
-              (t.children()[0] as Txt).fill(colors.dark, 0.3),
+              (t.children()[0] as Txt).fill(colors.onAccent, 0.3),
             )
           : all(
               t.fill(colors.surf, 0.3),
-              t.shadowColor('rgba(244,241,234,0)', 0.3),
+              t.shadowColor(withAlpha(colors.ink, 0), 0.3),
               t.stroke(colors.dim, 0.3),
               (t.children()[0] as Txt).fill(colors.mute, 0.3),
             ),
@@ -246,9 +269,9 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
           y={LY[ev.lane]}
           width={400}
           height={104}
-          radius={16}
+          radius={radius(16)}
           fill={colors.surf}
-          {...neubrutal(col, 7, 4)}
+          {...boxStyle(col, 7, 4)}
         >
           <Txt y={-18} text={ev.a} fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
           <Txt y={20} text={ev.b} fontFamily={fonts.mono} fontSize={18} fill={colors.mute} />
@@ -261,7 +284,7 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
           y={DBY}
           width={330}
           height={90}
-          radius={16}
+          radius={radius(16)}
           fill={colors.surf2}
           stroke={ev.dbColor}
           lineWidth={4}
@@ -279,7 +302,7 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
           y: LY[ev.lane] + (ev.lane === 1 ? -66 : 66),
           fs: 22,
           sh: 4,
-          color: colors.dark,
+          color: colors.onAccent,
         }) as Rect;
         res.opacity(0);
         kids.push(res);

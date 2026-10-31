@@ -1,6 +1,18 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, sequence, waitFor} from '@motion-canvas/core';
-import {TreeView, chip, colors, fonts, indexLegend, leave, neubrutal, pop, say, snapOf} from '@motion-studio/video-kit';
+import {
+  TreeView,
+  chip,
+  colors,
+  fonts,
+  indexLegend,
+  leave,
+  pop,
+  say,
+  snapOf,
+  boxStyle,
+  radius,
+} from '@motion-studio/video-kit';
 
 // ================================================================ B-TREE RULES
 export function* btreeRulesSection(view: View2D): ThreadGenerator {
@@ -27,13 +39,13 @@ export function* btreeRulesSection(view: View2D): ThreadGenerator {
           y={-250 + i * 100}
           width={700}
           height={82}
-          radius={18}
+          radius={radius(18)}
           fill={colors.surf}
-          {...neubrutal(col, 7, 4)}
+          {...boxStyle(col, 7, 4)}
           opacity={0}
         >
-          <Rect x={-310} width={44} height={44} radius={12} fill={col}>
-            <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.dark} />
+          <Rect x={-310} width={44} height={44} radius={radius(12)} fill={col}>
+            <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.onAccent} />
           </Rect>
           <Txt
             x={-270}

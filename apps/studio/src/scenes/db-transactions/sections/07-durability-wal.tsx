@@ -1,6 +1,6 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, easeInOutCubic, sequence, tween, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, logRow, pop, say, shake, titledPanel} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, logRow, pop, say, shake, titledPanel, radius} from '@motion-studio/video-kit';
 
 // ================================================================ 06 DURABILITY / WAL
 export function* durabilityWalSection(view: View2D): ThreadGenerator {
@@ -84,12 +84,12 @@ export function* durabilityWalSection(view: View2D): ThreadGenerator {
         y={-190 + i * 82}
         width={330}
         height={68}
-        radius={14}
+        radius={radius(14)}
         fill={colors.surf}
         stroke={colors.dim}
         lineWidth={3}
       >
-        <Rect x={-132} width={36} height={36} radius={10} fill={colors.dim}>
+        <Rect x={-132} width={36} height={36} radius={radius(10)} fill={colors.dim}>
           <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
         </Rect>
         <Txt x={-104} offsetX={-1} text={t} fontFamily={fonts.mono} fontWeight={700} fontSize={16} fill={colors.mute} />
@@ -104,7 +104,7 @@ export function* durabilityWalSection(view: View2D): ThreadGenerator {
     yield* all(
       r.stroke(colors.lime, 0.2),
       badge.fill(colors.lime, 0.2),
-      (badge.children()[0] as Txt).fill(colors.dark, 0.2),
+      (badge.children()[0] as Txt).fill(colors.onAccent, 0.2),
       (r.children()[1] as Txt).fill(colors.ink, 0.2),
     );
   };
@@ -157,7 +157,7 @@ export function* durabilityWalSection(view: View2D): ThreadGenerator {
         [-780, -345],
         [-780, -107],
       ]}
-      radius={20}
+      radius={radius(20)}
       stroke={colors.dim}
       lineWidth={4}
       lineDash={[8, 8]}

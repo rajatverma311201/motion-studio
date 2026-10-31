@@ -1,8 +1,8 @@
 import {Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {createRef} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 export interface StatCard {
   node: Rect;
@@ -27,7 +27,7 @@ export function statCard(
 ): StatCard {
   const val = createRef<Txt>();
   const node = (
-    <Rect x={x} y={y} width={w} height={h} radius={20} fill={colors.surf} {...neubrutal(color, 8, 4)}>
+    <Rect x={x} y={y} width={w} height={h} radius={radius(20)} fill={colors.surf} {...boxStyle(color, 8, 4)}>
       <Txt
         y={-h / 2 + 30}
         text={title}

@@ -1,6 +1,6 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ WHY B+TREE
 export function* whyBplustreeWinsSection(view: View2D): ThreadGenerator {
@@ -37,7 +37,15 @@ export function* whyBplustreeWinsSection(view: View2D): ThreadGenerator {
   rowsData.forEach(([name, a, b, why], i) => {
     const y = -210 + i * 112;
     const r = (
-      <Rect y={y} width={1700} height={92} radius={18} fill={colors.surf} {...neubrutal(colors.lime, 7, 4)} opacity={0}>
+      <Rect
+        y={y}
+        width={1700}
+        height={92}
+        radius={radius(18)}
+        fill={colors.surf}
+        {...boxStyle(colors.lime, 7, 4)}
+        opacity={0}
+      >
         <Txt
           x={-810}
           offsetX={-1}
@@ -60,7 +68,7 @@ export function* whyBplustreeWinsSection(view: View2D): ThreadGenerator {
     fs: 46,
     sh: 10,
     rot: -1.5,
-    color: colors.dark,
+    color: colors.onAccent,
   }) as Rect;
   verdict.opacity(0);
   const names = chip('MYSQL INNODB · POSTGRESQL · ORACLE · SQL SERVER · SQLITE', colors.surf2, {

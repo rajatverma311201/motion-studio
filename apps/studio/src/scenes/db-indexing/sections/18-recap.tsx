@@ -1,6 +1,6 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ RECAP
 export function* recapSection(view: View2D): ThreadGenerator {
@@ -21,9 +21,9 @@ export function* recapSection(view: View2D): ThreadGenerator {
           y={-150 + Math.floor(i / 3) * 250}
           width={560}
           height={215}
-          radius={22}
+          radius={radius(22)}
           fill={colors.surf}
-          {...neubrutal(col, 9, 4)}
+          {...boxStyle(col, 9, 4)}
           opacity={0}
         >
           <Txt y={-62} text={h} fontFamily={fonts.mono} fontWeight={700} fontSize={30} letterSpacing={4} fill={col} />

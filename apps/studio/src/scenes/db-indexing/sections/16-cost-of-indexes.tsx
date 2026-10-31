@@ -1,6 +1,6 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, label, leave, neubrutal, pop, say, shake, statCard} from '@motion-studio/video-kit';
+import {chip, colors, fonts, label, leave, pop, say, shake, statCard, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ COSTS
 export function* costOfIndexesSection(view: View2D): ThreadGenerator {
@@ -27,9 +27,9 @@ export function* costOfIndexesSection(view: View2D): ThreadGenerator {
           y={-250 + i * 100}
           width={540}
           height={70}
-          radius={14}
+          radius={radius(14)}
           fill={colors.surf}
-          {...neubrutal(cols[i], 6, 3.5)}
+          {...boxStyle(cols[i], 6, 3.5)}
           opacity={0}
         >
           <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={i === 0 ? 22 : 26} fill={colors.ink} />
@@ -83,16 +83,16 @@ export function* costOfIndexesSection(view: View2D): ThreadGenerator {
     const blocks: {fill: Rect}[] = [];
     const g = (<Node />) as Node;
     fills.forEach((f, i) => {
-      const fillRect = (<Rect x={0} y={61} width={80} height={0} offsetY={1} radius={6} fill={col} />) as Rect;
+      const fillRect = (<Rect x={0} y={61} width={80} height={0} offsetY={1} radius={radius(6)} fill={col} />) as Rect;
       const b = (
         <Rect
           x={(i - (fills.length - 1) / 2) * 116}
           y={y}
           width={96}
           height={130}
-          radius={12}
+          radius={radius(12)}
           fill={colors.surf}
-          {...neubrutal(colors.ink, 0, 3.5)}
+          {...boxStyle(colors.ink, 0, 3.5)}
         >
           {fillRect}
         </Rect>

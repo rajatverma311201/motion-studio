@@ -15,7 +15,7 @@ export interface StackedTitleOptions {
 
 /**
  * Hard-shadow headline stack: pink and cyan copies sit behind the cream text.
- * This is the older lesson title look; `titleSlab()` is the newer slab treatment.
+ * This is the older lesson title look; `titleBlock()` is the theme-aware treatment.
  *
  * @example
  * view.add(stackedTitle({text: 'DB TRANSACTIONS', fontSize: 168, y: 10}));

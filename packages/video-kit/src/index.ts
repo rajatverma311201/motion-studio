@@ -3,4 +3,5 @@ export * from './components';
 export * from './hud';
 export * from './lesson';
 export * from './theme';
+export * from './themes';
 export * from './tree';

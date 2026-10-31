@@ -1,7 +1,29 @@
-import {describe, expect, it} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it} from 'vitest';
 import {colors} from '../../theme';
+import {setActiveTheme} from '../../themes/active-theme';
+import {neubrutalTheme} from '../../themes/neubrutal';
+import {registerTheme} from '../../themes/registry';
 import type {CodeLanguage} from './languages';
 import {tokenize} from './tokenizer';
+
+const TEMP_THEME = 'tokenizer-test-theme';
+
+function tempLime(): string {
+  return neubrutalTheme.variants.dark.colors.cyan;
+}
+
+beforeAll(() => {
+  registerTheme({
+    ...neubrutalTheme,
+    id: TEMP_THEME,
+    variants: {
+      dark: {...neubrutalTheme.variants.dark, colors: {...neubrutalTheme.variants.dark.colors, lime: tempLime()}},
+      light: neubrutalTheme.variants.light,
+    },
+  });
+});
+
+afterEach(() => setActiveTheme('neubrutal'));
 
 describe('tokenize', () => {
   it('colours SQL keywords and strings without losing characters', () => {
@@ -67,5 +89,21 @@ describe('tokenize', () => {
           .join(''),
       ).toBe(line);
     }
+  });
+});
+
+describe('tokenize theme sensitivity', () => {
+  it('resolves token colours from the active theme', () => {
+    setActiveTheme(TEMP_THEME);
+    expect(tokenize("'Ria'", 'sql')[0][1]).toBe(tempLime());
+  });
+
+  it('changes a token colour when the mode changes', () => {
+    setActiveTheme(TEMP_THEME);
+    const dark = tokenize("'Ria'", 'sql')[0][1];
+    setActiveTheme(TEMP_THEME, 'light');
+    const light = tokenize("'Ria'", 'sql')[0][1];
+    expect(light).not.toBe(dark);
+    expect(light).toBe(neubrutalTheme.variants.light.colors.lime);
   });
 });

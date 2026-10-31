@@ -1,6 +1,6 @@
 import {Circle, Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, easeOutCubic, sequence, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say, shake} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, shake, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ 03 ACID
 export function* acidSection(view: View2D): ThreadGenerator {
@@ -27,8 +27,8 @@ export function* acidSection(view: View2D): ThreadGenerator {
     ) as Txt;
   const box = (text: string, x: number, y: number, w: number, fill: string, fs = 17) =>
     (
-      <Rect x={x} y={y} width={w} height={60} radius={12} fill={fill} {...neubrutal(colors.ink, 4, 3)}>
-        <Txt text={text} fontFamily={fonts.mono} fontWeight={700} fontSize={fs} fill={colors.dark} />
+      <Rect x={x} y={y} width={w} height={60} radius={radius(12)} fill={fill} {...boxStyle(colors.ink, 4, 3)}>
+        <Txt text={text} fontFamily={fonts.mono} fontWeight={700} fontSize={fs} fill={colors.onAccent} />
       </Rect>
     ) as Rect;
 
@@ -47,10 +47,10 @@ export function* acidSection(view: View2D): ThreadGenerator {
         const st = tx('PENDING', 0, 70, {fill: colors.mute});
         s.add([b1, b2, st]);
         yield* waitFor(0.6);
-        yield* all(b1.fill(colors.lime, 0.3), (b1.children()[0] as Txt).fill(colors.dark, 0.3));
+        yield* all(b1.fill(colors.lime, 0.3), (b1.children()[0] as Txt).fill(colors.onAccent, 0.3));
         st.text('UPDATE 1 OK');
         yield* waitFor(0.7);
-        yield* all(b2.fill(colors.red, 0.3), (b2.children()[0] as Txt).fill(colors.dark, 0.3));
+        yield* all(b2.fill(colors.red, 0.3), (b2.children()[0] as Txt).fill(colors.onAccent, 0.3));
         st.text('UPDATE 2 FAILED');
         st.fill(colors.red);
         yield* shake(b2, 6, 4);
@@ -104,7 +104,15 @@ export function* acidSection(view: View2D): ThreadGenerator {
         const t1 = box('T1', -115, -30, 90, colors.pink, 24);
         const t2 = box('T2', 115, -30, 90, colors.cyan, 24);
         const wall = (
-          <Rect width={14} height={120} y={-30} radius={5} fill={colors.lime} stroke={colors.ink} lineWidth={3} />
+          <Rect
+            width={14}
+            height={120}
+            y={-30}
+            radius={radius(5)}
+            fill={colors.lime}
+            stroke={colors.ink}
+            lineWidth={3}
+          />
         ) as Rect;
         const w1 = tx('writing…', -115, 20, {fill: colors.mute});
         const arrow = (
@@ -142,10 +150,12 @@ export function* acidSection(view: View2D): ThreadGenerator {
         const bot = (
           <Circle y={36} size={[110, 34]} fill={colors.violet} stroke={colors.ink} lineWidth={4} />
         ) as Circle;
-        const top = (<Circle y={-48} size={[110, 34]} fill="#B7A0FF" stroke={colors.ink} lineWidth={4} />) as Circle;
+        const top = (
+          <Circle y={-48} size={[110, 34]} fill={colors.violet} stroke={colors.ink} lineWidth={4} />
+        ) as Circle;
         const ok = (
           <Circle x={48} y={-56} size={38} fill={colors.lime} stroke={colors.ink} lineWidth={3.5}>
-            <Txt text="✓" fontFamily={fonts.sans} fontWeight={700} fontSize={24} fill={colors.dark} />
+            <Txt text="✓" fontFamily={fonts.sans} fontWeight={700} fontSize={24} fill={colors.onAccent} />
           </Circle>
         ) as Circle;
         ok.opacity(0);
@@ -177,13 +187,21 @@ export function* acidSection(view: View2D): ThreadGenerator {
   const screens: Rect[] = [];
   const cards = specs.map((sp, i) => {
     const screen = (
-      <Rect y={170} width={350} height={220} radius={16} fill={colors.code} stroke={colors.dim} lineWidth={3} />
+      <Rect y={170} width={350} height={220} radius={radius(16)} fill={colors.code} stroke={colors.dim} lineWidth={3} />
     ) as Rect;
     screens.push(screen);
     return (
-      <Rect x={xs[i]} y={-10} width={CW} height={640} radius={26} fill={colors.surf} {...neubrutal(sp.color, 10, 4)}>
-        <Rect y={-215} width={150} height={150} radius={26} fill={sp.color} stroke={colors.ink} lineWidth={4}>
-          <Txt text={sp.letter} fontFamily={fonts.sans} fontWeight={700} fontSize={120} fill={colors.dark} />
+      <Rect
+        x={xs[i]}
+        y={-10}
+        width={CW}
+        height={640}
+        radius={radius(26)}
+        fill={colors.surf}
+        {...boxStyle(sp.color, 10, 4)}
+      >
+        <Rect y={-215} width={150} height={150} radius={radius(26)} fill={sp.color} stroke={colors.ink} lineWidth={4}>
+          <Txt text={sp.letter} fontFamily={fonts.sans} fontWeight={700} fontSize={120} fill={colors.onAccent} />
         </Rect>
         <Txt
           y={-100}

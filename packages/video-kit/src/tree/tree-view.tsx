@@ -1,9 +1,9 @@
 import {Circle, Line, Node, Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import type {SimpleSignal, ThreadGenerator} from '@motion-canvas/core';
 import {all, createSignal, easeInOutCubic, easeOutBack} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 import {leavesOf} from './snapshot';
 import {layoutTree, nodeWidth} from './tree-layout';
 import type {Key, Snap, TNode} from './tree-types';
@@ -126,7 +126,13 @@ export class TreeView {
         />
       ) as Txt;
       const cell = (
-        <Rect x={(i - (k - 1) / 2) * this.cw} width={this.cw - 8} height={H - 16} radius={8} fill={colors.surf2}>
+        <Rect
+          x={(i - (k - 1) / 2) * this.cw}
+          width={this.cw - 8}
+          height={H - 16}
+          radius={radius(8)}
+          fill={colors.surf2}
+        >
           {t}
           {dot ? <Circle y={18} size={9} fill={colors.orange} /> : null}
         </Rect>
@@ -146,9 +152,9 @@ export class TreeView {
       <Rect
         width={() => nodeWidth(nKeys(), this.cw)}
         height={H}
-        radius={14}
+        radius={radius(14)}
         fill={colors.surf}
-        {...neubrutal(this.colorOf(n.leaf), 6, 3.5)}
+        {...boxStyle(this.colorOf(n.leaf), 6, 3.5)}
       />
     ) as Rect;
     const cellLayer = (<Node />) as Node;
@@ -317,7 +323,7 @@ export class TreeView {
   *markCell(id: string, i: number, color: string, dur = 0.12): ThreadGenerator {
     const v = this.vis.get(id)!;
     if (!v.cells[i]) return;
-    yield* all(v.cells[i].fill(color, dur), v.texts[i].fill(colors.dark, dur));
+    yield* all(v.cells[i].fill(color, dur), v.texts[i].fill(colors.onAccent, dur));
   }
   /** colour a node's whole fill (e.g. to show it as merged / dirty) */
   *tint(ids: string[], color: string, dur = 0.2): ThreadGenerator {

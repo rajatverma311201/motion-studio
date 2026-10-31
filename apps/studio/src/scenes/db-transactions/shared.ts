@@ -24,4 +24,6 @@ export function totalChip(x: number, y: number): Rect {
 }
 
 /** The flying rupee coin. */
-export const coin = (): Rect => chip('₹300', colors.yellow, {fs: 24, sh: 4}) as Rect;
+export function coin(): Rect {
+  return chip('₹300', colors.yellow, {fs: 24, sh: 4}) as Rect;
+}

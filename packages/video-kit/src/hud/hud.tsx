@@ -1,8 +1,10 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {createRef} from '@motion-canvas/core';
-import {colors} from '../theme/colors';
-import {fonts, loadFonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
+import {boxStyle, colors, fonts, loadFonts, radius} from '../theme';
+import {getTheme} from '../themes/active-theme';
+import {withAlpha} from '../themes/color-utils';
+import {SOFT_SHADOW_DARK, SOFT_SHADOW_LIGHT} from '../themes/shadows';
+import type {ThemeHud} from '../themes/theme-types';
 
 /** One chapter of a lesson: its HUD label and accent colour. */
 export interface SectionDef {
@@ -44,6 +46,71 @@ export const hudState = {
   pillActiveWidth: 52,
 };
 
+/** The caption bar shape for the active caption style. */
+function captionBar(hud: ThemeHud): Rect {
+  const theme = getTheme();
+  const scale = theme.shape.elevationScale;
+  if (hud.captionStyle === 'tonal') {
+    return (
+      <Rect
+        y={462}
+        width={1740}
+        height={78}
+        radius={radius(39)}
+        fill={colors.surf2}
+        shadowColor={theme.mode === 'dark' ? withAlpha(SOFT_SHADOW_DARK, 0.28) : withAlpha(SOFT_SHADOW_LIGHT, 0.16)}
+        shadowBlur={21 * scale}
+        shadowOffset={[0, 5.6 * scale]}
+      />
+    ) as Rect;
+  }
+
+  if (hud.captionStyle === 'outline') {
+    return (
+      <Rect
+        y={462}
+        width={1740}
+        height={78}
+        radius={radius(14)}
+        fill={colors.surf}
+        stroke={colors.border}
+        lineWidth={1.5}
+      />
+    ) as Rect;
+  }
+
+  return (
+    <Rect y={462} width={1740} height={78} radius={radius(20)} fill={colors.surf} {...boxStyle(colors.brand, 7, 4)} />
+  ) as Rect;
+}
+
+/** The little caption label, or null when the theme hides it. */
+function captionLabelChip(hud: ThemeHud): Rect | null {
+  if (hud.captionLabel === null) return null;
+  const outline = hud.captionStyle === 'outline';
+  return (
+    <Rect
+      x={-800}
+      y={462}
+      width={92}
+      height={40}
+      radius={radius(10)}
+      fill={outline ? colors.surf : colors.brand}
+      stroke={outline ? colors.border : undefined}
+      lineWidth={outline ? 1.5 : undefined}
+    >
+      <Txt
+        text={hud.captionLabel}
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={20}
+        letterSpacing={2}
+        fill={outline ? colors.brand : colors.onBrand}
+      />
+    </Rect>
+  ) as Rect;
+}
+
 /**
  * Build the background grid, top bar, section pills and caption bar.
  *
@@ -59,33 +126,36 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
   hudState.pillWidth = options.pills?.width ?? 28;
   hudState.pillActiveWidth = options.pills?.activeWidth ?? 52;
 
+  const {hud} = getTheme();
   const grid: Line[] = [];
-  for (let x = -960; x <= 960; x += 60)
-    grid.push(
-      (
-        <Line
-          points={[
-            [x, -540],
-            [x, 540],
-          ]}
-          stroke={colors.grid}
-          lineWidth={2}
-        />
-      ) as Line,
-    );
-  for (let y = -540; y <= 540; y += 60)
-    grid.push(
-      (
-        <Line
-          points={[
-            [-960, y],
-            [960, y],
-          ]}
-          stroke={colors.grid}
-          lineWidth={2}
-        />
-      ) as Line,
-    );
+  if (hud.gridVisible && hud.gridSize > 0) {
+    for (let x = -960; x <= 960; x += hud.gridSize)
+      grid.push(
+        (
+          <Line
+            points={[
+              [x, -540],
+              [x, 540],
+            ]}
+            stroke={colors.grid}
+            lineWidth={2}
+          />
+        ) as Line,
+      );
+    for (let y = -540; y <= 540; y += hud.gridSize)
+      grid.push(
+        (
+          <Line
+            points={[
+              [-960, y],
+              [960, y],
+            ]}
+            stroke={colors.grid}
+            lineWidth={2}
+          />
+        ) as Line,
+      );
+  }
   view.add(<Node zIndex={-10}>{grid}</Node>);
 
   const n = defs.length;
@@ -94,8 +164,11 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
   const pillX = (i: number): number => (layout ? layout.startX + i * layout.step : 904 - (n - i) * step + step / 2);
   hudState.pills = defs.map(
     (_, i) =>
-      (<Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={7} fill={colors.dim} />) as Rect,
+      (
+        <Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={radius(7)} fill={colors.dim} />
+      ) as Rect,
   );
+  const label = captionLabelChip(hud);
   view.add(
     <Node zIndex={50}>
       <Rect
@@ -103,9 +176,9 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
         y={-492}
         width={30}
         height={30}
-        radius={8}
-        fill={colors.lime}
-        stroke={colors.ink}
+        radius={radius(8)}
+        fill={colors.brand}
+        stroke={colors.border}
         lineWidth={3.5}
         offsetX={-1}
       />
@@ -128,8 +201,8 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
         layout
         alignItems="center"
         padding={[4, 16]}
-        radius={999}
-        fill={colors.lime}
+        radius={radius(999)}
+        fill={colors.brand}
       >
         <Txt
           ref={hudState.secTxt}
@@ -138,14 +211,12 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
           fontWeight={700}
           fontSize={20}
           letterSpacing={2}
-          fill={colors.dark}
+          fill={colors.onAccent}
         />
       </Rect>
       {hudState.pills}
-      <Rect y={462} width={1740} height={78} radius={20} fill={colors.surf} {...neubrutal(colors.lime, 7, 4)} />
-      <Rect x={-800} y={462} width={92} height={40} radius={10} fill={colors.lime}>
-        <Txt text="NOTE" fontFamily={fonts.mono} fontWeight={700} fontSize={20} letterSpacing={2} fill={colors.dark} />
-      </Rect>
+      {captionBar(hud)}
+      {label}
       <Txt
         ref={hudState.cap}
         x={-736}

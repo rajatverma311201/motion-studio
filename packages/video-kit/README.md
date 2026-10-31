@@ -10,9 +10,18 @@ The package ships **TypeScript source only**. There is no build step: the studio
 src/
   index.ts                public barrel
   theme/
-    colors.ts             colors palette + ColorName type
-    fonts.ts              fonts + idempotent loadFonts()
-    neubrutal.ts          neubrutal() border/shadow props + formatNumber()
+    colors.ts             active-theme colour Proxy + ColorName type
+    fonts.ts              active-theme font Proxy + idempotent loadFonts()
+    box-style.ts          boxStyle() border/elevation + radius()
+    format.ts             formatNumber()
+  themes/
+    theme-types.ts        Theme, ThemeVariant, ThemeColors, ResolvedTheme, ...
+    color-utils.ts        parseColor(), withAlpha(), mix(), contrastRatio()
+    neubrutal.ts          neubrutalTheme (dark is the original look)
+    registry.ts           themes, themeIds, getThemeById(), registerTheme()
+    active-theme.ts       setActiveTheme(), getTheme(), resolveThemeSelection()
+    shadows.ts            soft-elevation shadow inks
+    golden/               frozen default look for the golden test
   animation/
     pop.ts                pop()
     shake.ts              shake()
@@ -26,7 +35,7 @@ src/
     stacked-title.tsx     stackedTitle()
     timeline-lane.tsx     timelineLane()
     titled-panel.tsx      titledPanel()
-    title-slab.tsx        titleSlab(), titlePill()
+    title-block.tsx       titleBlock(), titlePill()
     stat-card.tsx         statCard()
     legend.tsx            indexLegend()
     bullet-row.tsx        bulletRow()
@@ -145,6 +154,60 @@ export default defineLesson({
 
 `BuildHudOptions.sectionChipX` moves the section chip; `pills` replaces the right-aligned row with a fixed `startX`/`step` layout and explicit inactive/active widths. Both fields are optional and only change geometry, never the HUD animation durations.
 
+## Themes
+
+A theme is a design language; mode is a separate choice (`dark` or `light`). The kit flattens the pair into a `ResolvedTheme` once at scene start, and every helper reads it at call time.
+
+### Types
+
+- `Theme` — id, name, family, description, `defaultMode`, shared `fonts`, and mandatory `variants.dark` / `variants.light`.
+- `ThemeVariant` — `colors` (`ThemeColors`), `shape` (`ThemeShape`) and `hud` (`ThemeHud`).
+- `ResolvedTheme` — one variant plus `id`, `name`, `mode` and `fonts`. This is what `getTheme()` returns.
+- `ThemeColors` has semantic accent slots (`lime`, `pink`, `cyan`, `yellow`, `violet`, `orange`, `red`), chrome keys (`brand`, `onBrand`), surfaces and text keys. Accent slots are roles, not literal hues.
+
+```ts
+import {getTheme, setActiveTheme, withAlpha} from '@motion-studio/video-kit';
+
+setActiveTheme('neubrutal', 'light');
+const theme = getTheme();
+const text = theme.colors.ink;
+```
+
+### How a lesson picks a theme and mode
+
+Theme id and mode are resolved independently, highest precedence first:
+
+| Order | Theme id                                                                     | Mode                               |
+| ----- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| 1     | player variable `theme` (`variables='{"theme":"neubrutal","mode":"light"}'`) | player variable `mode`             |
+| 2     | dev hash `#theme=<id>` (works together with `#s=N&theme=...`)                | hash `#mode=dark` or `#mode=light` |
+| 3     | `"theme"` in `chapters.json`                                                 | `"mode"` in `chapters.json`        |
+| 4     | `neubrutal`                                                                  | the chosen theme's `defaultMode`   |
+
+`defineLesson()` calls `resolveThemeSelection()` and then `setActiveTheme(themeId, mode)` before it fills the background or builds the HUD. Unknown ids are skipped with a warning; nothing throws. `chapters.json` may carry `"theme": "..."` and `"mode": "dark" | "light"`.
+
+### No import-time colour reads
+
+Never capture a colour or font at module load:
+
+```ts
+const accent = colors.lime; // WRONG: freezes the first theme forever
+```
+
+`colors` and `fonts` are Proxies over the active theme, so `colors.lime` inside a function body is correct. Rule tables store accent key names (`'lime'`) and resolve them with `colors[key]` when tokenizing.
+
+### boxStyle, radius, withAlpha
+
+- `boxStyle(accent, offset = 8, borderWidth = 4)` returns `ShapeProps` with the active theme's border width and elevation (`hard`, `soft`, `glow` or `none`).
+- `radius(n)` scales a number or a 4-tuple by `shape.radiusScale`; values `>= 100` (pills) pass through.
+- `withAlpha(color, alpha)` returns a `rgba(...)` string and accepts `#rgb`, `#rrggbb`, `rgb()` and `rgba()` inputs.
+
+```tsx
+<Rect {...boxStyle(colors.pink, 8, 4)} radius={radius(20)} fill={withAlpha(colors.ink, 0.09)} />
+```
+
+The default theme is `neubrutal` in `dark` mode, which reproduces the original look. `themes/golden/neubrutal-dark.json` freezes that palette, font stacks, HUD and shape numbers; `golden.test.ts` fails in milliseconds if any of them drift.
+
 ## How to add a component
 
 1. Pick the folder: visual primitives in `components/`, timed animations in `animation/`, design tokens in `theme/`, scene furniture in `hud/`.
@@ -157,34 +220,34 @@ Scenes are not part of this package. They import the barrel and keep their own s
 
 ## Rename table (from `db-indexing/kit.tsx`)
 
-| Old                                      | New                                             | File                           |
-| ---------------------------------------- | ----------------------------------------------- | ------------------------------ |
-| `C`                                      | `colors`                                        | `theme/colors.ts`              |
-| `FONT`                                   | `fonts.sans`                                    | `theme/fonts.ts`               |
-| `MONO`                                   | `fonts.mono`                                    | `theme/fonts.ts`               |
-| the `<link>` injection block             | `loadFonts()` (idempotent)                      | `theme/fonts.ts`               |
-| `NB(shadow, sh, bw)`                     | `neubrutal(shadow, sh, bw)`                     | `theme/neubrutal.ts`           |
-| `num`                                    | `formatNumber`                                  | `theme/neubrutal.ts`           |
-| `chip`, `chipText`                       | same names                                      | `components/chip.tsx`          |
-| `label`                                  | same name                                       | `components/label.tsx`         |
-| `card`                                   | same name                                       | `components/card.tsx`          |
-| `pop`                                    | same name                                       | `animation/pop.ts`             |
-| `shake`                                  | same name                                       | `animation/shake.ts`           |
-| `countTo`                                | same name                                       | `animation/count-to.ts`        |
-| `hud`                                    | `hudState`                                      | `hud/hud.tsx`                  |
-| `buildHud`, `setSection`, `say`, `leave` | same names                                      | `hud/*`                        |
-| `bigText`                                | `stackedTitle()` (legacy) / `titleSlab()` (new) | `components/stacked-title.tsx` |
-| `CodeP`                                  | `CodePanel`                                     | `components/code-panel/`       |
-| `codePanel(o)`                           | `codePanel(options)`                            | `code-panel.tsx`               |
-| `Lang`                                   | `CodeLanguage`                                  | `languages.ts`                 |
-| `LH`                                     | `LINE_HEIGHT`                                   | `code-panel.tsx`               |
-| `nodeW`                                  | `nodeWidth`                                     | `tree/tree-layout.ts`          |
-| `layout`                                 | `layoutTree`                                    | `tree/tree-layout.ts`          |
-| `stat`                                   | `statCard`                                      | `components/stat-card.tsx`     |
-| `legend`                                 | `indexLegend`                                   | `components/legend.tsx`        |
-| `bullet`                                 | `bulletRow`                                     | `components/bullet-row.tsx`    |
-| `miniTree(cx, ...)`                      | `miniTree({cx, ...})`                           | `components/mini-tree.tsx`     |
-| `lit` / `unlit`                          | `highlightStroke` / `clearStroke`               | `components/mini-tree.tsx`     |
+| Old                                      | New                                              | File                         |
+| ---------------------------------------- | ------------------------------------------------ | ---------------------------- |
+| `C`                                      | `colors`                                         | `theme/colors.ts`            |
+| `FONT`                                   | `fonts.sans`                                     | `theme/fonts.ts`             |
+| `MONO`                                   | `fonts.mono`                                     | `theme/fonts.ts`             |
+| the `<link>` injection block             | `loadFonts()` (idempotent)                       | `theme/fonts.ts`             |
+| `NB(shadow, sh, bw)`                     | `boxStyle(shadow, sh, bw)`                       | `theme/box-style.ts`         |
+| `num`                                    | `formatNumber`                                   | `theme/format.ts`            |
+| `chip`, `chipText`                       | same names                                       | `components/chip.tsx`        |
+| `label`                                  | same name                                        | `components/label.tsx`       |
+| `card`                                   | same name                                        | `components/card.tsx`        |
+| `pop`                                    | same name                                        | `animation/pop.ts`           |
+| `shake`                                  | same name                                        | `animation/shake.ts`         |
+| `countTo`                                | same name                                        | `animation/count-to.ts`      |
+| `hud`                                    | `hudState`                                       | `hud/hud.tsx`                |
+| `buildHud`, `setSection`, `say`, `leave` | same names                                       | `hud/*`                      |
+| `bigText`                                | `stackedTitle()` (legacy) / `titleBlock()` (new) | `components/title-block.tsx` |
+| `CodeP`                                  | `CodePanel`                                      | `components/code-panel/`     |
+| `codePanel(o)`                           | `codePanel(options)`                             | `code-panel.tsx`             |
+| `Lang`                                   | `CodeLanguage`                                   | `languages.ts`               |
+| `LH`                                     | `LINE_HEIGHT`                                    | `code-panel.tsx`             |
+| `nodeW`                                  | `nodeWidth`                                      | `tree/tree-layout.ts`        |
+| `layout`                                 | `layoutTree`                                     | `tree/tree-layout.ts`        |
+| `stat`                                   | `statCard`                                       | `components/stat-card.tsx`   |
+| `legend`                                 | `indexLegend`                                    | `components/legend.tsx`      |
+| `bullet`                                 | `bulletRow`                                      | `components/bullet-row.tsx`  |
+| `miniTree(cx, ...)`                      | `miniTree({cx, ...})`                            | `components/mini-tree.tsx`   |
+| `lit` / `unlit`                          | `highlightStroke` / `clearStroke`                | `components/mini-tree.tsx`   |
 
 From `db-transactions/transactions.tsx`:
 
@@ -215,7 +278,7 @@ const alice = accountCard({
 view.add(alice.node);
 ```
 
-`titledPanel()` and `logRow()` cover the durability diagrams: a neubrutalist panel with a mono title, and a fixed-height row with a coloured outline. `timelineLane()` draws a dashed lane with a coloured label tile. `stackedTitle()` keeps the older pink/cyan/cream offset headline; `titleSlab()` remains the newer slab treatment.
+`titledPanel()` and `logRow()` cover the durability diagrams: a neubrutalist panel with a mono title, and a fixed-height row with a coloured outline. `timelineLane()` draws a dashed lane with a coloured label tile. `stackedTitle()` keeps the older pink/cyan/cream offset headline; `titleBlock()` renders the theme's title style (slab, plain or pill).
 
 ```ts
 view.add(titledPanel({x: 200, y: -170, width: 520, height: 220, title: 'WAL', color: colors.lime}));

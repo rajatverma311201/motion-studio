@@ -4,8 +4,19 @@ import type {Scene2D} from '@motion-canvas/2d';
 import {makeScene2D} from '@motion-canvas/2d';
 import {buildHud, setSection} from '../hud';
 import {colors} from '../theme';
+import {resolveThemeSelection, setActiveTheme} from '../themes/active-theme';
+import {themeIds} from '../themes/registry';
 import {resolveChapters} from './chapters';
 import type {LessonConfig} from './lesson-types';
+
+/** Read the dev URL hash without assuming a browser. */
+function readHash(): string | undefined {
+  try {
+    return typeof location === 'undefined' ? undefined : location.hash;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Pure start-section resolution. The player variable wins over the dev hash,
@@ -40,19 +51,11 @@ export function readStartSection(total: number): number {
     // Outside a running scene there are no variables; the hash fallback still works.
   }
 
-  let hash: string | undefined;
-  try {
-    hash = typeof location === 'undefined' ? undefined : location.hash;
-  } catch {
-    // `location` can be unavailable in non-browser contexts.
-    hash = undefined;
-  }
-
-  return parseStartSection(hash, variable, total);
+  return parseStartSection(readHash(), variable, total);
 }
 
 /**
- * Build the default export of a lesson scene: background, HUD, section loop.
+ * Build the default export of a lesson scene: theme, background, HUD, section loop.
  *
  * @example
  * export default defineLesson({
@@ -70,11 +73,38 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
     );
   }
 
-  const hudDefs = resolveChapters(chapters).map(({name, color}) => ({name, color}));
-
   return makeScene2D(function* (view) {
+    let themeVariable = '';
+    let modeVariable = '';
+    try {
+      const variables = useScene().variables;
+      themeVariable = variables.get('theme', '')();
+      modeVariable = variables.get('mode', '')();
+    } catch {
+      // Outside a running scene there are no variables; hash and chapters still work.
+    }
+
+    if (themeVariable && !themeIds.includes(themeVariable)) {
+      console.warn(`Unknown theme "${themeVariable}" from the player variable; using the next valid source.`);
+    }
+    if (chapters.theme && !themeIds.includes(chapters.theme)) {
+      console.warn(
+        `Unknown theme "${chapters.theme}" in chapters.json for "${chapters.slug}"; using the next valid source.`,
+      );
+    }
+
+    const {themeId, mode} = resolveThemeSelection({
+      themeVariable,
+      modeVariable,
+      hash: readHash(),
+      lessonTheme: chapters.theme,
+      lessonMode: chapters.mode,
+    });
+    setActiveTheme(themeId, mode);
+
     view.fill(colors.bg);
     const start = readStartSection(total);
+    const hudDefs = resolveChapters(chapters).map(({name, color}) => ({name, color}));
     buildHud(view, chapters.title, hudDefs, config.hud);
 
     for (let i = start; i < total; i++) {

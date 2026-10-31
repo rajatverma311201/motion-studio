@@ -672,25 +672,68 @@ Clicking a chapter restarts playback **at that chapter and plays on until the en
 - `pnpm dev` -> `[videos] watching for file changes...` plus `[docs] VITE v8.3.5 ready ... :3000`; `pnpm smoke:docs` -> **PASS**
 - both dev processes stopped; ports 3000 and 9000 released
 
+## Step 13: theme system core
+
+**What changed**
+
+- New pure-TypeScript `packages/video-kit/src/themes/`: `theme-types.ts`, `color-utils.ts` (+ tests), `neubrutal.ts`, `registry.ts`, `active-theme.ts` (+ tests), `shadows.ts`, `golden.test.ts`, `golden/neubrutal-dark.json`, `index.ts`.
+- `neubrutal` dark is the original palette verbatim plus `onAccent`, `border`, `brand`, `onBrand`; light uses the table from the prompt. Both modes share Space Grotesk / JetBrains Mono and the same Google Fonts URL.
+- `theme/colors.ts` and `theme/fonts.ts` are Proxies over `getTheme()`; `loadFonts()` injects the active theme's stylesheet per theme id (`video-kit-fonts-<id>`).
+- `theme/box-style.ts` replaces `theme/neubrutal.ts` with `boxStyle()` (hard/soft/glow/none) and `radius()` (number or 4-tuple; pills >= 100 pass through). `formatNumber()` moved to `theme/format.ts`.
+- HUD reads `hud.gridSize`/`gridVisible`, uses brand/onBrand chrome, and implements `bar`/`tonal`/`outline` caption styles. `title-slab.tsx` became `title-block.tsx` with `slab`/`plain`/`pill` styles; `titlePill()` stays.
+- `defineLesson()` resolves the theme/mode pair (player variable, hash, `chapters.json`, defaults), warns on unknown ids and calls `setActiveTheme()` before `view.fill()`/`buildHud()`. `resolveChapters()` moved inside the scene so chapter colours resolve after the theme is active. `ChaptersFile` and `chapters.schema.json` accept optional `theme` and `mode`.
+- Code panel rule tables store accent keys and `tokenize()` resolves them at call time; the highlight bar uses `withAlpha(colors.ink, 0.09)`.
+- Studio codemod: `neubrutal()` -> `boxStyle()`, `colors.dark` -> `colors.onAccent`, numeric/array radii -> `radius(...)`, every `rgba()`/hex literal in scenes replaced with `withAlpha(colors.x, a)`/`colors.x`, and the module-level `ANOMS` table plus the `coin` helper now resolve colours at call time.
+- `tools/scripts/sync-generated.mjs` warns and keeps the existing `palette.json` when the colour regex finds nothing (0 pairs), exit 0.
+
+**Codemod / grep results**
+
+- `grep -rn "neubrutal(" apps packages --include=*.ts --include=*.tsx | wc -l` -> 0.
+- `grep -rn "colors.dark" ...` -> 0.
+- hex literal grep outside `themes/` -> 0 (tests included).
+- rgba literal grep outside `themes/` -> 0 (tests included).
+- module-level colour/font grep -> 0 (only JSDoc examples remain in the broader scan).
+
+Two non-palette hexes had no exact slot: `#FF5C7A` (isolation-levels row) -> `colors.pink` and `#B7A0FF` (ACID disk lid) -> `colors.violet`. They are the nearest semantic slots; the quick subset does not cover those two frames. The soft-elevation shadow inks (`#000000` / `#1B2340`) live in `themes/shadows.ts`, so the raw-colour grep stays at 0 outside `themes/`.
+
+**Checks (step 13)**
+
+- `pnpm --filter @motion-studio/video-kit test` -> 65/65 tests pass (9 files), including golden, registry, active-theme, box-style and tokenizer theme tests.
+- `pnpm check` -> exit 0 (typecheck, lint 0 errors / 69 pre-existing warnings, tests, format:check).
+- `pnpm studio:build` -> exit 0 (`db-transactions.js`, `db-indexing.js`, chunk `_virtual_settings-972be7cb.js`).
+- `pnpm snap:quick` -> **6/6 PASS** (0.000% each; capture 84.7 s, compare 0.2 s). Dev server stopped afterwards; port 9000 released.
+
+**Blocked**
+
+- None.
+
+**Follow-ups**
+
+- Step 14 adds the theme catalogue and showcase; step 15 adds the config/flag layers and the theme generator. `resolveThemeSelection` keeps its candidates as ordered lists so new layers are a small change.
+- The docs palette regex now produces no entries; `apps/docs` keeps the last generated `palette.json` until step 15 replaces the source.
+- `colors` is a Proxy over `{}`, so `Object.keys(colors)` is empty. No current caller enumerates it; use `themeIds`/`themes` instead.
+- `titleBlock({style: 'plain'})` uses a 160 px brand underline; step 14 may want to tune it per theme.
+
 ## Summary
 
 Every commit from `git log --oneline --reverse`, grouped by step.
 
-| Step | Scope                                    | Commits                                                                                                      |
-| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 00   | Import and safety baseline               | `bfadeb8 init-proj`, `265f505 chore: baseline before monorepo restructure`                                   |
-| 01   | Monorepo bootstrap                       | `5d30f17 chore: convert repo to pnpm workspace and move motion canvas project to apps/studio`                |
-| 02   | Screenshot baseline                      | `7a2065d test: add playwright snapshot capture and compare tools`                                            |
-| 03   | video-kit foundation                     | `5a5a779 feat(video-kit): add theme, animation, hud and base components`                                     |
-| 04   | video-kit code panel                     | `a02ff56 feat(video-kit): add syntax-coloured code panel with tokenizer tests`                               |
-| 05   | video-kit tree engine                    | `3528303 feat(video-kit): add b-tree/b+tree engine, mini tree, stat card and legend`                         |
-| 06   | video-kit lesson factory                 | `7fdf57c feat(video-kit): add defineLesson factory and chapters schema`                                      |
-| 07   | db-indexing migration                    | `0956c1f`, `906b407`, `183cd17`, `25fad8e`, `fe8320d`, `70a6058`                                             |
-| 08   | db-transactions migration                | `b25a6fa`, `5325eb4`, `ba89320`, `9d36777`                                                                   |
-| 09   | docs scaffold                            | `b273eca feat(docs): scaffold tanstack start + fumadocs app with neubrutalist dark theme`                    |
-| 10   | docs content model and landing page      | `42a2c8f feat(docs): add course structure, lesson pages and landing page`                                    |
-| 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                            |
-| 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`) |
+| Step | Scope                                    | Commits                                                                                                                                                                                                         |
+| ---- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 00   | Import and safety baseline               | `bfadeb8 init-proj`, `265f505 chore: baseline before monorepo restructure`                                                                                                                                      |
+| 01   | Monorepo bootstrap                       | `5d30f17 chore: convert repo to pnpm workspace and move motion canvas project to apps/studio`                                                                                                                   |
+| 02   | Screenshot baseline                      | `7a2065d test: add playwright snapshot capture and compare tools`                                                                                                                                               |
+| 03   | video-kit foundation                     | `5a5a779 feat(video-kit): add theme, animation, hud and base components`                                                                                                                                        |
+| 04   | video-kit code panel                     | `a02ff56 feat(video-kit): add syntax-coloured code panel with tokenizer tests`                                                                                                                                  |
+| 05   | video-kit tree engine                    | `3528303 feat(video-kit): add b-tree/b+tree engine, mini tree, stat card and legend`                                                                                                                            |
+| 06   | video-kit lesson factory                 | `7fdf57c feat(video-kit): add defineLesson factory and chapters schema`                                                                                                                                         |
+| 07   | db-indexing migration                    | `0956c1f`, `906b407`, `183cd17`, `25fad8e`, `fe8320d`, `70a6058`                                                                                                                                                |
+| 08   | db-transactions migration                | `b25a6fa`, `5325eb4`, `ba89320`, `9d36777`                                                                                                                                                                      |
+| 09   | docs scaffold                            | `b273eca feat(docs): scaffold tanstack start + fumadocs app with neubrutalist dark theme`                                                                                                                       |
+| 10   | docs content model and landing page      | `42a2c8f feat(docs): add course structure, lesson pages and landing page`                                                                                                                                       |
+| 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                                                                                                                               |
+| 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`)                                                                                                    |
+| 13   | theme system core                        | `3d667c5 test(video-kit): freeze the current neubrutal look as golden values`, `a181920 test(snapshots): add quick six-frame capture and compare subset`, plus the commit that adds this section (`git log -1`) |
 
 ### Tech debt
 
@@ -705,6 +748,10 @@ Every commit from `git log --oneline --reverse`, grouped by step.
 - Docs build prints two cosmetic Fumadocs CSS warnings (`::highlight(fd-search)`) and the `node:fs/promises` browser-externalization warning from `fumadocs-mdx`. The build and the page work.
 - `new-lesson` requires a course folder with `meta.json`; it does not create a new course. `--chapters` only changes the skeleton, not the docs `###` note count after editing.
 - The MP4 render is manual in the editor; there is no CI job that renders or uploads a video.
+- `pnpm snap:quick` covers six of the 58 baseline frames. The full 40+18 compare is intentionally not run in steps 13-16 except as a fallback when a quick failure is unclear.
+- The two non-palette hexes in the old scenes are now `colors.pink` (`#FF5C7A`) and `colors.violet` (`#B7A0FF`); those two frames shift slightly. Exact parity needs a theme slot if it matters.
+- `colors` is a Proxy over an empty target, so `Object.keys(colors)` is empty. Use `getTheme().colors` or `themes` when enumeration is needed.
+- `apps/docs/src/generated/palette.json` is stale until step 15: the sync script warns and keeps the last file instead of regenerating it from the Proxy.
 
 ### Candidates for the kit
 

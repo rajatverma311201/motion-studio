@@ -17,6 +17,15 @@
       "minLength": 1,
       "description": "Upper-case HUD title, e.g. \"DB INDEXING\"."
     },
+    "theme": {
+      "type": "string",
+      "description": "Optional theme id. Unknown ids are skipped with a console warning."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["dark", "light"],
+      "description": "Optional theme mode. The theme's defaultMode is used when omitted."
+    },
     "chapters": {
       "type": "array",
       "minItems": 1,

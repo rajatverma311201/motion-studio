@@ -1,7 +1,7 @@
 import {Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 /** Options for {@link titledPanel}. */
 export interface TitledPanelOptions {
@@ -22,7 +22,7 @@ export interface TitledPanelOptions {
 export function titledPanel(options: TitledPanelOptions): Rect {
   const {x, y, width, height, title, color} = options;
   return (
-    <Rect x={x} y={y} width={width} height={height} radius={22} fill={colors.surf} {...neubrutal(color, 8, 4)}>
+    <Rect x={x} y={y} width={width} height={height} radius={radius(22)} fill={colors.surf} {...boxStyle(color, 8, 4)}>
       <Txt
         y={-height / 2 + 30}
         text={title}

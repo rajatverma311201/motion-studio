@@ -1,6 +1,6 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, sequence, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, neubrutal, pop, say, stackedTitle} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, pop, say, stackedTitle, boxStyle, radius} from '@motion-studio/video-kit';
 
 // ================================================================ 08 RECAP
 export function* recapSection(view: View2D): ThreadGenerator {
@@ -13,9 +13,17 @@ export function* recapSection(view: View2D): ThreadGenerator {
   ];
   const rows = items.map(([l, n, d, col], i) => {
     const r = (
-      <Rect x={0} y={-240 + i * 118} width={1200} height={96} radius={20} fill={colors.surf} {...neubrutal(col, 8, 4)}>
-        <Rect x={-540} width={72} height={72} radius={16} fill={col}>
-          <Txt text={l} fontFamily={fonts.sans} fontWeight={700} fontSize={50} fill={colors.dark} />
+      <Rect
+        x={0}
+        y={-240 + i * 118}
+        width={1200}
+        height={96}
+        radius={radius(20)}
+        fill={colors.surf}
+        {...boxStyle(col, 8, 4)}
+      >
+        <Rect x={-540} width={72} height={72} radius={radius(16)} fill={col}>
+          <Txt text={l} fontFamily={fonts.sans} fontWeight={700} fontSize={50} fill={colors.onAccent} />
         </Rect>
         <Txt
           x={-480}

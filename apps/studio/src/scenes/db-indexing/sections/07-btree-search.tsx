@@ -6,10 +6,11 @@ import {
   fonts,
   indexLegend,
   leave,
-  neubrutal,
   playSearch,
   say,
   searchPlan,
+  boxStyle,
+  radius,
 } from '@motion-studio/video-kit';
 import {finalSnap} from '../shared';
 
@@ -27,9 +28,9 @@ export function* btreeSearchSection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[8, 18]}
-      radius={12}
+      radius={radius(12)}
       fill={colors.code}
-      {...neubrutal(colors.cyan, 5, 3.5)}
+      {...boxStyle(colors.cyan, 5, 3.5)}
     >
       <Txt
         ref={q}
@@ -42,7 +43,15 @@ export function* btreeSearchSection(view: View2D): ThreadGenerator {
     </Rect>
   ) as Rect;
   const readBox = (
-    <Rect x={-560} y={290} width={380} height={110} radius={20} fill={colors.surf} {...neubrutal(colors.orange, 8, 4)}>
+    <Rect
+      x={-560}
+      y={290}
+      width={380}
+      height={110}
+      radius={radius(20)}
+      fill={colors.surf}
+      {...boxStyle(colors.orange, 8, 4)}
+    >
       <Txt
         y={-28}
         text="PAGE READS"

@@ -8,11 +8,12 @@ import {
   fonts,
   label,
   leave,
-  neubrutal,
   pop,
   say,
   shake,
   statCard,
+  boxStyle,
+  radius,
 } from '@motion-studio/video-kit';
 
 // ================================================================ SORTED INDEX + BINARY SEARCH
@@ -30,9 +31,9 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
         y={Y}
         width={100}
         height={84}
-        radius={14}
+        radius={radius(14)}
         fill={colors.surf2}
-        {...neubrutal(colors.lime, 5, 3.5)}
+        {...boxStyle(colors.lime, 5, 3.5)}
       >
         <Txt y={-8} text={String(k)} fontFamily={fonts.mono} fontWeight={700} fontSize={34} fill={colors.ink} />
         <Circle y={26} size={11} fill={colors.orange} />
@@ -61,7 +62,7 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
           y={150}
           width={200}
           height={170}
-          radius={16}
+          radius={radius(16)}
           fill={colors.surf}
           stroke={colors.dim}
           lineWidth={3.5}
@@ -100,7 +101,7 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
       lineWidth={5}
       endArrow
       arrowSize={14}
-      radius={18}
+      radius={radius(18)}
       end={0}
     />
   ) as Line;
@@ -136,7 +137,7 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
     yield* all(
       ...cells.map((c, i) => c.opacity(i >= lo && i <= hi ? 1 : 0.22, 0.25)),
       cells[mid].fill(colors.yellow, 0.2),
-      cellTxt(cells[mid]).fill(colors.dark, 0.2),
+      cellTxt(cells[mid]).fill(colors.onAccent, 0.2),
     );
     if (KEYS[mid] === target) {
       yield* all(cells[mid].fill(colors.lime, 0.2), shake(cells[mid], 4, 3));
@@ -174,7 +175,7 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
   fresh.y(Y - 95);
   fresh.opacity(0);
   fresh.fill(colors.yellow);
-  cellTxt(fresh).fill(colors.dark);
+  cellTxt(fresh).fill(colors.onAccent);
   root().add(fresh);
   yield* fresh.opacity(1, 0.3);
   const moved = statCard(330, 335, 360, 110, 'ENTRIES SHIFTED', colors.pink);

@@ -1,6 +1,18 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, easeInOutCubic, waitFor} from '@motion-canvas/core';
-import {chip, colors, countTo, fonts, formatNumber, label, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
+import {
+  chip,
+  colors,
+  countTo,
+  fonts,
+  formatNumber,
+  label,
+  leave,
+  pop,
+  say,
+  boxStyle,
+  radius,
+} from '@motion-studio/video-kit';
 
 // ================================================================ PAGES + FANOUT
 export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
@@ -17,13 +29,15 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
   yield* say('Disks and SSDs read whole pages, typically 8 KB. Reading 1 byte or the whole page costs one I/O.');
   const mkPage = (x: number, keys: number, color: string, title: string, sub: string) => {
     const page = (
-      <Rect x={x} y={-40} width={480} height={300} radius={22} fill={colors.surf} {...neubrutal(color, 9, 4)} />
+      <Rect x={x} y={-40} width={480} height={300} radius={radius(22)} fill={colors.surf} {...boxStyle(color, 9, 4)} />
     ) as Rect;
     const cols = 12;
     for (let i = 0; i < keys; i++) {
       const r = Math.floor(i / cols);
       const c = i % cols;
-      page.add(<Rect x={-209 + c * 38} y={-85 + r * 38} width={30} height={30} radius={7} fill={colors.lime} />);
+      page.add(
+        <Rect x={-209 + c * 38} y={-85 + r * 38} width={30} height={30} radius={radius(7)} fill={colors.lime} />,
+      );
     }
     page.add(
       <Txt
@@ -79,9 +93,9 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
           x={(i - (n - 1) / 2) * (w + gap)}
           width={w}
           height={70}
-          radius={12}
+          radius={radius(12)}
           fill={colors.surf2}
-          {...neubrutal(l === 2 ? colors.lime : colors.violet, 5, 3.5)}
+          {...boxStyle(l === 2 ? colors.lime : colors.violet, 5, 3.5)}
         />,
       );
     }
@@ -187,7 +201,15 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
           letterSpacing={1}
           fill={colors.mute}
         />
-        <Rect x={-760} offsetX={-1} width={0} height={64} radius={14} fill={color} {...neubrutal(colors.ink, 0, 3.5)} />
+        <Rect
+          x={-760}
+          offsetX={-1}
+          width={0}
+          height={64}
+          radius={radius(14)}
+          fill={color}
+          {...boxStyle(colors.ink, 0, 3.5)}
+        />
         <Txt
           x={-760 + w + 26}
           offsetX={-1}

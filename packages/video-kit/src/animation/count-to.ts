@@ -1,6 +1,6 @@
 import {Txt} from '@motion-canvas/2d';
 import {ThreadGenerator, easeInOutCubic, map, tween} from '@motion-canvas/core';
-import {formatNumber} from '../theme/neubrutal';
+import {formatNumber} from '../theme/format';
 
 /**
  * Animate a text node from one number to another through a formatter.

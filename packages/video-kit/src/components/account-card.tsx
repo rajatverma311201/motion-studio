@@ -1,8 +1,9 @@
 import {Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {createRef} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {formatNumber, neubrutal} from '../theme/neubrutal';
+import {formatNumber} from '../theme/format';
 
 /** Options for {@link accountCard}. */
 export interface AccountCardOptions {
@@ -38,9 +39,9 @@ export function accountCard(options: AccountCardOptions): AccountCard {
   const bal = createRef<Txt>();
   const tag = createRef<Rect>();
   const node = (
-    <Rect x={x} y={y} width={500} height={190} radius={22} fill={colors.surf} {...neubrutal(color, 9, 4)}>
-      <Rect x={-170} width={100} height={100} radius={20} fill={color} stroke={colors.ink} lineWidth={4}>
-        <Txt text={letter} fontFamily={fonts.sans} fontWeight={700} fontSize={66} fill={colors.dark} />
+    <Rect x={x} y={y} width={500} height={190} radius={radius(22)} fill={colors.surf} {...boxStyle(color, 9, 4)}>
+      <Rect x={-170} width={100} height={100} radius={radius(20)} fill={color} stroke={colors.ink} lineWidth={4}>
+        <Txt text={letter} fontFamily={fonts.sans} fontWeight={700} fontSize={66} fill={colors.onAccent} />
       </Rect>
       <Txt
         x={-100}
@@ -71,7 +72,7 @@ export function accountCard(options: AccountCardOptions): AccountCard {
         layout
         alignItems="center"
         padding={[3, 10]}
-        radius={8}
+        radius={radius(8)}
         fill={colors.yellow}
         opacity={0}
       >
@@ -81,7 +82,7 @@ export function accountCard(options: AccountCardOptions): AccountCard {
           fontWeight={700}
           fontSize={14}
           letterSpacing={1}
-          fill={colors.dark}
+          fill={colors.onAccent}
         />
       </Rect>
     </Rect>

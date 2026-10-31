@@ -1,9 +1,9 @@
 import {Line, Node, Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import type {ThreadGenerator} from '@motion-canvas/core';
 import {all} from '@motion-canvas/core';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 export interface MiniTreeOptions {
   /** horizontal centre of the root and of the middle leaf */
@@ -55,17 +55,33 @@ export function miniTree({cx, rootText, rows, rootColor, leafColor, rowFontSize}
     ),
   );
   const root = (
-    <Rect x={cx} y={rootY} width={300} height={66} radius={14} fill={colors.surf} {...neubrutal(rootColor, 6, 3.5)}>
+    <Rect
+      x={cx}
+      y={rootY}
+      width={300}
+      height={66}
+      radius={radius(14)}
+      fill={colors.surf}
+      {...boxStyle(rootColor, 6, 3.5)}
+    >
       <Txt text={rootText} fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
     </Rect>
   ) as Rect;
   rows.forEach((rs, i) => {
     const hls: Rect[] = [];
     const leaf = (
-      <Rect x={xs[i]} y={leafY} width={LW} height={LH} radius={14} fill={colors.surf} {...neubrutal(leafColor, 6, 3.5)}>
+      <Rect
+        x={xs[i]}
+        y={leafY}
+        width={LW}
+        height={LH}
+        radius={radius(14)}
+        fill={colors.surf}
+        {...boxStyle(leafColor, 6, 3.5)}
+      >
         {rs.map((t, j) => {
           const h = (
-            <Rect y={-30 + j * 58} width={LW - 20} height={46} radius={8} fill={colors.clear}>
+            <Rect y={-30 + j * 58} width={LW - 20} height={46} radius={radius(8)} fill={colors.clear}>
               <Txt text={t} fontFamily={fonts.mono} fontWeight={700} fontSize={rowFontSize} fill={colors.ink} />
             </Rect>
           ) as Rect;

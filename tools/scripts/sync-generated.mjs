@@ -120,8 +120,10 @@ for (const match of colorsSource.matchAll(COLOR_ENTRY)) {
   palette[match[1]] = match[2];
 }
 const colorCount = Object.keys(palette).length;
-if (colorCount === 0) fail(COLORS_FILE, "no colour entries matching key: '#value' found");
+if (colorCount === 0) {
+  console.warn('warning: palette not generated (themes replace it in step 15)');
+} else {
+  await writeFile(PALETTE_FILE, `${JSON.stringify(palette, null, 2)}\n`, 'utf8');
+}
 
-await writeFile(PALETTE_FILE, `${JSON.stringify(palette, null, 2)}\n`, 'utf8');
-
-console.log(`synced ${lessons.size} lessons and ${colorCount} palette colours`);
+console.log(`synced ${lessons.size} lesson(s)${colorCount > 0 ? ` and ${colorCount} palette colours` : ''}`);

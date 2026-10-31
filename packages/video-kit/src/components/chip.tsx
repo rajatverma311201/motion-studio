@@ -1,7 +1,7 @@
 import {Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 /** Optional styling for {@link chip}. */
 export interface ChipOptions {
@@ -27,16 +27,16 @@ export function chip(text: string, fill: string, o: ChipOptions = {}): Rect {
       layout
       alignItems="center"
       padding={[6, 16]}
-      radius={10}
+      radius={radius(10)}
       fill={fill}
       rotation={o.rot ?? 0}
       x={o.x ?? 0}
       y={o.y ?? 0}
-      {...neubrutal(o.shadow ?? colors.ink, o.sh ?? 5, 3.5)}
+      {...boxStyle(o.shadow ?? colors.ink, o.sh ?? 5, 3.5)}
     >
       <Txt
         text={text}
-        fill={o.color ?? colors.dark}
+        fill={o.color ?? colors.onAccent}
         fontSize={o.fs ?? 22}
         fontWeight={700}
         fontFamily={o.mono === false ? fonts.sans : fonts.mono}

@@ -1,7 +1,5 @@
 import {Circle, Line, Node, Rect, Txt} from '@motion-canvas/2d';
-import {colors} from '../../theme';
-import {fonts} from '../../theme/fonts';
-import {neubrutal} from '../../theme/neubrutal';
+import {boxStyle, colors, fonts, radius, withAlpha} from '../../theme';
 import type {CodeLanguage} from './languages';
 import {tokenize} from './tokenizer';
 
@@ -38,8 +36,15 @@ export function codePanel(options: CodePanelOptions): CodePanel {
   const h = 64 + options.code.length * LINE_HEIGHT + 36;
   const lineY = (i: number): number => -h / 2 + 64 + 18 + i * LINE_HEIGHT + LINE_HEIGHT / 2;
   const hl = (
-    <Rect width={options.w - 24} height={LINE_HEIGHT} radius={8} fill="rgba(255,255,255,0.09)" opacity={0} y={lineY(0)}>
-      <Rect x={-(options.w - 24) / 2 + 3} width={6} height={LINE_HEIGHT - 8} radius={3} fill={options.accent} />
+    <Rect
+      width={options.w - 24}
+      height={LINE_HEIGHT}
+      radius={radius(8)}
+      fill={withAlpha(colors.ink, 0.09)}
+      opacity={0}
+      y={lineY(0)}
+    >
+      <Rect x={-(options.w - 24) / 2 + 3} width={6} height={LINE_HEIGHT - 8} radius={radius(3)} fill={options.accent} />
     </Rect>
   ) as Rect;
   // Each token is its own Txt on a fixed monospace grid (0.6 em per glyph):
@@ -71,11 +76,11 @@ export function codePanel(options: CodePanelOptions): CodePanel {
       y={options.y}
       width={options.w}
       height={h}
-      radius={20}
+      radius={radius(20)}
       fill={colors.code}
-      {...neubrutal(options.accent, 10, 4)}
+      {...boxStyle(options.accent, 10, 4)}
     >
-      <Rect y={-h / 2 + 32} width={options.w} height={64} fill={colors.surf2} radius={[20, 20, 0, 0]} />
+      <Rect y={-h / 2 + 32} width={options.w} height={64} fill={colors.surf2} radius={radius([20, 20, 0, 0])} />
       <Line
         points={[
           [-options.w / 2, -h / 2 + 64],

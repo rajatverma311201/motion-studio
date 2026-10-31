@@ -7,11 +7,13 @@ import {
   fonts,
   label,
   leave,
-  neubrutal,
   pop,
   say,
   shake,
   statCard,
+  boxStyle,
+  radius,
+  withAlpha,
 } from '@motion-studio/video-kit';
 
 // ================================================================ FULL TABLE SCAN
@@ -35,9 +37,9 @@ export function* scanSection(view: View2D): ThreadGenerator {
       layout
       alignItems="center"
       padding={[8, 20]}
-      radius={12}
+      radius={radius(12)}
       fill={colors.code}
-      {...neubrutal(colors.pink, 6, 3.5)}
+      {...boxStyle(colors.pink, 6, 3.5)}
     >
       <Txt
         text="SELECT * FROM users WHERE name = 'Ria';"
@@ -50,7 +52,15 @@ export function* scanSection(view: View2D): ThreadGenerator {
   ) as Rect;
   const rowRects: Rect[] = [];
   const tbl = (
-    <Rect x={-470} y={-5} width={700} height={595} radius={22} fill={colors.surf} {...neubrutal(colors.cyan, 9, 4)}>
+    <Rect
+      x={-470}
+      y={-5}
+      width={700}
+      height={595}
+      radius={radius(22)}
+      fill={colors.surf}
+      {...boxStyle(colors.cyan, 9, 4)}
+    >
       <Txt
         x={-300}
         y={-240}
@@ -94,7 +104,7 @@ export function* scanSection(view: View2D): ThreadGenerator {
       />
       {data.map(([id, name, city], i) => {
         const r = (
-          <Rect y={-172 + i * 54} width={668} height={46} radius={10} fill={colors.clear} opacity={0}>
+          <Rect y={-172 + i * 54} width={668} height={46} radius={radius(10)} fill={colors.clear} opacity={0}>
             <Txt
               x={-300}
               offsetX={-1}
@@ -134,7 +144,7 @@ export function* scanSection(view: View2D): ThreadGenerator {
             y={-20 + r * 52}
             width={42}
             height={42}
-            radius={9}
+            radius={radius(9)}
             fill={colors.surf2}
             stroke={colors.dim}
             lineWidth={3}
@@ -175,7 +185,7 @@ export function* scanSection(view: View2D): ThreadGenerator {
   pagesStat.val.text('1');
   for (let i = 0; i < data.length; i++) {
     const hit = data[i][1] === 'Ria';
-    yield* rowRects[i].fill(hit ? 'rgba(198,255,61,0.35)' : 'rgba(255,210,61,0.28)', 0.12);
+    yield* rowRects[i].fill(hit ? withAlpha(colors.lime, 0.35) : withAlpha(colors.yellow, 0.28), 0.12);
     rowsStat.val.text(String(i + 1));
     yield* waitFor(0.28);
     if (!hit) yield* rowRects[i].fill(colors.clear, 0.15);

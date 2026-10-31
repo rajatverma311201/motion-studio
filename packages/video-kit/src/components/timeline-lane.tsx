@@ -1,7 +1,7 @@
 import {Line, Node, Rect, Txt} from '@motion-canvas/2d';
+import {boxStyle, radius} from '../theme/box-style';
 import {colors} from '../theme/colors';
 import {fonts} from '../theme/fonts';
-import {neubrutal} from '../theme/neubrutal';
 
 /** Options for {@link timelineLane}. */
 export interface TimelineLaneOptions {
@@ -35,8 +35,8 @@ export function timelineLane(options: TimelineLaneOptions): Node {
         lineWidth={4}
         lineDash={[10, 10]}
       />
-      <Rect x={labelX} y={y} width={100} height={64} radius={14} fill={color} {...neubrutal(colors.ink, 5, 3.5)}>
-        <Txt text={label} fontFamily={fonts.sans} fontWeight={700} fontSize={38} fill={colors.dark} />
+      <Rect x={labelX} y={y} width={100} height={64} radius={radius(14)} fill={color} {...boxStyle(colors.ink, 5, 3.5)}>
+        <Txt text={label} fontFamily={fonts.sans} fontWeight={700} fontSize={38} fill={colors.onAccent} />
       </Rect>
     </Node>
   ) as Node;

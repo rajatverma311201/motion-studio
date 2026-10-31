@@ -12,6 +12,7 @@ import {
   revealLines,
   say,
   shake,
+  radius,
 } from '@motion-studio/video-kit';
 import {coin, fmt, moveBal, setTag, totalChip} from '../shared';
 
@@ -36,7 +37,7 @@ export function* beginCommitRollbackSection(view: View2D): ThreadGenerator {
       y={-45}
       width={580}
       height={500}
-      radius={34}
+      radius={radius(34)}
       stroke={colors.lime}
       lineWidth={4}
       lineDash={[16, 12]}
