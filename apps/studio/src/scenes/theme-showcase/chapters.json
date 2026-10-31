@@ -1,0 +1,36 @@
+{
+  "slug": "theme-showcase",
+  "title": "THEME SHOWCASE",
+  "chapters": [
+    {
+      "name": "TITLE",
+      "color": "lime",
+      "summary": "The active theme and mode, written on the title card."
+    },
+    {
+      "name": "PALETTE",
+      "color": "cyan",
+      "summary": "All seven accent slots plus the surface, ink and mute tokens."
+    },
+    {
+      "name": "COMPONENTS",
+      "color": "pink",
+      "summary": "Chips, cards, stat cards, bullet rows and the tree legend."
+    },
+    {
+      "name": "CODE",
+      "color": "yellow",
+      "summary": "SQL and EXPLAIN panels with revealed lines and a moving focus bar."
+    },
+    {
+      "name": "TREE",
+      "color": "violet",
+      "summary": "A B-tree built with playInsert, then the compact mini tree."
+    },
+    {
+      "name": "HUD",
+      "color": "orange",
+      "summary": "Three captions cycle through the caption bar while the pills light up."
+    }
+  ]
+}
