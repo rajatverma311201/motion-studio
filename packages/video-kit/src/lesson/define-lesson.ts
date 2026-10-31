@@ -4,19 +4,11 @@ import type {Scene2D} from '@motion-canvas/2d';
 import {makeScene2D} from '@motion-canvas/2d';
 import {buildHud, setSection} from '../hud';
 import {colors} from '../theme';
-import {resolveThemeSelection, setActiveTheme} from '../themes/active-theme';
+import {parseLookHash, resolveThemeSelection, setActiveTheme} from '../themes/active-theme';
+import {readBuildLook, readLocationHash} from '../themes/build-look';
 import {themeIds} from '../themes/registry';
 import {resolveChapters} from './chapters';
 import type {LessonConfig} from './lesson-types';
-
-/** Read the dev URL hash without assuming a browser. */
-function readHash(): string | undefined {
-  try {
-    return typeof location === 'undefined' ? undefined : location.hash;
-  } catch {
-    return undefined;
-  }
-}
 
 /**
  * Pure start-section resolution. The player variable wins over the dev hash,
@@ -51,7 +43,7 @@ export function readStartSection(total: number): number {
     // Outside a running scene there are no variables; the hash fallback still works.
   }
 
-  return parseStartSection(readHash(), variable, total);
+  return parseStartSection(readLocationHash(), variable, total);
 }
 
 /**
@@ -93,14 +85,26 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
       );
     }
 
-    const {themeId, mode} = resolveThemeSelection({
-      themeVariable,
-      modeVariable,
-      hash: readHash(),
+    const hash = parseLookHash(readLocationHash());
+    const build = readBuildLook();
+    if (build.configTheme && !themeIds.includes(build.configTheme)) {
+      console.warn(`Unknown theme "${build.configTheme}" in video.config.json; using the next valid source.`);
+    }
+
+    const {themeId, mode, source} = resolveThemeSelection({
+      hashTheme: hash.theme,
+      hashMode: hash.mode,
+      cliTheme: build.cliTheme,
+      cliMode: build.cliMode,
+      variableTheme: themeVariable,
+      variableMode: modeVariable,
       lessonTheme: chapters.theme,
       lessonMode: chapters.mode,
+      configTheme: build.configTheme,
+      configMode: build.configMode,
     });
     setActiveTheme(themeId, mode);
+    console.info(`[video-kit] look: ${themeId} / ${mode}  (theme from ${source.theme}, mode from ${source.mode})`);
 
     view.fill(colors.bg);
     const start = readStartSection(total);

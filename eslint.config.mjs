@@ -55,7 +55,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/docs/src/routes/**', '**/*.d.ts', '**/*.config.*'],
+    files: ['apps/docs/src/routes/**', '**/*.d.ts', '**/*.config.{js,mjs,cjs,ts,mts,cts}'],
     rules: {'check-file/filename-naming-convention': 'off'},
   },
   {

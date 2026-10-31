@@ -1,23 +1,32 @@
 import {DEFAULT_MODE, DEFAULT_THEME_ID, getThemeById} from './registry';
 import type {ResolvedTheme, Theme, ThemeMode} from './theme-types';
 
-/** Inputs collected from every layer that can pick a theme. Later steps add more layers as new lists. */
+/** The layer that supplied a resolved value. */
+export type ThemeSource = 'hash' | 'cli' | 'variable' | 'lesson' | 'config' | 'default';
+
+/** Every layer that can pick a theme or a mode. Each field is resolved independently. */
 export interface ThemeSelectionInput {
-  themeVariable?: string;
-  modeVariable?: string;
-  hash?: string;
+  hashTheme?: string;
+  hashMode?: string;
+  cliTheme?: string;
+  cliMode?: string;
+  variableTheme?: string;
+  variableMode?: string;
   lessonTheme?: string;
   lessonMode?: string;
+  configTheme?: string;
+  configMode?: string;
 }
 
-/** The pair that `setActiveTheme` needs. */
+/** The pair that `setActiveTheme` needs, plus where each half came from. */
 export interface ThemeSelection {
   themeId: string;
   mode: ThemeMode;
+  source: {theme: ThemeSource; mode: ThemeSource};
 }
 
-const THEME_HASH = /[#&]theme=([a-z0-9-]+)/;
-const MODE_HASH = /[#&]mode=(dark|light)/;
+const THEME_HASH = /(?:^|[#&])theme=([a-z0-9-]+)/;
+const MODE_HASH = /(?:^|[#&])mode=(dark|light)/;
 
 let activeId = DEFAULT_THEME_ID;
 let activeMode: ThemeMode = DEFAULT_MODE;
@@ -42,25 +51,66 @@ function resolveTheme(id: string): Theme {
 }
 
 /**
- * Select the theme id and mode from ordered candidate lists.
- *
- * Precedence (highest first) is: player variable, dev URL hash, chapters.json,
- * then the defaults. Unknown values are skipped, never thrown.
+ * Pull the look parameters out of a URL hash such as `#s=3&theme=tokyo-night&mode=light`.
+ * Absent or malformed values are left undefined.
  *
  * @example
- * resolveThemeSelection({hash: '#s=3&theme=neubrutal&mode=light'}); // {themeId: 'neubrutal', mode: 'light'}
+ * parseLookHash('#s=3&theme=tokyo-night&mode=light'); // {theme: 'tokyo-night', mode: 'light'}
+ */
+export function parseLookHash(hash: string | undefined): {theme?: string; mode?: string} {
+  if (!hash) return {};
+  return {
+    theme: THEME_HASH.exec(hash)?.[1],
+    mode: MODE_HASH.exec(hash)?.[1],
+  };
+}
+
+/**
+ * Select the theme id and mode from every layer. Precedence, highest first:
+ * URL hash, CLI flag, player variable, chapters.json, video.config.json, built-in.
+ * Each field resolves on its own; invalid values are skipped, never thrown.
+ *
+ * @example
+ * resolveThemeSelection({cliTheme: 'tokyo-night', lessonMode: 'light'}); // tokyo-night / light, theme from cli
  */
 export function resolveThemeSelection(input: ThemeSelectionInput): ThemeSelection {
-  const hashTheme = input.hash ? THEME_HASH.exec(input.hash)?.[1] : undefined;
-  const themeCandidates = [input.themeVariable, hashTheme, input.lessonTheme];
-  const themeId = themeCandidates.find(candidate => candidate !== undefined && getThemeById(candidate) !== undefined);
-  const resolvedId = themeId ?? DEFAULT_THEME_ID;
+  const themeCandidates: [string | undefined, ThemeSource][] = [
+    [input.hashTheme, 'hash'],
+    [input.cliTheme, 'cli'],
+    [input.variableTheme, 'variable'],
+    [input.lessonTheme, 'lesson'],
+    [input.configTheme, 'config'],
+  ];
 
-  const hashMode = input.hash ? MODE_HASH.exec(input.hash)?.[1] : undefined;
-  const modeCandidates = [input.modeVariable, hashMode, input.lessonMode];
-  const mode = modeCandidates.find(isMode) ?? resolveTheme(resolvedId).defaultMode;
+  let themeId = DEFAULT_THEME_ID;
+  let themeSource: ThemeSource = 'default';
+  for (const [candidate, source] of themeCandidates) {
+    if (candidate !== undefined && getThemeById(candidate) !== undefined) {
+      themeId = candidate;
+      themeSource = source;
+      break;
+    }
+  }
 
-  return {themeId: resolvedId, mode};
+  const modeCandidates: [string | undefined, ThemeSource][] = [
+    [input.hashMode, 'hash'],
+    [input.cliMode, 'cli'],
+    [input.variableMode, 'variable'],
+    [input.lessonMode, 'lesson'],
+    [input.configMode, 'config'],
+  ];
+
+  let mode = resolveTheme(themeId).defaultMode;
+  let modeSource: ThemeSource = 'default';
+  for (const [candidate, source] of modeCandidates) {
+    if (isMode(candidate)) {
+      mode = candidate;
+      modeSource = source;
+      break;
+    }
+  }
+
+  return {themeId, mode, source: {theme: themeSource, mode: modeSource}};
 }
 
 /**

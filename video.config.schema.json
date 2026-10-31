@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://motion-studio.local/schemas/video.config.schema.json",
+  "title": "VideoConfig",
+  "description": "Default look for every video. A lesson's chapters.json overrides it, and the studio flags or the URL hash override both.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "theme": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Theme id, e.g. \"tokyo-night\". Unknown ids are skipped."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["dark", "light"],
+      "description": "Theme mode. The theme's defaultMode is used when omitted."
+    }
+  }
+}

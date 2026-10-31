@@ -1,15 +1,19 @@
 export {
   getTheme,
+  parseLookHash,
   resolveThemeSelection,
   setActiveTheme,
   type ThemeSelection,
   type ThemeSelectionInput,
+  type ThemeSource,
 } from './active-theme';
 export {blueprintTheme} from './blueprint';
+export {readBuildLook, readLocationHash, type BuildLook} from './build-look';
 export {contrastRatio, mix, parseColor, withAlpha, type ParsedColor} from './color-utils';
 export {neubrutalTheme} from './neubrutal';
 export {notebookTheme} from './notebook';
 export {paperEditorialTheme} from './paper-editorial';
+export {resolveProjectName, type LessonLook} from './project-name';
 export {shadcnTheme} from './shadcn';
 export {terminalGreenTheme} from './terminal-green';
 export {tokyoNightTheme} from './tokyo-night';
