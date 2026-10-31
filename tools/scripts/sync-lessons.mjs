@@ -22,6 +22,7 @@ const CONFIG_FILE = path.join(ROOT, 'video.config.json');
 const PALETTE = ['lime', 'pink', 'cyan', 'yellow', 'violet', 'orange', 'red'];
 const MODES = ['dark', 'light'];
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const AT = /^(?:[0-9]{1,2}:[0-5][0-9]|[0-9]+:[0-5][0-9]:[0-5][0-9])$/;
 
 const {themes, themeIds} = await import(
   pathToFileURL(path.join(ROOT, 'packages/video-kit/src/themes/registry.ts')).href
@@ -92,6 +93,20 @@ function validate(file, data) {
   if (data.mode !== undefined && !MODES.includes(data.mode)) {
     fail(file, 'mode must be "dark" or "light"');
   }
+  if (data.summaryPoints !== undefined) {
+    if (!Array.isArray(data.summaryPoints)) {
+      fail(file, 'summaryPoints must be an array when present');
+    }
+    const todoPlaceholder = data.summaryPoints.length === 1 && data.summaryPoints[0] === 'TODO';
+    if (!todoPlaceholder && (data.summaryPoints.length < 3 || data.summaryPoints.length > 8)) {
+      fail(file, 'summaryPoints must have 3 to 8 entries (or exactly ["TODO"])');
+    }
+    data.summaryPoints.forEach((point, index) => {
+      if (typeof point !== 'string' || point.length === 0) {
+        fail(file, `summaryPoints[${index}] must be a non-empty string`);
+      }
+    });
+  }
   if (!Array.isArray(data.chapters) || data.chapters.length === 0) {
     fail(file, 'chapters must be a non-empty array');
   }
@@ -110,6 +125,9 @@ function validate(file, data) {
     }
     if (chapter.summary !== undefined && typeof chapter.summary !== 'string') {
       fail(file, `chapters[${index}].summary must be a string when present`);
+    }
+    if (chapter.at !== undefined && (typeof chapter.at !== 'string' || !AT.test(chapter.at))) {
+      fail(file, `chapters[${index}].at must be m:ss or h:mm:ss when present (got ${JSON.stringify(chapter.at)})`);
     }
   });
 }

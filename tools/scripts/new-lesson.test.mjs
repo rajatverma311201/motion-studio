@@ -70,7 +70,9 @@ test('generates a studio project, sections, lesson page and meta entry', async t
     chapters.chapters.map(chapter => chapter.color),
     ['lime', 'cyan', 'pink'],
   );
+  assert.deepEqual(chapters.summaryPoints, ['TODO']);
   for (const chapter of chapters.chapters) assert.equal(typeof chapter.summary, 'string');
+  for (const chapter of chapters.chapters) assert.equal(chapter.at, undefined);
 
   const scene = await read(root, 'apps/studio/src/scenes', SLUG, 'scene.tsx');
   assert.match(scene, /defineLesson/);
@@ -96,13 +98,17 @@ test('generates a studio project, sections, lesson page and meta entry', async t
   const page = await read(root, 'apps/docs/content/docs/databases', `${SLUG}.mdx`);
   assert.match(page, /^---\n/);
   assert.match(page, new RegExp(`video: ${SLUG}`));
-  assert.match(page, /status: draft/);
+  assert.match(page, /status: outline/);
   assert.match(page, /duration: TBD/);
-  assert.match(page, /## What you will learn/);
-  assert.match(page, /## Chapters/);
-  assert.match(page, /## Chapter notes/);
-  assert.match(page, /### 2\. Chapter 2/);
+  assert.match(page, /## Summary points/);
+  assert.match(page, /## Chapters and voiceover notes/);
+  assert.match(page, /## YouTube description/);
+  assert.match(page, /### 02 · CHAPTER 2/);
   assert.match(page, new RegExp(`<LessonVideo slug="${SLUG}" />`));
+  assert.match(page, new RegExp(`<SummaryPoints slug="${SLUG}" />`));
+  assert.match(page, new RegExp(`<YoutubeDescription slug="${SLUG}" />`));
+  assert.match(page, /<VoiceoverNotes>/);
+  assert.match(page, /- TODO: first thing to say/);
 
   const meta = JSON.parse(await read(root, 'apps/docs/content/docs/databases/meta.json'));
   assert.equal(meta.title, 'Databases');

@@ -12,6 +12,8 @@ export interface LessonChapter {
   color: ColorName;
   /** One sentence for the docs page (not shown in the video). */
   summary?: string;
+  /** Timestamp in the final render, e.g. "4:12". Filled in after the render. */
+  at?: string;
 }
 
 export interface ChaptersFile {
@@ -21,6 +23,8 @@ export interface ChaptersFile {
   theme?: string;
   /** Optional theme mode; the theme's defaultMode wins when omitted. */
   mode?: ThemeMode;
+  /** 3 to 8 short points for the docs page and the YouTube description. */
+  summaryPoints?: string[];
   chapters: LessonChapter[];
 }
 

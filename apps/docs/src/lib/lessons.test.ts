@@ -1,58 +1,41 @@
 import {describe, expect, it, vi} from 'vitest';
 
 vi.mock('@/lib/source', () => ({
-  source: {getPages: () => []},
+  source: {getPages: () => [], getPageTree: () => ({children: []})},
 }));
 
-import {filterPublished, sortLessons} from './lessons';
+import {courseName, lookLabel, statusCounts} from './lessons';
 
-interface TestPage {
-  data: {
-    title: string;
-    video?: string;
-    status?: 'draft' | 'published';
-  };
-}
-
-function page(title: string, video?: string, status?: 'draft' | 'published'): TestPage {
-  return {data: {title, video, status}};
-}
-
-describe('filterPublished', () => {
-  it('keeps published pages that have a video', () => {
-    const pages = [
-      page('Published', 'db-published', 'published'),
-      page('Draft', 'db-draft', 'draft'),
-      page('No video', undefined, 'published'),
-      page('Draft without video', undefined, 'draft'),
-    ];
-
-    expect(filterPublished(pages).map(item => item.data.title)).toEqual(['Published']);
+describe('courseName', () => {
+  it('turns a course slug into a display name', () => {
+    expect(courseName('databases')).toBe('Databases');
+    expect(courseName('distributed-systems')).toBe('Distributed Systems');
   });
 
-  it('treats a missing status as published', () => {
-    expect(filterPublished([page('Default', 'db-default')]).map(item => item.data.title)).toEqual(['Default']);
-  });
-
-  it('returns a new array and leaves the input untouched', () => {
-    const pages = [page('Published', 'db-published', 'published')];
-    const filtered = filterPublished(pages);
-
-    expect(filtered).not.toBe(pages);
-    expect(pages).toHaveLength(1);
+  it('falls back when the page has no course folder', () => {
+    expect(courseName(undefined)).toBe('Lessons');
   });
 });
 
-describe('sortLessons', () => {
-  it('sorts by title without mutating the input', () => {
-    const pages = [page('Zeta'), page('alpha'), page('Beta')];
-    const sorted = sortLessons(pages);
+describe('lookLabel', () => {
+  it('joins the theme name and mode', () => {
+    expect(lookLabel({theme: 'tokyo-night', themeName: 'Tokyo Night', mode: 'light'})).toBe('Tokyo Night · Light');
+    expect(lookLabel({theme: 'neubrutal', themeName: 'Neubrutal', mode: 'dark'})).toBe('Neubrutal · Dark');
+  });
 
-    expect(sorted.map(item => item.data.title)).toEqual(['alpha', 'Beta', 'Zeta']);
-    expect(pages.map(item => item.data.title)).toEqual(['Zeta', 'alpha', 'Beta']);
+  it('returns an empty label without studio data', () => {
+    expect(lookLabel(undefined)).toBe('');
+  });
+});
+
+describe('statusCounts', () => {
+  it('counts every status and defaults missing ones to zero', () => {
+    expect(
+      statusCounts([{status: 'published'}, {status: 'published'}, {status: 'outline'}, {status: 'voiced'}]),
+    ).toEqual({outline: 1, animated: 0, rendered: 0, voiced: 1, published: 2});
   });
 
   it('handles an empty list', () => {
-    expect(sortLessons([])).toEqual([]);
+    expect(statusCounts([])).toEqual({outline: 0, animated: 0, rendered: 0, voiced: 0, published: 0});
   });
 });

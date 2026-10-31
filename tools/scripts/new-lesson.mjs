@@ -83,10 +83,6 @@ function chapterLabel(index) {
   return index === 0 ? 'INTRO' : `CHAPTER ${index + 1}`;
 }
 
-function titleCaseLabel(name) {
-  return name.toLowerCase().replace(/(^|\s)(\w)/g, (_, space, letter) => `${space}${letter.toUpperCase()}`);
-}
-
 function tsString(value) {
   return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
 }
@@ -169,56 +165,39 @@ export default makeProject({name: resolveProjectName(lesson.slug, lesson), scene
 
 function lessonPageSource({slug, title, chapters}) {
   const notes = chapters
-    .map((chapter, index) => `### ${index + 1}. ${titleCaseLabel(chapter.name)}\n\nTODO: notes for this chapter.`)
+    .map(
+      (chapter, index) => `### ${String(index + 1).padStart(2, '0')} · ${chapter.name}
+
+<VoiceoverNotes>
+
+- TODO: first thing to say about this chapter
+- TODO: second point
+
+</VoiceoverNotes>`,
+    )
     .join('\n\n');
 
   return `---
 title: ${yamlString(title)}
 description: 'TODO: one sentence about this lesson.'
 video: ${slug}
+status: outline
 duration: TBD
-level: beginner
-tags: []
-status: draft
 ---
 
 <LessonVideo slug="${slug}" />
 
-## What you will learn
+## Summary points
 
-TODO: three to six things this lesson explains.
+<SummaryPoints slug="${slug}" />
 
-## Chapters
-
-<LessonChapters slug="${slug}" />
-
-## The idea in one minute
-
-TODO: one paragraph that states the core idea.
-
-## Chapter notes
+## Chapters and voiceover notes
 
 ${notes}
 
-## Cheat sheet
+## YouTube description
 
-| Concept | One-line rule | When it matters |
-| --- | --- | --- |
-| TODO | TODO | TODO |
-
-## Common mistakes
-
-<Callout type="warn" title="TODO">
-  TODO: describe a mistake and its fix.
-</Callout>
-
-## Try it yourself
-
-TODO: a small example the reader can run.
-
-## Go deeper
-
-- TODO: link to a reference.
+<YoutubeDescription slug="${slug}" />
 `;
 }
 
@@ -299,6 +278,7 @@ const chaptersData = {
   title: title.toUpperCase(),
   ...(theme !== undefined ? {theme} : {}),
   ...(mode !== undefined ? {mode} : {}),
+  summaryPoints: ['TODO'],
   chapters,
 };
 const generated = [
@@ -347,6 +327,7 @@ console.log('');
 console.log('Next steps:');
 console.log(`  1. Preview in the editor: http://localhost:9000/src/projects/${slug}`);
 console.log(`     Start at a section with #s=N: http://localhost:9000/src/projects/${slug}#s=2`);
-console.log('  2. Replace the TODO captions and chapter names with real content.');
-console.log('  3. Set `status: published` in the lesson page frontmatter when done.');
-console.log(`  4. The look comes from chapters.json and video.config.json; override it with: pnpm studio --theme <id>`);
+console.log('  2. Replace the TODO captions, chapter names and voiceover notes with real content.');
+console.log('  3. Fill `summaryPoints` in chapters.json, then set `status` as the video moves through the pipeline.');
+console.log('  4. Set `status: published` and add `youtube:` when the video is live.');
+console.log(`  5. The look comes from chapters.json and video.config.json; override it with: pnpm studio --theme <id>`);
