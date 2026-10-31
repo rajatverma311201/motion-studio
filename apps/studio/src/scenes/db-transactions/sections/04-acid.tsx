@@ -142,9 +142,7 @@ export function* acidSection(view: View2D): ThreadGenerator {
         const bot = (
           <Circle y={36} size={[110, 34]} fill={colors.violet} stroke={colors.ink} lineWidth={4} />
         ) as Circle;
-        const top = (
-          <Circle y={-48} size={[110, 34]} fill="#B7A0FF" stroke={colors.ink} lineWidth={4} />
-        ) as Circle;
+        const top = (<Circle y={-48} size={[110, 34]} fill="#B7A0FF" stroke={colors.ink} lineWidth={4} />) as Circle;
         const ok = (
           <Circle x={48} y={-56} size={38} fill={colors.lime} stroke={colors.ink} lineWidth={3.5}>
             <Txt text="✓" fontFamily={fonts.sans} fontWeight={700} fontSize={24} fill={colors.dark} />
@@ -184,15 +182,7 @@ export function* acidSection(view: View2D): ThreadGenerator {
     screens.push(screen);
     return (
       <Rect x={xs[i]} y={-10} width={CW} height={640} radius={26} fill={colors.surf} {...neubrutal(sp.color, 10, 4)}>
-        <Rect
-          y={-215}
-          width={150}
-          height={150}
-          radius={26}
-          fill={sp.color}
-          stroke={colors.ink}
-          lineWidth={4}
-        >
+        <Rect y={-215} width={150} height={150} radius={26} fill={sp.color} stroke={colors.ink} lineWidth={4}>
           <Txt text={sp.letter} fontFamily={fonts.sans} fontWeight={700} fontSize={120} fill={colors.dark} />
         </Rect>
         <Txt

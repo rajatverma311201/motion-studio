@@ -178,10 +178,7 @@ export function* isolationLevelsSection(view: View2D): ThreadGenerator {
   yield* waitFor(0.8);
   for (let i = 0; i < rows.length; i++) {
     yield* say(rows[i].cap);
-    yield* all(
-      pop(levelCells[i], 0.35),
-      delay(0.2, sequence(0.18, ...cells[i].map(c => pop(c, 0.3)))),
-    );
+    yield* all(pop(levelCells[i], 0.35), delay(0.2, sequence(0.18, ...cells[i].map(c => pop(c, 0.3)))));
     yield* waitFor(2.6);
   }
   yield* say('More isolation means more safety, but less concurrency. Pick the weakest safe level.');

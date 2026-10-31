@@ -91,13 +91,10 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
   const n = defs.length;
   const step = 38;
   const layout = options.pills;
-  const pillX = (i: number): number =>
-    layout ? layout.startX + i * layout.step : 904 - (n - i) * step + step / 2;
+  const pillX = (i: number): number => (layout ? layout.startX + i * layout.step : 904 - (n - i) * step + step / 2);
   hudState.pills = defs.map(
     (_, i) =>
-      (
-        <Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={7} fill={colors.dim} />
-      ) as Rect,
+      (<Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={7} fill={colors.dim} />) as Rect,
   );
   view.add(
     <Node zIndex={50}>

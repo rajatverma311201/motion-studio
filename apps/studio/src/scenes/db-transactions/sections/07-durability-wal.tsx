@@ -1,25 +1,12 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, easeInOutCubic, sequence, tween, waitFor} from '@motion-canvas/core';
-import {
-  chip,
-  colors,
-  fonts,
-  leave,
-  logRow,
-  neubrutal,
-  pop,
-  say,
-  shake,
-  titledPanel,
-} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, logRow, neubrutal, pop, say, shake, titledPanel} from '@motion-studio/video-kit';
 
 // ================================================================ 06 DURABILITY / WAL
 export function* durabilityWalSection(view: View2D): ThreadGenerator {
   const root = createRef<Node>();
   const client = titledPanel({x: -780, y: -40, width: 190, height: 130, title: 'CLIENT', color: colors.cyan});
-  client.add(
-    <Txt y={22} text="COMMIT;" fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.ink} />,
-  );
+  client.add(<Txt y={22} text="COMMIT;" fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.ink} />);
   const ram = titledPanel({x: -380, y: -40, width: 330, height: 360, title: 'RAM · BUFFER POOL', color: colors.orange});
   const wal = titledPanel({
     x: 200,
@@ -105,15 +92,7 @@ export function* durabilityWalSection(view: View2D): ThreadGenerator {
         <Rect x={-132} width={36} height={36} radius={10} fill={colors.dim}>
           <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
         </Rect>
-        <Txt
-          x={-104}
-          offsetX={-1}
-          text={t}
-          fontFamily={fonts.mono}
-          fontWeight={700}
-          fontSize={16}
-          fill={colors.mute}
-        />
+        <Txt x={-104} offsetX={-1} text={t} fontFamily={fonts.mono} fontWeight={700} fontSize={16} fill={colors.mute} />
       </Rect>
     ) as Rect;
     r.opacity(0);
@@ -279,19 +258,8 @@ export function* durabilityWalSection(view: View2D): ThreadGenerator {
   yield* waitFor(1.6);
 
   yield* say('Crash! Memory is wiped. The data files never got the update.');
-  yield* all(
-    pop(power, 0.3),
-    shake(ram, 10, 6),
-    ram.stroke(colors.red, 0.3),
-    ram.shadowColor(colors.red, 0.3),
-  );
-  yield* all(
-    pgA.opacity(0, 0.4),
-    pgB.opacity(0, 0.4),
-    dirtyTag.opacity(0, 0.3),
-    lost.opacity(1, 0.4),
-    pop(stale, 0.3),
-  );
+  yield* all(pop(power, 0.3), shake(ram, 10, 6), ram.stroke(colors.red, 0.3), ram.shadowColor(colors.red, 0.3));
+  yield* all(pgA.opacity(0, 0.4), pgB.opacity(0, 0.4), dirtyTag.opacity(0, 0.3), lost.opacity(1, 0.4), pop(stale, 0.3));
   yield* waitFor(2.2);
 
   yield* say('On restart the database replays the log and re-applies every committed change.');

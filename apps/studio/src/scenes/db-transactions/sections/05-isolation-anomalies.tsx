@@ -172,9 +172,7 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
       ) as Rect,
   );
   // lanes
-  const lanes = [1, 2].map(l =>
-    timelineLane({y: LY[l], label: `T${l}`, color: l === 1 ? colors.pink : colors.cyan}),
-  );
+  const lanes = [1, 2].map(l => timelineLane({y: LY[l], label: `T${l}`, color: l === 1 ? colors.pink : colors.cyan}));
   const dbLabel = (
     <Rect x={-800} y={DBY} width={100} height={64} radius={14} fill={colors.surf2} {...neubrutal(colors.ink, 5, 3.5)}>
       <Txt text="DB" fontFamily={fonts.sans} fontWeight={700} fontSize={34} fill={colors.ink} />
@@ -243,7 +241,15 @@ export function* isolationAnomaliesSection(view: View2D): ThreadGenerator {
       const ev = an.evs[e];
       const col = ev.lane === 1 ? colors.pink : colors.cyan;
       const card = (
-        <Rect x={SX[e]} y={LY[ev.lane]} width={400} height={104} radius={16} fill={colors.surf} {...neubrutal(col, 7, 4)}>
+        <Rect
+          x={SX[e]}
+          y={LY[ev.lane]}
+          width={400}
+          height={104}
+          radius={16}
+          fill={colors.surf}
+          {...neubrutal(col, 7, 4)}
+        >
           <Txt y={-18} text={ev.a} fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
           <Txt y={20} text={ev.b} fontFamily={fonts.mono} fontSize={18} fill={colors.mute} />
         </Rect>

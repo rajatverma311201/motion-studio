@@ -84,11 +84,7 @@ export function* problemSection(view: View2D): ThreadGenerator {
 
   yield* say('Step 1 runs: the money leaves Alice’s account.');
   yield* focusLine(code, 1, colors.cyan);
-  yield* all(
-    moveBal(alice, 700, 0.8, colors.yellow),
-    pop(c, 0.3),
-    c.position([-215, -45], 0.8, easeInOutCubic),
-  );
+  yield* all(moveBal(alice, 700, 0.8, colors.yellow), pop(c, 0.3), c.position([-215, -45], 0.8, easeInOutCubic));
   yield* waitFor(1.2);
 
   yield* say('The server dies before step 2 ever runs.');

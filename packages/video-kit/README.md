@@ -18,9 +18,14 @@ src/
     shake.ts              shake()
     count-to.ts           countTo()
   components/
+    account-card.tsx      accountCard()
     chip.tsx              chip(), chipText()
     label.tsx             label()
     card.tsx              card()
+    log-row.tsx           logRow()
+    stacked-title.tsx     stackedTitle()
+    timeline-lane.tsx     timelineLane()
+    titled-panel.tsx      titledPanel()
     title-slab.tsx        titleSlab(), titlePill()
     stat-card.tsx         statCard()
     legend.tsx            indexLegend()
@@ -125,6 +130,21 @@ Start-section precedence, highest first:
 
 The result is clamped into `[0, total - 1]`. The player web component passes the variable as JSON, e.g. `<motion-canvas-player variables='{"startSection": 3}'>`; the editor has no variables, so `#s=N` stays useful while authoring.
 
+Older lessons can keep their original HUD geometry through the optional `hud` config. The defaults reproduce the shared right-aligned pill row; `db-transactions` passes its fixed left-to-right row:
+
+```tsx
+export default defineLesson({
+  chapters: chapters as ChaptersFile,
+  sections,
+  hud: {
+    sectionChipX: -470,
+    pills: {startX: 504, step: 46, width: 36, activeWidth: 64},
+  },
+});
+```
+
+`BuildHudOptions.sectionChipX` moves the section chip; `pills` replaces the right-aligned row with a fixed `startX`/`step` layout and explicit inactive/active widths. Both fields are optional and only change geometry, never the HUD animation durations.
+
 ## How to add a component
 
 1. Pick the folder: visual primitives in `components/`, timed animations in `animation/`, design tokens in `theme/`, scene furniture in `hud/`.
@@ -153,7 +173,7 @@ Scenes are not part of this package. They import the barrel and keep their own s
 | `countTo`                                | same name                          | `animation/count-to.ts`     |
 | `hud`                                    | `hudState`                         | `hud/hud.tsx`               |
 | `buildHud`, `setSection`, `say`, `leave` | same names                         | `hud/*`                     |
-| `bigText`                                | deleted, replaced by `titleSlab()` | `components/title-slab.tsx` |
+| `bigText`                                | `stackedTitle()` (legacy) / `titleSlab()` (new) | `components/stacked-title.tsx` |
 | `CodeP`                                  | `CodePanel`                        | `components/code-panel/`    |
 | `codePanel(o)`                           | `codePanel(options)`               | `code-panel.tsx`            |
 | `Lang`                                   | `CodeLanguage`                     | `languages.ts`              |
@@ -165,6 +185,40 @@ Scenes are not part of this package. They import the barrel and keep their own s
 | `bullet`                                 | `bulletRow`                        | `components/bullet-row.tsx` |
 | `miniTree(cx, ...)`                      | `miniTree({cx, ...})`              | `components/mini-tree.tsx`  |
 | `lit` / `unlit`                          | `highlightStroke` / `clearStroke`  | `components/mini-tree.tsx`  |
+
+From `db-transactions/transactions.tsx`:
+
+| Old           | New              | File                            |
+| ------------- | ---------------- | ------------------------------- |
+| `account()`   | `accountCard()`  | `components/account-card.tsx`   |
+| `panel()`     | `titledPanel()`  | `components/titled-panel.tsx`   |
+| `tile()`      | `logRow()`       | `components/log-row.tsx`        |
+| lane JSX      | `timelineLane()` | `components/timeline-lane.tsx`  |
+| `bigText()`   | `stackedTitle()` | `components/stacked-title.tsx`  |
+
+## Lesson furniture
+
+`accountCard()` returns the card plus the balance text and status tag so a scene can animate them. Pass a formatter when the video needs a currency other than plain `en-US` numbers:
+
+```ts
+import {accountCard, colors} from '@motion-studio/video-kit';
+
+const alice = accountCard({
+  name: 'ALICE', letter: 'A', color: colors.cyan,
+  x: -560, y: -170, value: 1000,
+  format: n => '₹' + Math.round(n).toLocaleString('en-IN'),
+});
+view.add(alice.node);
+```
+
+`titledPanel()` and `logRow()` cover the durability diagrams: a neubrutalist panel with a mono title, and a fixed-height row with a coloured outline. `timelineLane()` draws a dashed lane with a coloured label tile. `stackedTitle()` keeps the older pink/cyan/cream offset headline; `titleSlab()` remains the newer slab treatment.
+
+```ts
+view.add(titledPanel({x: 200, y: -170, width: 520, height: 220, title: 'WAL', color: colors.lime}));
+view.add(logRow({text: 'tx4821  COMMIT', x: 0, y: 24, width: 470, color: colors.lime}));
+view.add(timelineLane({y: -200, label: 'T1', color: colors.pink}));
+view.add(stackedTitle({text: 'TRANSACTIONS', fontSize: 168, y: 10}));
+```
 
 ## Code panel
 

@@ -1,0 +1,51 @@
+{
+  "slug": "db-transactions",
+  "title": "DB TRANSACTIONS",
+  "chapters": [
+    {
+      "name": "INTRO",
+      "color": "lime",
+      "summary": "A transaction groups many steps into one unit: all of them happen, or none do."
+    },
+    {
+      "name": "THE PROBLEM",
+      "color": "red",
+      "summary": "Two separate UPDATE statements lose ₹300 when the server crashes between them."
+    },
+    {
+      "name": "BEGIN · COMMIT · ROLLBACK",
+      "color": "lime",
+      "summary": "BEGIN and COMMIT make both updates atomic, while a crash before COMMIT rolls everything back."
+    },
+    {
+      "name": "ACID",
+      "color": "cyan",
+      "summary": "Atomicity, consistency, isolation and durability are the four guarantees of a transaction."
+    },
+    {
+      "name": "ISOLATION ANOMALIES",
+      "color": "pink",
+      "summary": "Dirty reads, non-repeatable reads and phantom reads show what happens when concurrent transactions see too much."
+    },
+    {
+      "name": "ISOLATION LEVELS",
+      "color": "yellow",
+      "summary": "The SQL standard defines four isolation levels that block more anomalies at the cost of concurrency."
+    },
+    {
+      "name": "DURABILITY · WAL",
+      "color": "violet",
+      "summary": "A write-ahead log flushed before COMMIT lets the database replay committed changes after a crash."
+    },
+    {
+      "name": "IN CODE",
+      "color": "orange",
+      "summary": "In Quarkus, @Transactional wraps a method, and checked exceptions still commit unless you opt in to rollback."
+    },
+    {
+      "name": "RECAP",
+      "color": "lime",
+      "summary": "Group the steps and treat them as a single unit: a transaction either fully happens or never happened."
+    }
+  ]
+}

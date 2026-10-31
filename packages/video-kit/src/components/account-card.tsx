@@ -75,7 +75,14 @@ export function accountCard(options: AccountCardOptions): AccountCard {
         fill={colors.yellow}
         opacity={0}
       >
-        <Txt text={tagText} fontFamily={fonts.mono} fontWeight={700} fontSize={14} letterSpacing={1} fill={colors.dark} />
+        <Txt
+          text={tagText}
+          fontFamily={fonts.mono}
+          fontWeight={700}
+          fontSize={14}
+          letterSpacing={1}
+          fill={colors.dark}
+        />
       </Rect>
     </Rect>
   ) as Rect;

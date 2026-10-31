@@ -91,14 +91,7 @@ export function* inCodeSection(view: View2D): ThreadGenerator {
           fill={colors.mute}
         />
         <Rect x={215} width={150} height={44} radius={10} fill={color}>
-          <Txt
-            text={tag}
-            fontFamily={fonts.mono}
-            fontWeight={700}
-            fontSize={20}
-            letterSpacing={1}
-            fill={colors.dark}
-          />
+          <Txt text={tag} fontFamily={fonts.mono} fontWeight={700} fontSize={20} letterSpacing={1} fill={colors.dark} />
         </Rect>
       </Rect>
     ) as Rect;
@@ -107,9 +100,24 @@ export function* inCodeSection(view: View2D): ThreadGenerator {
   };
   const r1 = rule(-170, 'RuntimeException', 'unchecked: the default rolls back', 'ROLLBACK', colors.pink);
   const r2 = rule(-48, 'Checked Exception', 'default: it still COMMITS', 'COMMIT', colors.yellow);
-  const r3 = rule(74, '@Transactional(rollbackOn = …)', 'opt in to roll back on checked ones too', 'ROLLBACK', colors.lime);
+  const r3 = rule(
+    74,
+    '@Transactional(rollbackOn = …)',
+    'opt in to roll back on checked ones too',
+    'ROLLBACK',
+    colors.lime,
+  );
   const tip = (
-    <Rect x={585} y={225} width={620} height={110} radius={20} fill={colors.surf} {...neubrutal(colors.cyan, 8, 4)} opacity={0}>
+    <Rect
+      x={585}
+      y={225}
+      width={620}
+      height={110}
+      radius={20}
+      fill={colors.surf}
+      {...neubrutal(colors.cyan, 8, 4)}
+      opacity={0}
+    >
       <Txt
         x={-285}
         y={-22}

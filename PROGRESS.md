@@ -355,3 +355,85 @@ None was trivially generic without changing its geometry or public options, so n
 | `durability` | `sections/07-durability-wal.tsx` (`durabilityWalSection`) |
 | `inCode` | `sections/08-in-code.tsx` (`inCodeSection`) |
 | `recap` | `sections/09-recap.tsx` (`recapSection`) |
+
+## Step 08: migrate db-transactions onto video-kit
+
+**What changed**
+
+* `apps/studio/src/scenes/db-transactions/` now contains `chapters.json`, `scene.tsx`, `shared.ts`, `scene.meta` and `sections/` (9 files). `transactions.tsx` is deleted; `transactions.meta` moved with `git mv` to `scene.meta`; the project imports `scene?scene`.
+* `chapters.json` has 9 chapters with palette keys and one-sentence summaries from the captions. `scene.tsx` uses `defineLesson()` and passes the legacy HUD geometry (`sectionChipX: -470`, pills `startX: 504`, `step: 46`, `width: 36`, `activeWidth: 64`). `loadFonts()` runs at module scope, as in step 07.
+* All 33 `say(...)` captions and holds and all 52 numeric `waitFor(...)` durations match the old file (multiset diff). The 52nd wait is the final `waitFor(0.5)` now owned by `defineLesson`. The four raw colours (`#FF5C7A`, `#B7A0FF`, two `rgba(244,241,234,0)` shadow clears) are unchanged.
+* The old file is **2666 lines**, not the 1330 the prompt estimated. The nine section files total **1644 lines**, so the split reduces the total but the literal `< 1330` acceptance line cannot pass without deleting content. The real comparison is 1644 < 2666.
+
+**Helper decisions**
+
+| Local helper | Kit equivalent | Decision |
+| --- | --- | --- |
+| palette `C` | `colors` | reuse; all entries equal |
+| fonts link | `loadFonts()` | reuse at module scope |
+| `FONT`, `MONO` | `fonts.sans`, `fonts.mono` | reuse |
+| `NB()` | `neubrutal()` | reuse |
+| `fmt()` | `formatNumber()` | keep local in `shared.ts` (`₹` + `en-IN`); passed to `countTo` and `accountCard` |
+| `chip`, `chipText` | same | reuse; output identical |
+| `pop`, `shake` | same | reuse; identical |
+| `countTo` | `countTo(..., fmt)` | reuse with the local formatter |
+| `bigText` | `titleSlab`/`titlePill` | promoted as `stackedTitle`; the old look is preserved |
+| `tokenize`, `codePanel`, `focusLine`, `revealLines` | same | reuse; the SQL snippets only use common keywords, Java rules identical |
+| `SECTIONS` | `chapters.json` + `defineLesson` | replace |
+| `buildHud` | `buildHud(..., options)` | extended with `sectionChipX` and `pills`; defaults keep db-indexing unchanged |
+| `setSection`, `say`, `leave` | same | reuse; `setSection` reads the pill widths from `hudState` |
+| `Acct`, `account` | — | promoted as `accountCard` |
+| `setTag`, `moveBal` | — | kept in `shared.ts` |
+| `totalChip`, `coin` | — | kept in `shared.ts` |
+| `ANOMS` | — | kept in section 05 |
+| `panel` | — | promoted as `titledPanel` |
+| `tile` | — | promoted as `logRow` |
+| lane JSX | — | promoted as `timelineLane` |
+
+**New kit components**
+
+| Name | File | Used by |
+| --- | --- | --- |
+| `accountCard()` | `packages/video-kit/src/components/account-card.tsx` | db-transactions sections 02 and 03 (4 cards) |
+| `titledPanel()` | `packages/video-kit/src/components/titled-panel.tsx` | section 07 (4 panels) |
+| `logRow()` | `packages/video-kit/src/components/log-row.tsx` | section 07 (7 rows) |
+| `timelineLane()` | `packages/video-kit/src/components/timeline-lane.tsx` | section 05 (2 lanes) |
+| `stackedTitle()` | `packages/video-kit/src/components/stacked-title.tsx` | sections 01 and 09 |
+
+**Kit behaviour added**
+
+* `BuildHudOptions`: optional `sectionChipX` (default `-560`) and `pills` (`startX`, `step`, `width`, `activeWidth`; default right-aligned 28/52). `hudState.pillWidth` / `hudState.pillActiveWidth` carry the widths into `setSection()`. `LessonConfig.hud` forwards the options from `defineLesson()`. Every option has a JSDoc line; the default path is unchanged.
+* The new components keep the original JSX numbers, so the rendered geometry did not move.
+
+**Accepted differences**
+
+* None. `db-transactions` is 18/18 PASS (max 0.069 %; the diff images for s6/s7 show only glyph antialiasing). `db-indexing` is 40/40 PASS. The known `s11_t52` boundary needed a paused recapture: the live screenshot lands about 0.35 s after the timecode and shows the fourth row fully faded in, while the baseline matches the paused frame at 52.01 at 0.000 %. The 0.4 % threshold was not changed.
+
+**Checks (step 08)**
+
+* `pnpm --filter @motion-studio/video-kit typecheck` -> exit 0
+* `pnpm --filter @motion-studio/video-kit test` -> 32/32 tests pass (the new options are documented with JSDoc; no new pure logic was added)
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0 (`db-transactions-2b53349d.js`, `db-indexing-e0b5c923.js`; the hashes are identical after Prettier)
+* `pnpm snap:capture current db-transactions` -> 18 frames
+* `pnpm snap:compare db-transactions` -> **18/18 PASS** (max 0.069 %)
+* `pnpm snap:capture current db-indexing` -> 40 frames
+* `pnpm snap:compare db-indexing` -> **40/40 PASS**
+* `ls apps/studio/src/scenes/db-transactions/sections | wc -l` -> 9
+* `test -f .../transactions.tsx && echo STILL_THERE` -> no output
+* `grep -rn "fonts.googleapis" apps/studio/src | wc -l` -> 0
+* `wc -l .../sections/*.tsx | tail -1` -> 1644 total (see the 2666-line note above)
+
+**Candidates for the kit (not moved)**
+
+* The four-row durability checklist (badge, label, highlight helper) is used once as a list; promote as `stepList` only when a second lesson needs it.
+* The anomaly event card + DB box pair (three per anomaly) is still tied to this scene's 400×104 / 330×90 geometry.
+* The in-code rule row (three rows) is a candidate for a `ruleRow` component.
+* `fmt` (`₹` + `en-IN`) could become a `formatCurrency` theme helper; it is intentionally local for now.
+* `totalChip` and `coin` stay local: they are lesson copy.
+
+**Follow-ups**
+
+* Restyle the transactions intro title as a `titleSlab` in a later visual pass. This step deliberately keeps `stackedTitle` so the baseline does not move.
+* db-indexing's `01-intro.tsx` still has a local `bigText`; it can switch to `stackedTitle` later with zero visual change.
+* `db-transactions` `#s=N` deep links and the player `startSection` variable work through `defineLesson`.
