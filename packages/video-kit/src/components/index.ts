@@ -1,5 +1,8 @@
+export {bulletRow} from './bullet-row';
 export {card} from './card';
 export {chip, chipText, type ChipOptions} from './chip';
+export {indexLegend} from './legend';
+export {clearStroke, highlightStroke, miniTree, type MiniTree, type MiniTreeOptions} from './mini-tree';
 export {
   LINE_HEIGHT,
   LANGUAGES,
@@ -14,4 +17,5 @@ export {
   type Token,
 } from './code-panel';
 export {label, type LabelOptions} from './label';
+export {statCard, type StatCard} from './stat-card';
 export {titlePill, titleSlab, type TitlePillOptions, type TitleSlabOptions} from './title-slab';

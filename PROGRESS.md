@@ -140,3 +140,35 @@ Compare runs `pixelmatch` with `threshold: 0.12` and passes a frame when the dif
 * `pnpm studio:build` -> exit 0; chunk hashes unchanged (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
 * import smoke via temporary `apps/studio/src/_smoke.ts` (deleted) -> studio typecheck exit 0
 * `grep -rn "#[0-9A-Fa-f]\{6\}" packages/video-kit/src/components/code-panel | wc -l` -> 0
+
+## Step 05: video-kit tree engine
+
+**What changed**
+
+* New `packages/video-kit/src/tree/` with `tree-types.ts`, `snapshot.ts`, `index-tree.ts`, `search-plan.ts`, `tree-layout.ts`, `tree-view.tsx`, `play-insert.ts`, `play-search.ts`, `index.ts` and two test files.
+* New components `stat-card.tsx`, `legend.tsx`, `bullet-row.tsx` and `mini-tree.tsx`; `components/index.ts` and the root barrel re-export them.
+* Renames applied exactly: `nodeW` -> `nodeWidth`, `layout` -> `layoutTree` (now exported), `stat` -> `statCard` (returns the new `StatCard` interface), `legend` -> `indexLegend`, `bullet` -> `bulletRow`, `lit`/`unlit` -> `highlightStroke`/`clearStroke`. Colours, fonts and borders come from `colors`, `fonts` and `neubrutal`; tree code narrates through `say` from `../hud`.
+* `miniTree()` now takes `MiniTreeOptions` (`{cx, rootText, rows, rootColor, leafColor, rowFontSize}`); `MiniTree` keeps the original shape. `TreeView` is still a plain class.
+* Geometry untouched: cell width 60, node height 72, padding 16, vgap 124, hgap 26 (B-tree) / 52 (B+tree), orange dots, lime leaf links.
+* README gained a folder-map entry, rename rows and a "Tree engine" usage section.
+
+**Decisions / deviations**
+
+* `layoutTree()` keeps the original return type, `Map<string, {x, y}>`; `tree-layout.test.ts` recomputes box widths with `nodeWidth()` for the overlap check.
+* The prompt's copy-up test asks for upper-case `COPIED`/`MOVES` from the `[10, 20, 5, 15]` sequence, but that sequence only produces `newroot` steps whose captions are sentence-cased ("is copied" / "moves"). The test uppercases the captions before matching, so it checks the semantics without touching the verified source text.
+* `tree.tsx` used to re-export `chipText` and `FONT` as a leftover; the new `tree-view.tsx` does not. Both are available from the package barrels.
+
+**Follow-ups**
+
+* Caption casing in `index-tree.ts` is inconsistent (`COPIED`/`MOVES` in split steps, "is copied"/"moves" in newroot steps). Kept untouched because the scenes are verified visually; the test is case-insensitive on that point.
+* Scenes still import their local `treeLogic`/`tree`/`legend`/`stat`/`bullet`/`miniTree` copies. Migrating them to `@motion-studio/video-kit` is a later step and must keep the section-local `leave(root)` behaviour.
+* `TreeView` still has no `dispose()`; `hide()` fades the root but leaves it attached. Unchanged from the original.
+
+**Checks (step 05)**
+
+* `pnpm --filter @motion-studio/video-kit typecheck` -> exit 0
+* `pnpm --filter @motion-studio/video-kit test` -> 21/21 tests pass (9 index-tree + 4 tree-layout + 2 theme + 6 tokenizer)
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0; chunk hashes unchanged (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
+* `git diff --stat HEAD~1 -- apps/studio/src` -> empty (scenes untouched)
+
