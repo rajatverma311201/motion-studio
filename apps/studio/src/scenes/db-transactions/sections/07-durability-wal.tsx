@@ -1,6 +1,6 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, easeInOutCubic, sequence, tween, waitFor} from '@motion-canvas/core';
-import {chip, colors, fonts, leave, logRow, neubrutal, pop, say, shake, titledPanel} from '@motion-studio/video-kit';
+import {chip, colors, fonts, leave, logRow, pop, say, shake, titledPanel} from '@motion-studio/video-kit';
 
 // ================================================================ 06 DURABILITY / WAL
 export function* durabilityWalSection(view: View2D): ThreadGenerator {
