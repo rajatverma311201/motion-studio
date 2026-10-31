@@ -282,6 +282,141 @@ try {
   assert(lessonErrors.pageErrors.length === 0, `lesson pageerror: ${lessonErrors.pageErrors[0]}`);
   assert(lessonErrors.consoleErrors.length === 0, `lesson console error: ${lessonErrors.consoleErrors[0]}`);
   await lessonContext.close();
+
+  const galleryContext = await browser.newContext({
+    viewport: {width: 1440, height: 1200},
+    colorScheme: 'light',
+    permissions: ['clipboard-read', 'clipboard-write'],
+  });
+  const galleryPage = await galleryContext.newPage();
+  const galleryErrors = watch(galleryPage);
+
+  await galleryPage.goto(`${DOCS_URL}/themes`, {waitUntil: 'networkidle'});
+  await waitForTheme(galleryPage, 'light');
+
+  const lookButtons = galleryPage.locator('[data-look]');
+  const lookCount = await lookButtons.count();
+  assert(lookCount === 14, `themes gallery shows ${lookCount} looks instead of 14`);
+  assert(
+    (await galleryPage.locator('[data-look="neubrutal:dark"]').getAttribute('aria-current')) === 'true',
+    'the default look is not marked aria-current',
+  );
+
+  try {
+    await galleryPage.waitForSelector('motion-canvas-player', {state: 'attached', timeout: PLAYER_TIMEOUT});
+  } catch {
+    throw new Error(`gallery motion-canvas-player did not appear within ${PLAYER_TIMEOUT / 1000}s`);
+  }
+  await galleryPage.waitForFunction(
+    () => {
+      const variables = document.querySelector('motion-canvas-player')?.getAttribute('variables') ?? '';
+      return variables.includes('"theme":"neubrutal"') && variables.includes('"mode":"dark"');
+    },
+    null,
+    {timeout: 10000},
+  );
+  assert(
+    (await galleryPage.locator('motion-canvas-player').getAttribute('auto')) === null,
+    'the gallery player autoplays on first load',
+  );
+  await noPageOverflow(galleryPage, 'themes desktop light');
+  await galleryPage.screenshot({path: path.join(SCREENSHOT_DIR, 'themes-light.png')});
+
+  await galleryPage.evaluate(() => {
+    document.querySelector('motion-canvas-player')?.setAttribute('data-smoke-id', 'before');
+  });
+  await galleryPage.locator('[data-look="tokyo-night:light"]').click();
+
+  try {
+    await galleryPage.waitForFunction(
+      () => {
+        const url = new window.URL(window.location.href);
+        const player = document.querySelector('motion-canvas-player');
+        const variables = player?.getAttribute('variables') ?? '';
+        return (
+          url.searchParams.get('theme') === 'tokyo-night' &&
+          url.searchParams.get('mode') === 'light' &&
+          player !== null &&
+          player.getAttribute('data-smoke-id') !== 'before' &&
+          variables.includes('"theme":"tokyo-night"') &&
+          variables.includes('"mode":"light"')
+        );
+      },
+      null,
+      {timeout: 10000},
+    );
+  } catch {
+    throw new Error('selecting tokyo-night / light did not update the URL and re-create the player');
+  }
+  await galleryPage.waitForSelector('motion-canvas-player[auto]', {state: 'attached', timeout: 5000});
+
+  await galleryPage.locator('[data-theme-toggle]').first().click();
+  await waitForTheme(galleryPage, 'dark');
+  await galleryPage.waitForTimeout(400);
+  await galleryPage.screenshot({path: path.join(SCREENSHOT_DIR, 'themes-dark.png')});
+
+  await galleryPage.locator('[data-look="neubrutal:dark"]').click();
+  await galleryPage.waitForFunction(
+    () => document.querySelector('[data-look="neubrutal:dark"]')?.getAttribute('aria-current') === 'true',
+    null,
+    {timeout: 5000},
+  );
+  await galleryPage.keyboard.press('ArrowDown');
+  await galleryPage.waitForFunction(
+    () => document.querySelector('[data-look="neubrutal:light"]')?.getAttribute('aria-current') === 'true',
+    null,
+    {timeout: 5000},
+  );
+  await galleryPage.keyboard.press('ArrowUp');
+  await galleryPage.keyboard.press('ArrowUp');
+  await galleryPage.waitForFunction(
+    () => document.querySelector('[data-look="blueprint:light"]')?.getAttribute('aria-current') === 'true',
+    null,
+    {timeout: 5000},
+  );
+
+  await galleryPage.locator('[data-chapter-index="3"]').click();
+  await galleryPage.waitForFunction(
+    () => {
+      const url = new window.URL(window.location.href);
+      const variables = document.querySelector('motion-canvas-player')?.getAttribute('variables') ?? '';
+      return url.searchParams.get('s') === '3' && variables.includes('"startSection":3');
+    },
+    null,
+    {timeout: 10000},
+  );
+
+  await galleryPage.reload({waitUntil: 'networkidle'});
+  await galleryPage.waitForFunction(
+    () => {
+      const url = new window.URL(window.location.href);
+      const selected = document.querySelector('[data-look="blueprint:light"]');
+      const variables = document.querySelector('motion-canvas-player')?.getAttribute('variables') ?? '';
+      return (
+        url.searchParams.get('theme') === 'blueprint' &&
+        url.searchParams.get('mode') === 'light' &&
+        url.searchParams.get('s') === '3' &&
+        selected?.getAttribute('aria-current') === 'true' &&
+        variables.includes('"theme":"blueprint"') &&
+        variables.includes('"mode":"light"') &&
+        variables.includes('"startSection":3')
+      );
+    },
+    null,
+    {timeout: 10000},
+  );
+  assert(
+    (await galleryPage.locator('motion-canvas-player').getAttribute('auto')) === null,
+    'the gallery player autoplays after a reload',
+  );
+
+  await galleryPage.setViewportSize({width: 390, height: 844});
+  await noPageOverflow(galleryPage, 'themes 390');
+  await galleryPage.screenshot({path: path.join(SCREENSHOT_DIR, 'themes-dark-390.png')});
+
+  assert(galleryErrors.pageErrors.length === 0, `themes pageerror: ${galleryErrors.pageErrors[0]}`);
+  assert(galleryErrors.consoleErrors.length === 0, `themes console error: ${galleryErrors.consoleErrors[0]}`);
+  await galleryContext.close();
 } catch (error) {
   failure = String(error.message).split('\n')[0];
 } finally {
