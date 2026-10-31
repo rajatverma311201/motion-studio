@@ -1,0 +1,120 @@
+---
+title: Adding a lesson
+description: Generate a lesson, preview it in the editor, map chapters to the video, publish the page and commit the editor metadata.
+---
+
+<p className="eyebrow">Production</p>
+
+A lesson is three things that must agree: a scene in `apps/studio`, a `chapters.json` shared by the player and the docs, and an MDX page in `apps/docs/content/docs`. The generator creates the skeleton for all three.
+
+## 1. Generate the skeleton
+
+```sh
+pnpm new:lesson mvcc-and-isolation "MVCC and Isolation Levels" --course databases
+```
+
+Arguments:
+
+| Argument                 | Meaning                                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `<slug>`                 | Kebab-case id. It becomes the project file, the scene folder, the video bundle name and the `video` frontmatter value. |
+| `"<Title>"`              | Human title. Used for the page title, the intro slab and the HUD title (upper-cased).                                  |
+| `--course <course-slug>` | Existing folder under `apps/docs/content/docs`, e.g. `databases`.                                                      |
+| `--chapters <n>`         | Optional chapter count, default `4`.                                                                                   |
+
+The generator refuses to run if the slug is not kebab-case, the course folder does not exist, or any target file already exists. It never overwrites.
+
+It creates:
+
+```text
+apps/studio/src/projects/<slug>.ts
+apps/studio/src/scenes/<slug>/chapters.json
+apps/studio/src/scenes/<slug>/scene.tsx
+apps/studio/src/scenes/<slug>/sections/01-intro.tsx
+apps/studio/src/scenes/<slug>/sections/02-chapter-2.tsx
+...
+apps/docs/content/docs/<course>/<slug>.mdx
+```
+
+It also appends the slug to the course's `meta.json`, runs `pnpm sync:generated`, and prints the editor URL plus the file list. Every generated chapter is a valid, previewable section: the intro shows a title slab, the others show a chip and a caption, and each ends with `leave(root)`.
+
+## 2. Preview in the editor
+
+```sh
+pnpm studio:dev
+```
+
+Open `http://localhost:9000/src/projects/<slug>`. To start at a section, add the dev-only hash:
+
+```text
+http://localhost:9000/src/projects/mvcc-and-isolation#s=2
+```
+
+`#s=N` is a **zero-based section index**: `#s=0` is the intro, `#s=2` is the third section. The value is clamped into `[0, chapters.length - 1]`. The player uses the `startSection` variable for the same purpose on the docs page.
+
+Only one editor page may be open per project: the editor rewrites the `.meta` files, which hot-restarts other pages. Close the others before running Playwright.
+
+## 3. Map chapters to the video
+
+`chapters.json` is the single source of truth. Chapter `i` corresponds to:
+
+- the `i`-th entry of `sections` in `scene.tsx`,
+- the `i`-th HUD pill,
+- the `i`-th chapter card on the docs page,
+- section index `i` in `#s=N` and in the player's chapter list.
+
+The counts must match exactly. `defineLesson()` throws at definition time when `sections.length !== chapters.length`, and the message names the slug and both counts. Chapter names are short and upper-case (`INTRO`, `B+TREE INSERT`); the colour is a palette key, not a hex value. The `summary` is one sentence shown only on the docs page.
+
+To change a chapter after generation, edit `chapters.json` and the matching section file together, then run:
+
+```sh
+pnpm sync:generated
+```
+
+`pnpm dev` runs the sync once at startup; it does not watch `chapters.json`. Restart `pnpm dev` after editing it if you need the docs chapter cards to update.
+
+## 4. Fill in the lesson page
+
+Open `apps/docs/content/docs/<course>/<slug>.mdx`. The template has the lesson headings: what you will learn, chapters, the idea in one minute, chapter notes, cheat sheet, common mistakes, try it yourself, go deeper. Replace every `TODO`.
+
+The frontmatter is validated at build time:
+
+```yaml
+title: 'MVCC and Isolation Levels'
+description: 'One sentence for the card and search result.'
+video: mvcc-and-isolation # must equal the studio project slug
+duration: 12 min
+level: intermediate # beginner | intermediate | advanced
+tags: [databases, mvcc]
+status: draft # draft | published
+```
+
+## 5. Publish
+
+Draft pages are rendered at their URL but filtered out of the landing page's lesson grid. When the video is ready, set:
+
+```yaml
+status: published
+```
+
+A published page needs a built bundle. `pnpm videos:build` creates `apps/docs/public/videos/projects/src/projects/<slug>.js`; without it the player shows "Video bundle not found". `pnpm build` does both in the right order.
+
+## 6. Commit the editor metadata
+
+Opening a scene or a project in the editor writes `.meta` files next to it:
+
+```text
+apps/studio/src/scenes/<slug>/scene.meta
+apps/studio/src/projects/<slug>.meta
+```
+
+Commit them. They hold the editor's saved state and are part of the project; never hand-edit them and never add them to `.gitignore`. The standalone `.meta` files are also excluded from Prettier and ESLint on purpose.
+
+## 7. Run the checks
+
+```sh
+pnpm check # typecheck + lint + tests + format
+pnpm build # videos + docs
+```
+
+`pnpm check` enforces the file-naming rules: every new file must be kebab-case, except the numbered section files (`01-intro.tsx`) and the TanStack route files.

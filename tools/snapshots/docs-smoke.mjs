@@ -27,7 +27,7 @@ const firstChapter = lesson?.chapters?.[0]?.name;
 const targetChapter = lesson?.chapters?.[CHAPTER_INDEX]?.name;
 
 if (!firstChapter || !targetChapter) {
-  console.log(`FAIL: no generated chapter data for ${SLUG}; run pnpm sync:lessons`);
+  console.log(`FAIL: no generated chapter data for ${SLUG}; run pnpm sync:generated`);
   process.exit(1);
 }
 

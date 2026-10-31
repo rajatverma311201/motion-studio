@@ -293,12 +293,12 @@ await writeFile(pageFile, lessonPageSource({slug, title, chapters}), 'utf8');
 meta.pages = [...pages, slug];
 await writeFile(metaFile, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
-const sync = spawnSync(process.execPath, [path.join(ROOT, 'tools/scripts/sync-lessons.mjs')], {
+const sync = spawnSync(process.execPath, [path.join(ROOT, 'tools/scripts/sync-generated.mjs')], {
   cwd: ROOT,
   stdio: 'inherit',
   env: process.env,
 });
-if (sync.status !== 0) fail(`sync-lessons.mjs failed (exit ${sync.status})`);
+if (sync.status !== 0) fail(`sync-generated.mjs failed (exit ${sync.status})`);
 
 const created = [
   projectFile,

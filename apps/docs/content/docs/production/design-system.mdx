@@ -1,0 +1,80 @@
+---
+title: Design system
+description: The dark neubrutalist palette, the two typefaces, the drawing rules, and the video-kit components every lesson reuses.
+---
+
+<p className="eyebrow">Production</p>
+
+Every frame shares one visual identity: a near-black canvas, cream borders, flat accent fills and hard offset shadows. The palette and the helpers live in `packages/video-kit/src/theme`; this page shows the same tokens the scenes use.
+
+## Palette
+
+<ColorSwatches />
+
+The values come from `packages/video-kit/src/theme/colors.ts`. The docs mirror the important ones as CSS custom properties in `apps/docs/src/styles/neubrutalism.css` so the site and the videos feel like one product.
+
+| Token            | Value                 | Used for                                   |
+| ---------------- | --------------------- | ------------------------------------------ |
+| `bg`             | `#0B0B10`             | Video background and page background       |
+| `surf` / `surf2` | `#15151D` / `#1F1F2B` | Cards, panels, code panels                 |
+| `ink`            | `#F4F1EA`             | Cream borders, body text on dark           |
+| `lime`           | `#C6FF3D`             | Primary accent, title slabs, links         |
+| `pink`           | `#FF4D8D`             | Warnings, errors, the second headline copy |
+| `cyan`           | `#3DE3FF`             | Secondary accent, info callouts            |
+| `yellow`         | `#FFD23D`             | Highlights and status tags                 |
+| `violet`         | `#9B7BFF`             | Shadows under title slabs and cards        |
+| `orange`         | `#FF8A3D`             | Tree row pointers and cost warnings        |
+| `red`            | `#FF4D4D`             | Mistakes and unsafe operations             |
+
+`clear` is `rgba(244,241,234,0)`: a transparent value used where a later animation fills a shape.
+
+## Type
+
+| Role                      | Family             | Where                                           |
+| ------------------------- | ------------------ | ----------------------------------------------- |
+| Headlines, body, captions | **Space Grotesk**  | `fonts.sans` in the kit, Fontsource in the docs |
+| Labels, code, HUD pills   | **JetBrains Mono** | `fonts.mono` in the kit, Fontsource in the docs |
+
+The studio injects the Google Fonts stylesheet at module load through `loadFonts()`. This is not cosmetic: Motion Canvas measures text when a `Txt` node is created, so loading fonts after the first frame leaves the intro titles shifted. Keep the module-scope `loadFonts()` call in every `scene.tsx`.
+
+## Rules
+
+1. **Cream borders, 2 to 4 px.** The docs use 2 px on cards and callouts; the video uses 3.5 to 7 px because it is scaled down in the player.
+2. **Hard offset shadows, never blur.** A shadow is `xpx ypx 0 <colour>`; the kit's `neubrutal()` helper builds the matching stroke and offset. No `box-shadow` blur radius, no drop shadows.
+3. **Flat fills.** Accents are solid colours; gradients are reserved for the faint grid and the transparency checkerboard.
+4. **Dark text on accents.** Lime, cyan, yellow, pink, violet and orange fills carry `colors.dark` text, not cream.
+5. **One accent per element.** A card has one border colour and one shadow colour; do not stack two accents on the same edge.
+6. **Mono for labels, grotesk for speech.** HUD labels are upper-case mono with wide letter spacing; narration is sentence case in the caption bar.
+
+## video-kit components
+
+Every component below is exported from `@motion-studio/video-kit` and documented with a JSDoc example in its source file.
+
+| Component                         | What it does                                                                                        | Source                                                        |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `titleSlab` / `titlePill`         | Solid accent slab with dark text and a hard offset shadow: the standard intro title.                | `packages/video-kit/src/components/title-slab.tsx`            |
+| `stackedTitle`                    | Older three-copy headline (pink and cyan behind cream); kept for the lessons that predate the slab. | `packages/video-kit/src/components/stacked-title.tsx`         |
+| `chip` / `chipText`               | Small neubrutalist chip with centred text, plus access to its `Txt` so the label can change.        | `packages/video-kit/src/components/chip.tsx`                  |
+| `label`                           | Plain mono label with optional left/right alignment.                                                | `packages/video-kit/src/components/label.tsx`                 |
+| `card`                            | Dark rectangle with a coloured hard shadow; the base shape for diagrams.                            | `packages/video-kit/src/components/card.tsx`                  |
+| `statCard`                        | Big-number card with a mono title and a live `val` text node for `countTo`.                         | `packages/video-kit/src/components/stat-card.tsx`             |
+| `accountCard`                     | Bank-account card with a letter tile, a balance and a hidden status tag.                            | `packages/video-kit/src/components/account-card.tsx`          |
+| `titledPanel`                     | Panel with a mono title in its top bar, used for WAL and data-file diagrams.                        | `packages/video-kit/src/components/titled-panel.tsx`          |
+| `logRow`                          | Fixed-height mono row with a coloured outline for log entries.                                      | `packages/video-kit/src/components/log-row.tsx`               |
+| `timelineLane`                    | Dashed timeline lane with a coloured label tile on the left.                                        | `packages/video-kit/src/components/timeline-lane.tsx`         |
+| `bulletRow`                       | Rounded bullet row that starts transparent for a staggered fade-in.                                 | `packages/video-kit/src/components/bullet-row.tsx`            |
+| `indexLegend`                     | Legend for the tree scenes: internal node, leaf node, row pointer.                                  | `packages/video-kit/src/components/legend.tsx`                |
+| `miniTree`                        | Two-level tree (one root, three leaves) with highlightable rows; cheaper than `TreeView`.           | `packages/video-kit/src/components/mini-tree.tsx`             |
+| `highlightStroke` / `clearStroke` | Highlight or reset a mini-tree row or leaf border.                                                  | `packages/video-kit/src/components/mini-tree.tsx`             |
+| `codePanel`                       | Syntax-coloured code panel with a title bar and a highlight bar.                                    | `packages/video-kit/src/components/code-panel/code-panel.tsx` |
+| `tokenize`                        | Tokenizer behind `codePanel` for SQL, Java and query plans.                                         | `packages/video-kit/src/components/code-panel/tokenizer.ts`   |
+| `focusLine` / `revealLines`       | Move the highlight bar to one line or reveal the panel line by line.                                | `packages/video-kit/src/components/code-panel/line-focus.ts`  |
+
+The HUD is a separate folder: `say()` writes the caption bar, `buildHud()` draws the title and chapter pills, `setSection()` advances them, and `leave()` fades a section out and removes it. The tree engine lives in `packages/video-kit/src/tree` and the lesson factory in `packages/video-kit/src/lesson`.
+
+```tsx
+import {chip, colors, leave, say, titleSlab} from '@motion-studio/video-kit';
+
+const title = titleSlab({text: 'DB INDEXING'});
+const tag = chip('B+TREE', colors.cyan);
+```

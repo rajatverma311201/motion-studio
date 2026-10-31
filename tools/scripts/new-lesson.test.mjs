@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GENERATOR = path.join(SCRIPT_DIR, 'new-lesson.mjs');
-const SYNC = path.join(SCRIPT_DIR, 'sync-lessons.mjs');
+const SYNC = path.join(SCRIPT_DIR, 'sync-generated.mjs');
 const SLUG = 'mvcc-and-isolation';
 const TITLE = 'MVCC and Isolation Levels';
 
@@ -18,11 +18,16 @@ async function fixture() {
   await mkdir(path.join(root, 'apps/studio/src/scenes'), {recursive: true});
   await mkdir(path.join(root, 'apps/docs/src/generated'), {recursive: true});
   await mkdir(path.join(root, 'apps/docs/content/docs/databases'), {recursive: true});
+  await mkdir(path.join(root, 'packages/video-kit/src/theme'), {recursive: true});
   await mkdir(path.join(root, 'tools/scripts'), {recursive: true});
 
   const meta = {title: 'Databases', root: true, pages: ['index', 'transactions']};
   await writeFile(path.join(root, 'apps/docs/content/docs/databases/meta.json'), `${JSON.stringify(meta, null, 2)}\n`);
-  await copyFile(SYNC, path.join(root, 'tools/scripts/sync-lessons.mjs'));
+  await writeFile(
+    path.join(root, 'packages/video-kit/src/theme/colors.ts'),
+    "export const colors = {\n  bg: '#0B0B10',\n  clear: 'rgba(244,241,234,0)',\n} as const;\n",
+  );
+  await copyFile(SYNC, path.join(root, 'tools/scripts/sync-generated.mjs'));
   return root;
 }
 
@@ -102,6 +107,9 @@ test('generates a studio project, sections, lesson page and meta entry', async t
   const lessons = JSON.parse(await read(root, 'apps/docs/src/generated/lessons.json'));
   assert.ok(lessons[SLUG]);
   assert.equal(lessons[SLUG].chapters.length, 3);
+
+  const palette = JSON.parse(await read(root, 'apps/docs/src/generated/palette.json'));
+  assert.deepEqual(palette, {bg: '#0B0B10', clear: 'rgba(244,241,234,0)'});
 
   assert.match(result.stdout, new RegExp(`http://localhost:9000/src/projects/${SLUG}`));
   assert.match(result.stdout, /status: published/);

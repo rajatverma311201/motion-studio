@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Collect every lesson's chapters.json into the docs app's generated data.
+ * Collect every lesson's chapters.json and the video-kit palette into the
+ * docs app's generated data.
  *
- *   node tools/scripts/sync-lessons.mjs
+ *   node tools/scripts/sync-generated.mjs
  *
- * The docs app must not import studio or kit TypeScript, so chapters reach it
- * through apps/docs/src/generated/lessons.json.
+ * The docs app must not import studio or kit TypeScript, so this data reaches
+ * it through apps/docs/src/generated/lessons.json and palette.json.
  */
 import {readdir, readFile, stat, writeFile, mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -17,7 +18,10 @@ const ROOT = process.env.MOTION_STUDIO_ROOT
 const SCENES_DIR = path.join(ROOT, 'apps/studio/src/scenes');
 const PROJECTS_DIR = path.join(ROOT, 'apps/studio/src/projects');
 const OUT_FILE = path.join(ROOT, 'apps/docs/src/generated/lessons.json');
+const PALETTE_FILE = path.join(ROOT, 'apps/docs/src/generated/palette.json');
+const COLORS_FILE = path.join(ROOT, 'packages/video-kit/src/theme/colors.ts');
 const PALETTE = ['lime', 'pink', 'cyan', 'yellow', 'violet', 'orange', 'red'];
+const COLOR_ENTRY = /^\s*([A-Za-z][A-Za-z0-9]*):\s*'([^']+)',?\s*$/gm;
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function fail(file, message) {
@@ -104,4 +108,20 @@ const sorted = Object.fromEntries([...lessons.entries()].sort(([a], [b]) => a.lo
 await mkdir(path.dirname(OUT_FILE), {recursive: true});
 await writeFile(OUT_FILE, `${JSON.stringify(sorted, null, 2)}\n`, 'utf8');
 
-console.log(`synced ${lessons.size} lessons`);
+let colorsSource;
+try {
+  colorsSource = await readFile(COLORS_FILE, 'utf8');
+} catch {
+  fail(COLORS_FILE, 'file not found');
+}
+
+const palette = {};
+for (const match of colorsSource.matchAll(COLOR_ENTRY)) {
+  palette[match[1]] = match[2];
+}
+const colorCount = Object.keys(palette).length;
+if (colorCount === 0) fail(COLORS_FILE, "no colour entries matching key: '#value' found");
+
+await writeFile(PALETTE_FILE, `${JSON.stringify(palette, null, 2)}\n`, 'utf8');
+
+console.log(`synced ${lessons.size} lessons and ${colorCount} palette colours`);

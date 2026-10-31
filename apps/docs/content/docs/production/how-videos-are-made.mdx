@@ -1,0 +1,76 @@
+---
+title: How videos are made
+description: The pipeline from a Motion Canvas scene in apps/studio to the player bundle embedded beside every lesson.
+---
+
+<p className="eyebrow">Production</p>
+
+Every lesson is a Motion Canvas scene. The scene lives in `apps/studio`, shares its visual building blocks with the other lessons through `packages/video-kit`, is built into a player bundle, and that bundle is embedded in this docs site with the Motion Canvas player. Rendering the final MP4 is a separate step, done from the studio editor.
+
+## The repository at a glance
+
+The tree below is the part of the repo that produces a video. Everything generated (`.source`, `dist`, `apps/docs/public/videos`, `apps/docs/src/generated`) is git-ignored and rebuilt from source.
+
+```text
+motion-studio/
+├── apps/
+│   ├── studio/                  Motion Canvas editor and scenes (Vite 4)
+│   │   └── src/
+│   │       ├── projects/        one project per lesson, e.g. db-indexing.ts
+│   │       └── scenes/
+│   │           └── db-indexing/
+│   │               ├── chapters.json   chapter names, colours, summaries
+│   │               ├── scene.tsx       defineLesson(...) wiring
+│   │               ├── scene.meta      editor metadata (commit this)
+│   │               └── sections/       01-intro.tsx, 02-... in chapter order
+│   └── docs/                    TanStack Start + Fumadocs site (Vite 8)
+│       ├── content/docs/        MDX lesson pages and these production pages
+│       ├── src/generated/       lessons.json + palette.json (git-ignored)
+│       └── public/videos/       built player bundles (git-ignored)
+├── packages/
+│   └── video-kit/               reusable scene building blocks
+│       └── src/
+│           ├── theme/           palette, fonts, neubrutal helper
+│           ├── animation/       pop, shake, countTo
+│           ├── components/      code panel, cards, chips, titles, trees
+│           ├── hud/             caption bar, section pills, say, leave
+│           ├── tree/            B-tree / B+tree engine and layout
+│           └── lesson/          defineLesson and the chapters schema
+├── tools/
+│   ├── scripts/                 sync-generated.mjs, new-lesson.mjs
+│   └── snapshots/               Playwright frame capture and pixel compare
+└── pnpm-workspace.yaml
+```
+
+## The pipeline
+
+1. **Write the scene.** `apps/studio/src/scenes/<slug>/scene.tsx` calls `defineLesson()` from `video-kit` with `chapters.json` and one generator per section. A project file in `apps/studio/src/projects/<slug>.ts` exposes it to the editor.
+2. **Share the look.** Palette, fonts, the caption bar, code panels and tree components come from `packages/video-kit`. The kit is TypeScript source with no build step; both the studio and its tests consume it directly.
+3. **Generate the docs data.** `pnpm sync:generated` reads every `chapters.json`, validates it, and writes `apps/docs/src/generated/lessons.json`. It also parses the kit palette into `palette.json` for the design-system page.
+4. **Build the player bundle.** `pnpm videos:build` runs the sync and then the studio's Vite build. The studio writes straight into `apps/docs/public/videos`: one entry per project at `projects/src/projects/<slug>.js`, plus shared chunks.
+5. **Play it on the docs page.** `<LessonVideo slug="<slug>" />` loads `/videos/projects/src/projects/<slug>.js` into the Motion Canvas player. `<LessonChapters>` renders the chapter cards from `lessons.json`. A chapter starts the bundle at that section.
+6. **Render the MP4.** Open `http://localhost:9000`, pick the project, and use the editor's render button. The `@motion-canvas/ffmpeg` exporter writes the final video to the editor's output folder. The MP4 is an artefact for YouTube; it is not committed and the docs do not depend on it.
+
+## Commands
+
+| Command                                           | What it does                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                        | Syncs generated data, then runs the studio bundle watcher and the docs dev server together. |
+| `pnpm videos:build`                               | Syncs generated data and builds every project into `apps/docs/public/videos`.               |
+| `pnpm build`                                      | `videos:build` followed by the docs production build.                                       |
+| `pnpm sync:generated`                             | Regenerates `lessons.json` and `palette.json` without building anything.                    |
+| `pnpm snap:capture current` / `pnpm snap:compare` | Captures every section to PNG and compares it with the baseline.                            |
+
+## Why two Vite versions
+
+The Motion Canvas Vite plugin supports Vite 4 and 5 only. TanStack Start requires Vite 8. That is why there are two apps with two lockstep toolchains:
+
+- `apps/studio` runs **Vite 4** with the Motion Canvas and ffmpeg plugins.
+- `apps/docs` runs **Vite 8** with TanStack Start, Fumadocs and Tailwind 4.
+
+The two configs never merge, and `apps/docs` never imports `.tsx` from `video-kit`; the two React runtimes and JSX transforms are not interchangeable. Data crosses the boundary only as JSON: `chapters.json` in, `lessons.json` and `palette.json` out.
+
+<Callout type="warn" title="Do not upgrade the studio to Vite 6+">
+  The Motion Canvas plugin will stop resolving projects and the editor will fail. Vite 4 is a deliberate pin, not an
+  oversight.
+</Callout>

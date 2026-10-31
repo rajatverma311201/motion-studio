@@ -12,7 +12,7 @@ export function LessonChapters({slug}: LessonChaptersProps) {
   if (!lesson) {
     return (
       <p className="nb-video-missing nb-video-missing-lesson" role="alert">
-        No lesson data for <code>{slug}</code>. Run <code>pnpm sync:lessons</code> in the repo root.
+        No lesson data for <code>{slug}</code>. Run <code>pnpm sync:generated</code> in the repo root.
       </p>
     );
   }
