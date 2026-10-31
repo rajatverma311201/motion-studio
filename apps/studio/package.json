@@ -10,7 +10,8 @@
   "dependencies": {
     "@motion-canvas/2d": "^3.17.2",
     "@motion-canvas/core": "^3.17.2",
-    "@motion-canvas/ffmpeg": "^1.1.0"
+    "@motion-canvas/ffmpeg": "^1.1.0",
+    "@motion-studio/video-kit": "workspace:*"
   },
   "devDependencies": {
     "@motion-canvas/ui": "^3.17.2",

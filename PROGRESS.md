@@ -80,3 +80,30 @@ Compare runs `pixelmatch` with `threshold: 0.12` and passes a frame when the dif
 * `ls .snapshots/baseline/db-indexing | wc -l` -> 40
 * `ls .snapshots/baseline/db-transactions | wc -l` -> 18
 * `pnpm snap:capture current db-transactions && pnpm snap:compare db-transactions` -> 18/18 PASS
+
+## Step 03: video-kit foundation
+
+**What changed**
+
+* New workspace package `packages/video-kit` (`@motion-studio/video-kit`, private, no build step, no `"type": "module"`) with `theme/`, `animation/`, `components/` and `hud/` folders, a barrel per folder, a root barrel and a README.
+* Ported verbatim from `db-indexing/kit.tsx`: palette + `ColorName`, font stacks, idempotent `loadFonts()`, `neubrutal()`/`formatNumber()`, `chip()`/`chipText()`, `label()`, `card()`, `pop()`, `shake()`, `countTo()`, `buildHud()`/`hudState`, `setSection()`, `say()`, `leave()`, plus the `easeInOutCubic`/`easeOutBack`/`easeOutCubic` re-exports.
+* New `titleSlab()` and `titlePill()` in `components/title-slab.tsx`. Spec used: slab radius 30, padding `[14, 64]`, shadow 18, border 7, font 168, letter spacing -3, lime fill + violet shadow; pill radius 22, padding `[8, 36]`, shadow 10, border 5, font 84. `bigText` is intentionally not ported.
+* `loadFonts()` injects `#video-kit-fonts` once and returns early on later calls; `buildHud()` calls it and resets `hudState.pills`/`hudState.defs` before rebuilding.
+* `apps/studio` now depends on `@motion-studio/video-kit` (`workspace:*`) and `vite.config.ts` has `resolve.dedupe` for `@motion-canvas/2d` and `@motion-canvas/core`.
+* The code panel/tokenizer/`focusLine`/`revealLines` deliberately stayed in `kit.tsx`: they are not part of this step's target tree.
+
+**Deviations / decisions**
+
+* `packages/video-kit/tsconfig.json` adds `"skipLibCheck": true`. Vitest 2.1 declaration files reference Node globals (`Buffer`, `node:fs`, ...) and `@types/node` is not in the dependency list given for this package; without it `tsc --noEmit` fails inside dependency `.d.ts` files. No `src/env.d.ts` was needed.
+* This tree's `s_intro.tsx` still uses `bigText` (there is no inline slab node `l1` to extract), so `titleSlab()`/`titlePill()` follow the exact numbers in the step prompt. Scenes were not modified.
+* The `resolve.dedupe` line uses the existing config's double quotes and 4-space indent to keep the diff to one line.
+
+**Checks (step 03)**
+
+* `pnpm --filter @motion-studio/video-kit typecheck` -> exit 0
+* `pnpm --filter @motion-studio/video-kit test` -> 2/2 tests pass
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0; project chunk hashes unchanged from step 02 (`db-indexing-a520dc3d`, `db-transactions-ac22f8df`)
+* import smoke via temporary `apps/studio/src/_smoke.ts` (deleted) -> studio typecheck exit 0
+* `grep -rn "from './kit'" apps/studio/src/scenes/db-indexing | wc -l` -> 6 (unchanged)
+* Kebab-case check: `LC_ALL=C find packages/video-kit/src \( -name "*[A-Z]*" -o -name "*_*" \) | wc -l` -> 0. The acceptance command without `LC_ALL=C` returns 25 on this macOS/APFS setup because BSD `find` matches the `[A-Z]` range against lowercase names under the default locale.
