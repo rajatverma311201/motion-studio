@@ -733,6 +733,29 @@ samp {
   font-size: 0.68rem;
 }
 
+.nb-theme-swatches {
+  display: grid;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.nb-theme-swatch-title {
+  margin: 0;
+  font-family: var(--nb-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nb-theme-swatch-default {
+  color: var(--nb-lime);
+}
+
+.nb-theme-swatch-row .nb-swatches {
+  margin: 0.75rem 0 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #nd-sidebar a[data-active='true'],
   #nd-sidebar-mobile a[data-active='true'],

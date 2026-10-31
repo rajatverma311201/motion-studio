@@ -1,0 +1,143 @@
+---
+title: Render a video in a look
+description: Pick the theme and mode a video renders in with video.config.json, chapters.json, a studio flag or the URL hash.
+---
+
+<p className="eyebrow">Production</p>
+
+A look is a pair: a theme id such as `tokyo-night` and a mode, `dark` or `light`. The two halves resolve independently, so "Tokyo Night light" is valid even though Tokyo Night defaults to dark. The built-in look is **Neubrutal dark**, and nothing changes until you ask for something else.
+
+Motion Canvas renders MP4 only from the editor's **Render** button. There is no headless CLI, so every command below starts the editor in a look; you then click Render.
+
+## Precedence
+
+| #   | Source                       | How you set it                                 | Typical use                                      |
+| --- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| 1   | URL hash                     | `#theme=tokyo-night&mode=light`                | quick preview while editing; snapshot tools      |
+| 2   | Command-line flag            | `pnpm studio --theme tokyo-night --mode light` | render this session in a different look          |
+| 3   | Motion Canvas variables      | `theme` / `mode` project variables             | the docs player; not used by hand                |
+| 4   | The lesson's `chapters.json` | `"theme"` / `"mode"`                           | the permanent look of one video                  |
+| 5   | `video.config.json`          | `"theme"` / `"mode"`                           | the default for every video                      |
+| 6   | Built-in                     | —                                              | `neubrutal`, or the chosen theme's `defaultMode` |
+
+Each field walks the list on its own. If the CLI sets a theme but not a mode, the mode still comes from the lesson, then the config file, then the theme's `defaultMode`. Invalid ids and modes are skipped with a console warning, never a crash.
+
+## Commands
+
+```sh
+# Start the editor in a look for this session.
+pnpm studio --theme tokyo-night --mode light
+
+# Only change the mode; the theme still comes from chapters.json or the config.
+pnpm studio --mode light
+
+# The old command: no flags, reads chapters.json and video.config.json.
+pnpm studio:dev
+
+# A different port.
+pnpm studio --theme shadcn --port 9100
+```
+
+Both `pnpm studio --theme ...` and `pnpm studio -- --theme ...` reach the script on pnpm 12.16.1 (the `--` is stripped). `pnpm studio:light` and `pnpm studio:dark` are shortcuts for the mode alone.
+
+Before Vite starts, the launcher prints where the look comes from:
+
+```text
+Motion Canvas editor  http://localhost:9000
+Look from flags: tokyo-night / light   (lesson and config settings still apply to anything not given)
+Remember: the URL hash (#theme=...&mode=...) overrides these flags.
+```
+
+### The hash trick
+
+Open the project with the look in the hash:
+
+```text
+http://localhost:9000/src/projects/db-indexing#s=3&theme=shadcn&mode=dark
+```
+
+`#s=3` still starts at section 3. The hash wins over every other source and needs no restart, but the scene must reload for the new look to apply: refresh the page after editing the hash. This is also what `pnpm snap:themes` and `pnpm snap:capture --theme ...` use.
+
+### The config file
+
+`video.config.json` at the repo root sets the default for all videos:
+
+```json
+{
+  "$schema": "./video.config.schema.json",
+  "theme": "neubrutal",
+  "mode": "dark"
+}
+```
+
+Both keys are optional; a missing `mode` uses the chosen theme's default. The file is read when the Vite server starts, so **restart `pnpm studio` after changing it**. With the file as above — or no file at all — videos render exactly as before.
+
+### The lesson file
+
+Set a permanent look for one video in its `chapters.json`:
+
+```json
+{
+  "slug": "db-indexing",
+  "title": "DB INDEXING",
+  "theme": "paper-editorial",
+  "mode": "light",
+  "chapters": [{"name": "INTRO", "color": "lime"}]
+}
+```
+
+`theme` and `mode` are optional and validated by `pnpm sync:lessons`. An unknown theme stops the sync with `file: unknown theme "<id>"`; a bad mode stops it with `file: mode must be "dark" or "light"`.
+
+## Render steps
+
+1. Start the editor in the look you want, for example `pnpm studio --theme tokyo-night --mode light`.
+2. Open `http://localhost:9000/src/projects/<slug>`.
+3. Check the console. The scene prints exactly one line per start:
+   ```text
+   [video-kit] look: tokyo-night / light  (theme from cli, mode from lesson)
+   ```
+   `theme from` and `mode from` name the winning layer: `hash`, `cli`, `variable`, `lesson`, `config` or `default`.
+4. Open the **Render** tab, set the range and FPS, and pick **Video (FFmpeg)** as the exporter.
+5. Press **Render**. The file lands in `apps/studio/output/`.
+
+### Output file names
+
+The FFmpeg exporter names the file from the project `name`. Each project file in `apps/studio/src/projects/` computes it at load time with `resolveProjectName()`:
+
+- the built-in look renders to `<slug>.mp4` (`db-indexing.mp4`), exactly as before;
+- any other look renders to `<slug>--<theme>--<mode>.mp4` (`db-indexing--tokyo-night--light.mp4`).
+
+So two renders of the same lesson do not overwrite each other. The `.meta` file keeps following the project **file** name, not the look, so the editor state is shared by every look of that lesson. The name is fixed when the project loads; reload after changing the hash.
+
+## Themes
+
+Seven themes ship with the repo. Every theme has a dark and a light variant, so there are fourteen looks.
+
+| Id                | Name            | Default mode | Character                                          |
+| ----------------- | --------------- | ------------ | -------------------------------------------------- |
+| `neubrutal`       | Neubrutal       | dark         | Thick borders, hard offset shadows, punchy accents |
+| `shadcn`          | Shadcn          | dark         | Zinc neutrals, hairline borders, calm and clean    |
+| `notebook`        | Notebook        | light        | Soft tonal surfaces, no outlines, calm blue        |
+| `tokyo-night`     | Tokyo Night     | dark         | The editor palette; ideal for code-heavy videos    |
+| `terminal-green`  | Terminal Green  | dark         | Phosphor green on near-black with a soft glow      |
+| `paper-editorial` | Paper Editorial | light        | Warm paper, ink rules and one editorial red        |
+| `blueprint`       | Blueprint       | dark         | Drafting paper with a strong grid                  |
+
+Drop either half to get the theme's default mode: `pnpm studio --theme paper-editorial` starts in light.
+
+The default theme's two variants:
+
+<ColorSwatches theme="neubrutal" />
+
+## Create a theme
+
+```sh
+pnpm new:theme midnight-purple "Midnight Purple" --from tokyo-night
+pnpm new:theme midnight-purple "Midnight Purple" --from tokyo-night --default-mode light
+```
+
+The generator copies `packages/video-kit/src/themes/tokyo-night.ts` — both variants come along — writes `midnight-purple.ts`, rewrites the id, name, exported constant and description, and registers it in `registry.ts` between the generated markers. It refuses to overwrite an existing file and rejects unknown ids and modes. Then it runs `pnpm sync:themes`.
+
+Next: edit both variants, run `pnpm --filter @motion-studio/video-kit test`, capture the look with `pnpm snap:themes -- --only midnight-purple`, open `.snapshots/themes.html`, and try `pnpm studio --theme midnight-purple`.
+
+Colours live in `packages/video-kit/src/themes/<id>.ts`; the docs never import the kit. `pnpm sync:themes` copies the ids, names and colours into `apps/docs/src/generated/themes.json` for the [design system](/docs/production/design-system).

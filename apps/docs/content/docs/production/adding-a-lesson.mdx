@@ -21,6 +21,8 @@ Arguments:
 | `"<Title>"`              | Human title. Used for the page title, the intro slab and the HUD title (upper-cased).                                  |
 | `--course <course-slug>` | Existing folder under `apps/docs/content/docs`, e.g. `databases`.                                                      |
 | `--chapters <n>`         | Optional chapter count, default `4`.                                                                                   |
+| `--theme <id>`           | Optional theme id written into `chapters.json`, e.g. `tokyo-night`. Validated against the registry.                    |
+| `--mode dark\|light`     | Optional mode written into `chapters.json`; the theme's default applies when omitted.                                  |
 
 The generator refuses to run if the slug is not kebab-case, the course folder does not exist, or any target file already exists. It never overwrites.
 
@@ -36,7 +38,7 @@ apps/studio/src/scenes/<slug>/sections/02-chapter-2.tsx
 apps/docs/content/docs/<course>/<slug>.mdx
 ```
 
-It also appends the slug to the course's `meta.json`, runs `pnpm sync:generated`, and prints the editor URL plus the file list. Every generated chapter is a valid, previewable section: the intro shows a title slab, the others show a chip and a caption, and each ends with `leave(root)`.
+It also appends the slug to the course's `meta.json`, runs `pnpm sync:lessons`, and prints the editor URL plus the file list. Every generated chapter is a valid, previewable section: the intro shows a title block, the others show a chip and a caption, and each ends with `leave(root)`.
 
 ## 2. Preview in the editor
 
@@ -68,7 +70,7 @@ The counts must match exactly. `defineLesson()` throws at definition time when `
 To change a chapter after generation, edit `chapters.json` and the matching section file together, then run:
 
 ```sh
-pnpm sync:generated
+pnpm sync:lessons
 ```
 
 `pnpm dev` runs the sync once at startup; it does not watch `chapters.json`. Restart `pnpm dev` after editing it if you need the docs chapter cards to update.

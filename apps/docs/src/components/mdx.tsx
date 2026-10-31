@@ -7,6 +7,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type {MDXComponents} from 'mdx/types';
 import type {ComponentProps} from 'react';
 import {ColorSwatches} from '@/components/color-swatches';
+import {ThemeTable} from '@/components/theme-table';
 import {LessonChapters} from '@/components/video/lesson-chapters';
 import {LessonVideo} from '@/components/video/lesson-video';
 
@@ -43,6 +44,7 @@ export function getMDXComponents(components?: MDXComponents) {
     LessonVideo,
     LessonChapters,
     ColorSwatches,
+    ThemeTable,
     ...components,
   } satisfies MDXComponents;
 }

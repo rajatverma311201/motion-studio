@@ -791,34 +791,98 @@ Four looks smoke-tested: `neubrutal` light, `notebook` light, `notebook` dark an
 - Existing-lesson smoke: 4 looks x 4 frames = **16/16** screenshots, no browser errors; the defects are listed above.
 - The `theme-showcase` `.meta` files are committed. The sheet and smoke PNGs stay under `.snapshots/` (ignored).
 
+## Step 15: choose the look a video renders in
+
+**What changed**
+
+- Root `video.config.json` (`$schema`, `theme: neubrutal`, `mode: dark`) and `video.config.schema.json`. Both keys are optional; a missing mode uses the theme's `defaultMode`.
+- `packages/video-kit/src/themes/active-theme.ts`: `resolveThemeSelection()` now takes `hashTheme/hashMode`, `cliTheme/cliMode`, `variableTheme/variableMode`, `lessonTheme/lessonMode` and `configTheme/configMode`, resolves each field independently in that order, skips invalid values and returns `{themeId, mode, source: {theme, mode}}`. `parseLookHash()` is exported for `#s=3&theme=x&mode=light`.
+- New `globals.d.ts`, `build-look.ts` (`readBuildLook`, `readLocationHash`) and `project-name.ts` (`resolveProjectName`). `apps/studio/vite.config.ts` reads `video.config.json` with `fs.readFileSync` relative to `__dirname` and defines `__VIDEO_CLI_THEME__`, `__VIDEO_CLI_MODE__`, `__VIDEO_CONFIG_THEME__`, `__VIDEO_CONFIG_MODE__`; a malformed `VIDEO_THEME` (non-kebab) or `VIDEO_MODE` (not `dark`/`light`) throws before Vite starts.
+- `defineLesson()` builds all six inputs and prints one line per scene start:
+  `[video-kit] look: tokyo-night / light  (theme from cli, mode from lesson)`.
+- `tools/scripts/studio.mjs`: parses `--theme`, `--mode`, `--port`, `--print`, ignores a leading `--`, validates the id against `themeIds`, sets `VIDEO_THEME`/`VIDEO_MODE` only when given, prints the banner, then spawns `pnpm --filter @motion-studio/studio exec vite --port <n>` and forwards SIGINT/SIGTERM. Root scripts `studio`, `studio:light`, `studio:dark`; `studio:dev` is unchanged.
+- `sync-generated.mjs` replaced by `sync-lessons.mjs` (theme-aware, writes `look: {theme, themeName, mode}`) plus `sync-themes.mjs` (writes `apps/docs/src/generated/themes.json`). Root `sync:themes`, `sync:lessons`, `sync`; `videos:build`, `dev` and `build` call `pnpm sync`. The palette regex and `palette.json` are gone.
+- `ColorSwatches` reads `themes.json` and renders the dark and light rows (`<ColorSwatches theme="neubrutal" />`); new `ThemeTable` lists every theme; the design-system page points at the theme files. New docs page `production/render-in-a-look.mdx` with the precedence table, commands, render steps, output names and the generator.
+- `registry.ts` now uses explicit keys with `// <generated:imports>` and `// <generated:entries>` markers; `themeIds` derives from `Object.keys(themes)`. `new-theme.mjs` copies a theme, rewrites id/name/constant/description/defaultMode, inserts it between the markers and runs `sync:themes`. `new-lesson.mjs` accepts `--theme`/`--mode` and writes a named project.
+
+**Precedence (per field, highest first)**
+
+`hash` -> `cli` -> `variable` -> `lesson` -> `config` -> `default` (built-in: `neubrutal`, then the theme's `defaultMode`). Invalid ids and modes are skipped; the `source` fields name the winning layer.
+
+**Output-file findings (task 5)**
+
+- `@motion-canvas/ffmpeg` `FFmpegExporterServer` calls `.output(path.join(this.config.output, `${settings.name}.mp4`))`; the UI passes `name: project.name` from the Render button. `bootstrap()` builds `{name, ...config}`, so a `name` in `makeProject({...})` overrides the file-derived name.
+- The project `.meta` name comes from the project **file** path in `@motion-canvas/vite-plugin` (`path.posix.parse(base).name` -> `${name}.meta`), not from `project.name`.
+- `apps/studio/src/projects/*.ts` now call `resolveProjectName(chapters.slug, chapters)`: `<slug>` for the built-in look, `<slug>--<theme>--<mode>` otherwise. Verified in the editor: all three projects load, `db-indexing.meta`, `db-transactions.meta`, `theme-showcase.meta` and `scene.meta` are unchanged and not duplicated, and `git status` shows no `.meta` edits.
+- The name is fixed when the project loads, so changing the hash needs a page reload before it affects the render file name.
+
+**Browser verification**
+
+- `pnpm studio --theme tokyo-night --mode light --port 9100` -> banner `Look from flags: tokyo-night / light`; console `[video-kit] look: tokyo-night / light  (theme from cli, mode from cli)`; screenshot `.snapshots/step15/tokyo-night-light.png` checked: light Tokyo Night, title chip `Tokyo Night / Light`.
+- Same server, `.../theme-showcase#theme=shadcn&mode=dark` -> `look: shadcn / dark (theme from hash, mode from hash)`; screenshot checked: shadcn dark, chip `Shadcn / Dark`.
+- `pnpm studio:dev` (no flags) on `.../db-indexing#s=2` -> `look: neubrutal / dark (theme from config, mode from config)` because the shipped `video.config.json` sets those values; screenshot checked: the familiar Neubrutal dark frame. With `video.config.json` temporarily moved aside, the same page logged `... (theme from default, mode from default)`, proving the built-in path.
+- `video.config.json` set to `blueprint` / `light`, server restarted -> `look: blueprint / light (theme from config, mode from config)`; screenshot checked. File restored.
+- `chapters.json` temporarily given `"theme": "paper-editorial"` -> `theme from lesson`; the config's explicit `mode: dark` correctly outranked the theme default. With `mode` temporarily removed from the config -> `look: paper-editorial / light (theme from lesson, mode from default)`; screenshot checked. Both files restored.
+- The line prints twice per page load (initial scene start plus the editor's internal restart); both lines are identical.
+
+**Checks (step 15)**
+
+- `pnpm check` -> exit 0 (typecheck; ESLint 0 errors / 69 pre-existing warnings; docs 5/5, video-kit 87/87, tools/scripts 21/21; Prettier clean)
+- `pnpm studio --theme tokyo-night --mode light --print` -> `VIDEO_THEME=tokyo-night VIDEO_MODE=light` and `COMMAND=pnpm --filter @motion-studio/studio exec vite --port 9000`; both `pnpm studio --theme ...` and `pnpm studio -- --theme ...` reach the script on pnpm 12.16.1
+- `pnpm sync` -> `synced 7 themes`, `synced 3 lessons`; `lessons.json` has `look: {theme, themeName, mode}` for all three
+- `pnpm studio:build` -> exit 0 (with and without `VIDEO_THEME`/`VIDEO_MODE`); the built settings chunk contains `cliTheme:"tokyo-night",cliMode:"light"`
+- `pnpm docs:build` -> exit 0; `/docs/production/render-in-a-look` and `/docs/production/design-system` return 200, the swatch rows render `Neubrutal / dark` and `Neubrutal / light`, the theme table lists `blueprint`/`paper-editorial`/etc.
+- sync validation: a temporary lesson produced `chapters.json: unknown theme "nope"` and `chapters.json: mode must be "dark" or "light"`, both exit 1
+- `pnpm new:theme midnight-purple "Midnight Purple" --from tokyo-night` -> `synced 8 themes`; file, registry import/entry and `themes.json` verified, then removed
+- `grep -rn "video-kit" apps/docs/src apps/docs/package.json | wc -l` -> 0
+- No snapshot compare was run: this step does not change how the default look renders, and the two render path changes were checked with screenshots.
+
+**Render a video in a look (5-line recipe)**
+
+```sh
+pnpm studio --theme tokyo-night --mode light      # or set theme/mode in video.config.json or chapters.json
+open http://localhost:9000/src/projects/<slug>     # confirm "[video-kit] look: tokyo-night / light (theme from cli, ...)"
+# Render tab -> Video (FFmpeg) -> Render
+# Output: apps/studio/output/<slug>--tokyo-night--light.mp4 (plain <slug>.mp4 for the built-in look)
+```
+
+**Gotchas**
+
+- `tsx` is a devDependency of both the root and `tools/scripts`: the root `node --import tsx` commands resolve it from the root, while `tools/scripts` tests and generators resolve it from their own package. `new-lesson`/`new-theme` spawn the sync with the resolved `tsx` loader URL so `MOTION_STUDIO_ROOT` temp trees work.
+- `video.config.json` is read when the Vite server starts; restart the studio after editing it. The URL hash is read at scene start, and the project name at project load.
+- The `**/*.config.*` ESLint filename exemption was narrowed to JS/TS config extensions so `video.config.json` is not parsed as JavaScript.
+- `registry.ts` uses explicit keys now; `themeIds` is `Object.keys(themes)`, so a generated theme needs only the import and one entry.
+- The default look compared with step 14 is unchanged: only `name` was added to `makeProject`, and the built-in name is still the plain slug.
+
 ## Summary
 
 Every commit from `git log --oneline --reverse`, grouped by step.
 
-| Step | Scope                                    | Commits                                                                                                                                                                                                         |
-| ---- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 00   | Import and safety baseline               | `bfadeb8 init-proj`, `265f505 chore: baseline before monorepo restructure`                                                                                                                                      |
-| 01   | Monorepo bootstrap                       | `5d30f17 chore: convert repo to pnpm workspace and move motion canvas project to apps/studio`                                                                                                                   |
-| 02   | Screenshot baseline                      | `7a2065d test: add playwright snapshot capture and compare tools`                                                                                                                                               |
-| 03   | video-kit foundation                     | `5a5a779 feat(video-kit): add theme, animation, hud and base components`                                                                                                                                        |
-| 04   | video-kit code panel                     | `a02ff56 feat(video-kit): add syntax-coloured code panel with tokenizer tests`                                                                                                                                  |
-| 05   | video-kit tree engine                    | `3528303 feat(video-kit): add b-tree/b+tree engine, mini tree, stat card and legend`                                                                                                                            |
-| 06   | video-kit lesson factory                 | `7fdf57c feat(video-kit): add defineLesson factory and chapters schema`                                                                                                                                         |
-| 07   | db-indexing migration                    | `0956c1f`, `906b407`, `183cd17`, `25fad8e`, `fe8320d`, `70a6058`                                                                                                                                                |
-| 08   | db-transactions migration                | `b25a6fa`, `5325eb4`, `ba89320`, `9d36777`                                                                                                                                                                      |
-| 09   | docs scaffold                            | `b273eca feat(docs): scaffold tanstack start + fumadocs app with neubrutalist dark theme`                                                                                                                       |
-| 10   | docs content model and landing page      | `42a2c8f feat(docs): add course structure, lesson pages and landing page`                                                                                                                                       |
-| 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                                                                                                                               |
-| 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`)                                                                                                    |
-| 13   | theme system core                        | `3d667c5 test(video-kit): freeze the current neubrutal look as golden values`, `a181920 test(snapshots): add quick six-frame capture and compare subset`, plus the commit that adds this section (`git log -1`) |
-| 14   | theme catalogue and showcase             | `feat(video-kit): add six themes with dark and light variants`, `feat(video-kit): add theme-showcase lesson`, `feat(tools): add per-look snapshot runner and contact sheet`                                     |
+| Step | Scope                                    | Commits                                                                                                                                                                                                                |
+| ---- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 00   | Import and safety baseline               | `bfadeb8 init-proj`, `265f505 chore: baseline before monorepo restructure`                                                                                                                                             |
+| 01   | Monorepo bootstrap                       | `5d30f17 chore: convert repo to pnpm workspace and move motion canvas project to apps/studio`                                                                                                                          |
+| 02   | Screenshot baseline                      | `7a2065d test: add playwright snapshot capture and compare tools`                                                                                                                                                      |
+| 03   | video-kit foundation                     | `5a5a779 feat(video-kit): add theme, animation, hud and base components`                                                                                                                                               |
+| 04   | video-kit code panel                     | `a02ff56 feat(video-kit): add syntax-coloured code panel with tokenizer tests`                                                                                                                                         |
+| 05   | video-kit tree engine                    | `3528303 feat(video-kit): add b-tree/b+tree engine, mini tree, stat card and legend`                                                                                                                                   |
+| 06   | video-kit lesson factory                 | `7fdf57c feat(video-kit): add defineLesson factory and chapters schema`                                                                                                                                                |
+| 07   | db-indexing migration                    | `0956c1f`, `906b407`, `183cd17`, `25fad8e`, `fe8320d`, `70a6058`                                                                                                                                                       |
+| 08   | db-transactions migration                | `b25a6fa`, `5325eb4`, `ba89320`, `9d36777`                                                                                                                                                                             |
+| 09   | docs scaffold                            | `b273eca feat(docs): scaffold tanstack start + fumadocs app with neubrutalist dark theme`                                                                                                                              |
+| 10   | docs content model and landing page      | `42a2c8f feat(docs): add course structure, lesson pages and landing page`                                                                                                                                              |
+| 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                                                                                                                                      |
+| 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`)                                                                                                           |
+| 13   | theme system core                        | `3d667c5 test(video-kit): freeze the current neubrutal look as golden values`, `a181920 test(snapshots): add quick six-frame capture and compare subset`, plus the commit that adds this section (`git log -1`)        |
+| 14   | theme catalogue and showcase             | `feat(video-kit): add six themes with dark and light variants`, `feat(video-kit): add theme-showcase lesson`, `feat(tools): add per-look snapshot runner and contact sheet`                                            |
+| 15   | render look and theme generator          | `feat(video-kit): add cli flag and config file for the render look`, `feat(tools): add studio launcher, new-theme generator and theme data sync`, `docs: add render-in-a-look page and theme swatches from theme data` |
 
 ### Tech debt
 
-- `apps/docs/src/generated` is git-ignored, so a fresh clone must run `pnpm sync:generated` (or `pnpm dev` / `pnpm build`) before `pnpm check`; `pnpm check` itself does not sync.
+- `apps/docs/src/generated` is git-ignored, so a fresh clone must run `pnpm sync` (or `pnpm dev` / `pnpm build`) before `pnpm check`; `pnpm check` itself does not sync.
 - 70 `@typescript-eslint/consistent-type-imports` warnings remain. They are warnings by design; converting them would touch nearly every scene and kit file without changing behaviour.
 - `apps/studio/src/scenes/db-indexing/sections/01-intro.tsx` still has its local `bigText`; it can switch to `stackedTitle` with no visual change.
-- `db-transactions` sections 01 and 09 use `stackedTitle`; restyling them as `titleSlab` is a deliberate visual change and needs a new baseline.
+- `db-transactions` sections 01 and 09 use `stackedTitle`; restyling them with the `slab` title style is a deliberate visual change and needs a new baseline.
 - `s11_t52` (db-indexing) sits on a 0.35 s fade boundary: a live capture can land one frame late, so use a paused capture at 52.01 when it reports a mismatch.
 - `TreeView` has no `dispose()`; `hide()` fades the root but leaves it attached.
 - `pnpm dev` syncs generated data once. Editing `chapters.json` rebuilds the bundle but the docs chapter cards need a restart.
@@ -829,7 +893,8 @@ Every commit from `git log --oneline --reverse`, grouped by step.
 - `pnpm snap:quick` covers six of the 58 baseline frames. Step 14 ran the full 58-frame compare (58/58 PASS); later steps can use the quick subset unless a kit change touches more components.
 - The two non-palette hexes in the old scenes are now `colors.pink` (`#FF5C7A`) and `colors.violet` (`#B7A0FF`); those two frames shift slightly. Exact parity needs a theme slot if it matters.
 - `colors` is a Proxy over an empty target, so `Object.keys(colors)` is empty. Use `getTheme().colors` or `themes` when enumeration is needed.
-- `apps/docs/src/generated/palette.json` is stale until step 15: the sync script warns and keeps the last file instead of regenerating it from the Proxy.
+- `apps/docs/src/generated/themes.json` is now the only palette source for the docs; `palette.json` is gone.
+- `video.config.json` is read when the Vite server starts and the look line prints on every scene start (the editor restarts the scene once on load, so the console shows it twice). The project name, and therefore the MP4 name, is fixed at project load: reload after changing the hash.
 - The `db-transactions` ACID inactive cards use scene-local `opacity(0.4)` and fixed strokes; they lose contrast in light themes and ignore `borderWidthScale` (see `## Theme issues in existing lessons`).
 
 ### Candidates for the kit

@@ -19,7 +19,7 @@ apps/studio        Motion Canvas app (Vite 4). Scenes + project files only.
 apps/docs          TanStack Start + Fumadocs app (Vite 8).
 packages/video-kit Reusable Motion Canvas building blocks. TypeScript source, no build step.
 tools/snapshots    Playwright capture + pixel compare.
-tools/scripts      Node scripts (sync-generated, new-lesson).
+tools/scripts      Node scripts (sync-themes, sync-lessons, new-lesson, new-theme, studio).
 ```
 
 Package names use the scope `@motion-studio/*` (`@motion-studio/studio`, `@motion-studio/docs`, `@motion-studio/video-kit`, `@motion-studio/snapshots`).

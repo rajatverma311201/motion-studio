@@ -16,7 +16,7 @@ export function LessonVideo({slug}: LessonVideoProps) {
     return (
       <div className="nb-video-missing nb-video-missing-lesson" role="alert">
         <p>
-          No lesson data for <code>{slug}</code>. Run <code>pnpm sync:generated</code> in the repo root.
+          No lesson data for <code>{slug}</code>. Run <code>pnpm sync</code> in the repo root.
         </p>
       </div>
     );

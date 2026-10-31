@@ -20,13 +20,14 @@ motion-studio/
 │   │               └── sections/       numbered section files
 │   └── docs/                    TanStack Start + Fumadocs site (Vite 8)
 │       ├── content/docs/        lesson pages and production notes
-│       ├── src/generated/       lessons.json + palette.json (generated)
+│       ├── src/generated/       lessons.json + themes.json (generated)
 │       └── public/videos/       player bundles (generated)
 ├── packages/
-│   └── video-kit/               shared palette, HUD, components, lesson factory
+│   └── video-kit/               shared theme data, HUD, components, lesson factory
 ├── tools/
-│   ├── scripts/                 sync-generated.mjs, new-lesson.mjs
+│   ├── scripts/                 sync-themes, sync-lessons, new-lesson, new-theme, studio
 │   └── snapshots/               Playwright capture and pixel compare
+├── video.config.json            default look for every video
 ├── package.json                 root scripts
 └── pnpm-workspace.yaml
 ```
@@ -65,8 +66,12 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 | `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server.     |
 | `pnpm build`                                         | `videos:build` followed by the docs production build.                                |
 | `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                                 |
+| `pnpm studio`                                        | Start the editor. Add `--theme <id>` / `--mode dark\|light` to pick the render look. |
+| `pnpm studio:dev`                                    | Start the editor with no flags (the look still comes from the config and lesson).    |
 | `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.          |
+| `pnpm sync`                                          | Regenerate `themes.json` and `lessons.json` (themes first).                          |
 | `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.             |
+| `pnpm new:theme <id> "<Name>" --from <theme>`        | Copy an existing theme, register it and sync the docs data.                          |
 | `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.               |
 | `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                        |
 | `pnpm snap:themes`                                   | Capture the theme showcase in 7 themes × 2 modes and write `.snapshots/themes.html`. |
@@ -90,7 +95,42 @@ Every theme ships two variants, `dark` and `light`, and the theme and the mode a
 | `paper-editorial` | Paper Editorial | `editorial`  | light        | Warm paper, ink rules and one editorial red; a serif for titles.     |
 | `blueprint`       | Blueprint       | `dev`        | dark         | Drafting-paper look with a strong grid; light mode is a white-print. |
 
-Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, or set `theme` and `mode` in `chapters.json`. Unknown ids and modes fall back with a warning. `pnpm snap:themes` captures the `theme-showcase` lesson in all fourteen looks and writes a contact sheet to `.snapshots/themes.html`.
+Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, set `theme` and `mode` in `chapters.json`, set the default for every video in `video.config.json`, or pass `--theme` / `--mode` to `pnpm studio`. Unknown ids and modes fall back with a warning. `pnpm snap:themes` captures the `theme-showcase` lesson in all fourteen looks and writes a contact sheet to `.snapshots/themes.html`.
+
+### Choosing a look
+
+The theme id and the mode resolve independently; the first **valid** value wins per field:
+
+| #   | Source                       | Example                                              |
+| --- | ---------------------------- | ---------------------------------------------------- |
+| 1   | URL hash                     | `#s=3&theme=tokyo-night&mode=light`                  |
+| 2   | `pnpm studio` flags          | `pnpm studio --theme tokyo-night --mode light`       |
+| 3   | Motion Canvas variables      | `theme` / `mode` project variables (the docs player) |
+| 4   | The lesson's `chapters.json` | `"theme": "paper-editorial", "mode": "light"`        |
+| 5   | `video.config.json`          | the repo-root default (`neubrutal` / `dark`)         |
+| 6   | Built-in                     | `neubrutal`, or the chosen theme's `defaultMode`     |
+
+```sh
+pnpm studio --theme tokyo-night --mode light   # this session only
+pnpm studio --mode light                       # theme still from the lesson or config
+pnpm studio:dev                                # no flags, reads the config and lesson
+```
+
+Both `pnpm studio --theme ...` and `pnpm studio -- --theme ...` reach the script on pnpm 12.16.1. `video.config.json` is read when the Vite server starts, so restart the studio after editing it. The editor prints the winning layers on every scene start:
+
+```text
+[video-kit] look: tokyo-night / light  (theme from cli, mode from lesson)
+```
+
+MP4s come from the editor's Render button (Video / FFmpeg exporter) and land in `apps/studio/output`. The name is `<slug>.mp4` for the built-in look and `<slug>--<theme>--<mode>.mp4` otherwise, so two looks of one lesson do not overwrite each other. The full guide is at `/docs/production/render-in-a-look`.
+
+Create a theme from an existing one:
+
+```sh
+pnpm new:theme midnight-purple "Midnight Purple" --from tokyo-night
+```
+
+It copies both variants, rewrites the id, name and constant, registers the theme between the generated markers in `registry.ts`, and runs `pnpm sync:themes`.
 
 `NotebookLM` and `shadcn` here mean **inspired-by looks** built from public design ideas (Material tonal surfaces and Google's public colour tokens; zinc neutrals, 1 px borders and Tailwind colours). No logos, wordmarks or product UI are copied. The theme names shown in the UI are `Notebook` and `Shadcn`.
 
@@ -100,7 +140,7 @@ Pick a pair with `#theme=<id>&mode=<dark|light>` on a project URL, or set `theme
 pnpm new:lesson mvcc-and-isolation "MVCC and Isolation Levels" --course databases
 ```
 
-The generator refuses to overwrite anything. It creates the project file, `chapters.json`, `scene.tsx`, numbered section files and the MDX page, appends the page to the course's `meta.json`, and runs `pnpm sync:generated`.
+The generator refuses to overwrite anything. It creates the project file, `chapters.json`, `scene.tsx`, numbered section files and the MDX page, appends the page to the course's `meta.json`, and runs `pnpm sync:lessons`. Add `--theme <id>` and `--mode dark|light` to write a permanent look into the new `chapters.json`.
 
 1. Preview at `http://localhost:9000/src/projects/<slug>`. Start at a section with `#s=N` (zero-based).
 2. Replace the `TODO` captions in `sections/*.tsx` and the placeholder chapters in `chapters.json`. Keep the chapter count and the section count equal; `defineLesson()` throws otherwise.
@@ -117,7 +157,7 @@ Motion Canvas's Vite plugin supports **Vite 4 and 5 only**. TanStack Start requi
 - `apps/studio` runs Vite 4 with the Motion Canvas and ffmpeg plugins.
 - `apps/docs` runs Vite 8 with TanStack Start, Fumadocs and Tailwind 4.
 
-`apps/docs` must never import `.tsx` from `packages/video-kit`: the JSX runtimes differ. Data crosses the boundary as JSON (`chapters.json` in, `lessons.json` and `palette.json` out).
+`apps/docs` must never import `.tsx` from `packages/video-kit`: the JSX runtimes differ. Data crosses the boundary as JSON (`chapters.json` and the theme registry in, `lessons.json` and `themes.json` out).
 
 ## Troubleshooting
 
@@ -149,6 +189,6 @@ pnpm videos:build
 
 `pnpm dev` also builds the bundles in watch mode; `pnpm build` does it for production. The `apps/docs/public/videos` folder is git-ignored, so a fresh clone has no bundles until one of those commands runs.
 
-### Fresh clone: missing `lessons.json` or `palette.json`
+### Fresh clone: missing `lessons.json` or `themes.json`
 
-`apps/docs/src/generated` is git-ignored. Run `pnpm sync:generated` (or `pnpm dev`, or `pnpm build`) once after cloning, before `pnpm --filter @motion-studio/docs typecheck` or `pnpm check`.
+`apps/docs/src/generated` is git-ignored. Run `pnpm sync` (or `pnpm dev`, or `pnpm build`) once after cloning, before `pnpm --filter @motion-studio/docs typecheck` or `pnpm check`.

@@ -1,17 +1,21 @@
 ---
 title: Design system
-description: The dark neubrutalist palette, the two typefaces, the drawing rules, and the video-kit components every lesson reuses.
+description: The theme data files, the two site typefaces, the drawing rules, and the video-kit components every lesson reuses.
 ---
 
 <p className="eyebrow">Production</p>
 
-Every frame shares one visual identity: a near-black canvas, cream borders, flat accent fills and hard offset shadows. The palette and the helpers live in `packages/video-kit/src/theme`; this page shows the same tokens the scenes use.
+Every frame reads its look from a theme: colours, radii, border widths, shadow style and HUD chrome. The default is Neubrutal dark — a near-black canvas, cream borders, flat accent fills and hard offset shadows — but the same components render the other themes without changes.
 
 ## Palette
 
-<ColorSwatches />
+Colours are data. Every file in `packages/video-kit/src/themes/` declares a complete colour set for `dark` and `light`, and the kit reads the active variant through `colors`. The rows below show the default theme, `neubrutal`.
 
-The values come from `packages/video-kit/src/theme/colors.ts`. The docs mirror the important ones as CSS custom properties in `apps/docs/src/styles/neubrutalism.css` so the site and the videos feel like one product.
+<ColorSwatches theme="neubrutal" />
+
+The docs mirror the neubrutal dark values as CSS custom properties in `apps/docs/src/styles/neubrutalism.css` so the site and the default videos feel like one product. Other themes change the video, not the docs.
+
+The `neubrutal` dark slots and what they mean to the kit:
 
 | Token            | Value                 | Used for                                   |
 | ---------------- | --------------------- | ------------------------------------------ |
@@ -26,25 +30,37 @@ The values come from `packages/video-kit/src/theme/colors.ts`. The docs mirror t
 | `orange`         | `#FF8A3D`             | Tree row pointers and cost warnings        |
 | `red`            | `#FF4D4D`             | Mistakes and unsafe operations             |
 
-`clear` is `rgba(244,241,234,0)`: a transparent value used where a later animation fills a shape.
+Light variants use darker accents and a paper or white background; the swatch rows above show both. The accent names are semantic slots, not literal hues: `lime` means positive, `red` danger, `cyan` info, `yellow` warning, `pink` secondary highlight, `violet` structure and `orange` attention.
+
+## Themes
+
+A theme is one TypeScript file with both variants plus its fonts, shape and HUD settings. `pnpm sync:themes` copies the ids, names and colours into `apps/docs/src/generated/themes.json`; this table is generated from that file.
+
+<ThemeTable />
+
+- Change the default for every video in `video.config.json`.
+- Set a permanent look for one lesson with `theme` and `mode` in its `chapters.json`.
+- Override a session with `pnpm studio --theme <id> --mode <dark|light>`, or with `#theme=<id>&mode=<mode>` on the editor URL.
+
+The full precedence and the render steps are in [Render a video in a look](/docs/production/render-in-a-look).
 
 ## Type
 
-| Role                      | Family             | Where                                           |
-| ------------------------- | ------------------ | ----------------------------------------------- |
-| Headlines, body, captions | **Space Grotesk**  | `fonts.sans` in the kit, Fontsource in the docs |
-| Labels, code, HUD pills   | **JetBrains Mono** | `fonts.mono` in the kit, Fontsource in the docs |
+| Role                      | Family             | Where                                                     |
+| ------------------------- | ------------------ | --------------------------------------------------------- |
+| Headlines, body, captions | **Space Grotesk**  | `fonts.sans` in the default theme, Fontsource in the docs |
+| Labels, code, HUD pills   | **JetBrains Mono** | `fonts.mono` in the default theme, Fontsource in the docs |
 
-The studio injects the Google Fonts stylesheet at module load through `loadFonts()`. This is not cosmetic: Motion Canvas measures text when a `Txt` node is created, so loading fonts after the first frame leaves the intro titles shifted. Keep the module-scope `loadFonts()` call in every `scene.tsx`.
+Other themes declare their own stacks; `JetBrains Mono`, Roboto Mono and IBM Plex Mono all keep the 0.6 em advance the code panel depends on. The studio injects the active theme's Google Fonts stylesheet at module load through `loadFonts()`. This is not cosmetic: Motion Canvas measures text when a `Txt` node is created, so loading fonts after the first frame leaves the intro titles shifted. Keep the module-scope `loadFonts()` call in every `scene.tsx`.
 
 ## Rules
 
-1. **Cream borders, 2 to 4 px.** The docs use 2 px on cards and callouts; the video uses 3.5 to 7 px because it is scaled down in the player.
-2. **Hard offset shadows, never blur.** A shadow is `xpx ypx 0 <colour>`; the kit's `neubrutal()` helper builds the matching stroke and offset. No `box-shadow` blur radius, no drop shadows.
+1. **Borders come from the theme.** The docs use 2 px on cards and callouts; videos use `borderWidth()` because they are scaled down in the player. A theme with `borderWidthScale: 0` draws none.
+2. **Shadows come from the theme.** Neubrutal uses hard offset shadows with no blur; notebook uses soft shadows, tokyo-night has none. The kit's `boxStyle()` builds the matching stroke and offset. No ad-hoc `box-shadow` blur.
 3. **Flat fills.** Accents are solid colours; gradients are reserved for the faint grid and the transparency checkerboard.
-4. **Dark text on accents.** Lime, cyan, yellow, pink, violet and orange fills carry `colors.dark` text, not cream.
+4. **Text on accents uses `colors.onAccent`.** HUD chrome uses `colors.onBrand`, not `colors.onAccent`.
 5. **One accent per element.** A card has one border colour and one shadow colour; do not stack two accents on the same edge.
-6. **Mono for labels, grotesk for speech.** HUD labels are upper-case mono with wide letter spacing; narration is sentence case in the caption bar.
+6. **Mono for labels, sans for speech.** HUD labels are upper-case mono with wide letter spacing; narration is sentence case in the caption bar.
 
 ## video-kit components
 
@@ -52,7 +68,7 @@ Every component below is exported from `@motion-studio/video-kit` and documented
 
 | Component                         | What it does                                                                                        | Source                                                        |
 | --------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `titleSlab` / `titlePill`         | Solid accent slab with dark text and a hard offset shadow: the standard intro title.                | `packages/video-kit/src/components/title-slab.tsx`            |
+| `titleBlock` / `titlePill`        | Solid accent slab, plain title or pill in the theme's title style; dark text and a themed shadow.   | `packages/video-kit/src/components/title-block.tsx`           |
 | `stackedTitle`                    | Older three-copy headline (pink and cyan behind cream); kept for the lessons that predate the slab. | `packages/video-kit/src/components/stacked-title.tsx`         |
 | `chip` / `chipText`               | Small neubrutalist chip with centred text, plus access to its `Txt` so the label can change.        | `packages/video-kit/src/components/chip.tsx`                  |
 | `label`                           | Plain mono label with optional left/right alignment.                                                | `packages/video-kit/src/components/label.tsx`                 |
@@ -73,8 +89,8 @@ Every component below is exported from `@motion-studio/video-kit` and documented
 The HUD is a separate folder: `say()` writes the caption bar, `buildHud()` draws the title and chapter pills, `setSection()` advances them, and `leave()` fades a section out and removes it. The tree engine lives in `packages/video-kit/src/tree` and the lesson factory in `packages/video-kit/src/lesson`.
 
 ```tsx
-import {chip, colors, leave, say, titleSlab} from '@motion-studio/video-kit';
+import {chip, colors, leave, say, titleBlock} from '@motion-studio/video-kit';
 
-const title = titleSlab({text: 'DB INDEXING'});
+const title = titleBlock({text: 'DB INDEXING'});
 const tag = chip('B+TREE', colors.cyan);
 ```
