@@ -1,4 +1,4 @@
-import {defineLesson, type ChaptersFile} from '@motion-studio/video-kit';
+import {defineLesson, loadFonts, type ChaptersFile} from '@motion-studio/video-kit';
 import chapters from './chapters.json';
 import {introSection} from './sections/01-intro';
 import {scanSection} from './sections/02-full-table-scan';
@@ -18,6 +18,10 @@ import {compositeIndexesSection} from './sections/15-composite-indexes';
 import {costOfIndexesSection} from './sections/16-cost-of-indexes';
 import {explainAndGotchasSection} from './sections/17-explain-and-gotchas';
 import {recapSection} from './sections/18-recap';
+
+// Inject the font stylesheet at module load, as the old local kit did, so the
+// text layout is measured with the real fonts and not the fallback stack.
+loadFonts();
 
 export default defineLesson({
   chapters: chapters as ChaptersFile,

@@ -62,14 +62,27 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
       {...neubrutal(colors.pink, 6, 3.5)}
       opacity={0}
     >
-      <Txt ref={sqlTxt} text="SELECT * FROM users WHERE email = 'ria@x.in';" fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
+      <Txt
+        ref={sqlTxt}
+        text="SELECT * FROM users WHERE email = 'ria@x.in';"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={24}
+        fill={colors.ink}
+      />
     </Rect>
   ) as Rect;
   const walks = statCard(0, 300, 330, 120, 'TREE WALKS', colors.orange);
   walks.node.opacity(0);
   const pk = chip('PK = 42', colors.yellow, {x: -470, y: 0, fs: 24, sh: 5}) as Rect;
   pk.opacity(0);
-  const pg = chip('POSTGRESQL: HEAP + ROW ADDRESS (TID)', colors.surf2, {x: 0, y: 190, fs: 18, sh: 0, color: colors.ink}) as Rect;
+  const pg = chip('POSTGRESQL: HEAP + ROW ADDRESS (TID)', colors.surf2, {
+    x: 0,
+    y: 190,
+    fs: 18,
+    sh: 0,
+    color: colors.ink,
+  }) as Rect;
   pg.opacity(0);
   const cover = chip('COVERING INDEX · ONE WALK', colors.lime, {x: -470, y: 190, fs: 22, sh: 6}) as Rect;
   cover.opacity(0);
@@ -130,7 +143,7 @@ export function* clusteredVsSecondarySection(view: View2D): ThreadGenerator {
     sec.rows[1][1].fill(colors.clear, 0.2),
     pg.opacity(0, 0.3),
   );
-  chipText(sql).text('SELECT id, email FROM users WHERE email = \'ria@x.in\';');
+  chipText(sql).text("SELECT id, email FROM users WHERE email = 'ria@x.in';");
   walks.val.text('1');
   yield* say('Trick: if the query only needs columns that are in the index, the second walk disappears.');
   yield* all(highlightStroke(sec.leaves[1], colors.lime), pop(cover, 0.35));

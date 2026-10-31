@@ -1,6 +1,16 @@
 import {Node, Rect, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, createRef, waitFor} from '@motion-canvas/core';
-import {IndexTree, TreeView, chip, chipText, colors, indexLegend, leave, playInsert, say} from '@motion-studio/video-kit';
+import {
+  IndexTree,
+  TreeView,
+  chip,
+  chipText,
+  colors,
+  indexLegend,
+  leave,
+  playInsert,
+  say,
+} from '@motion-studio/video-kit';
 import {SEQ} from '../shared';
 
 // ================================================================ B+TREE INSERT
@@ -10,7 +20,13 @@ export function* bplustreeInsertSection(view: View2D): ThreadGenerator {
   const tv = new TreeView({x: 0, y: -235, scale: 1.6, plus: true});
   const insChip = chip('INSERT ▸ —', colors.yellow, {x: -620, y: -400, fs: 26, sh: 6}) as Rect;
   const lg = indexLegend(250, 340, true);
-  const maxChip = chip('MAX 3 KEYS PER NODE', colors.surf2, {x: -620, y: 340, fs: 18, sh: 0, color: colors.ink}) as Rect;
+  const maxChip = chip('MAX 3 KEYS PER NODE', colors.surf2, {
+    x: -620,
+    y: 340,
+    fs: 18,
+    sh: 0,
+    color: colors.ink,
+  }) as Rect;
   view.add(
     <Node ref={root} opacity={0}>
       {insChip}
@@ -41,7 +57,8 @@ export function* bplustreeInsertSection(view: View2D): ThreadGenerator {
       sawSplit = true;
       yield* say('Look: 15 sits in the parent AND still in the right leaf. B+tree leaf splits COPY the key up.', 4.2);
     }
-    if (key === 7) yield* say('Internal nodes split like a B-tree (the median moves up), but leaves always keep every key.', 3.8);
+    if (key === 7)
+      yield* say('Internal nodes split like a B-tree (the median moves up), but leaves always keep every key.', 3.8);
   }
   chipText(insChip).text('11 KEYS · 3 LEVELS');
   yield* tv.mark(tv.idsOfLeaves(), colors.lime, 0.3);

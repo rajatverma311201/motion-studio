@@ -20,7 +20,15 @@ export function* binaryTreesSection(view: View2D): ThreadGenerator {
     if (parent !== undefined) {
       const p = nodes.get(parent)!;
       const e = (
-        <Line points={[[p.x(), p.y() + 30], [x, y - 36]]} stroke={colors.ink} lineWidth={3.5} opacity={0} />
+        <Line
+          points={[
+            [p.x(), p.y() + 30],
+            [x, y - 36],
+          ]}
+          stroke={colors.ink}
+          lineWidth={3.5}
+          opacity={0}
+        />
       ) as Line;
       edgeLayer.add(e);
       return {n, e};
@@ -92,6 +100,9 @@ export function* binaryTreesSection(view: View2D): ThreadGenerator {
 
   yield* say('Self-balancing trees (AVL, red-black) fix the shape. But there is a second problem: disks.');
   yield* waitFor(3.2);
-  yield* say('Even perfectly balanced, 10 million keys need about 24 levels, and each level can be a separate disk read.', 4);
+  yield* say(
+    'Even perfectly balanced, 10 million keys need about 24 levels, and each level can be a separate disk read.',
+    4,
+  );
   yield* leave(root());
 }

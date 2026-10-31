@@ -5,7 +5,16 @@ import {chip, colors, fonts, leave, pop, say} from '@motion-studio/video-kit';
 function bigText(text: string, fs: number, y: number, ls = -2, off = 9): Node {
   const t = (fill: string, d: number) =>
     (
-      <Txt text={text} fontSize={fs} fontWeight={700} fontFamily={fonts.sans} fill={fill} x={d} y={d} letterSpacing={ls} />
+      <Txt
+        text={text}
+        fontSize={fs}
+        fontWeight={700}
+        fontFamily={fonts.sans}
+        fill={fill}
+        x={d}
+        y={d}
+        letterSpacing={ls}
+      />
     ) as Txt;
   return (
     <Node y={y}>
@@ -21,11 +30,27 @@ export function* introSection(view: View2D): ThreadGenerator {
   const root = createRef<Node>();
   const l1 = bigText('DB INDEXING', 190, -210);
   const l2 = bigText('B-TREE & B+TREE', 118, -40, -1, 7);
-  const sub = chip('HOW DATABASES FIND ROWS FAST', colors.yellow, {fs: 36, rot: -2, y: 110, sh: 8, mono: false}) as Rect;
+  const sub = chip('HOW DATABASES FIND ROWS FAST', colors.yellow, {
+    fs: 36,
+    rot: -2,
+    y: 110,
+    sh: 8,
+    mono: false,
+  }) as Rect;
   const slow = chip('O(n)', colors.red, {fs: 54, x: -250, y: 285, color: colors.ink, sh: 8}) as Rect;
   const fast = chip('O(log n)', colors.lime, {fs: 54, x: 250, y: 285, sh: 8}) as Rect;
   const arrow = (
-    <Line points={[[-130, 285], [90, 285]]} stroke={colors.ink} lineWidth={7} endArrow arrowSize={20} end={0} />
+    <Line
+      points={[
+        [-130, 285],
+        [90, 285],
+      ]}
+      stroke={colors.ink}
+      lineWidth={7}
+      endArrow
+      arrowSize={20}
+      end={0}
+    />
   ) as Line;
   l1.x(-1500);
   l2.x(1500);

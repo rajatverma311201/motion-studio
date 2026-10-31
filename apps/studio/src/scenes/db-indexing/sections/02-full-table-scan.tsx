@@ -1,6 +1,18 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, sequence, waitFor} from '@motion-canvas/core';
-import {chip, colors, countTo, fonts, label, leave, neubrutal, pop, say, shake, statCard} from '@motion-studio/video-kit';
+import {
+  chip,
+  colors,
+  countTo,
+  fonts,
+  label,
+  leave,
+  neubrutal,
+  pop,
+  say,
+  shake,
+  statCard,
+} from '@motion-studio/video-kit';
 
 // ================================================================ FULL TABLE SCAN
 export function* scanSection(view: View2D): ThreadGenerator {
@@ -72,12 +84,35 @@ export function* scanSection(view: View2D): ThreadGenerator {
         letterSpacing={3}
         fill={colors.mute}
       />
-      <Line points={[[-330, -212], [330, -212]]} stroke={colors.dim} lineWidth={3} />
+      <Line
+        points={[
+          [-330, -212],
+          [330, -212],
+        ]}
+        stroke={colors.dim}
+        lineWidth={3}
+      />
       {data.map(([id, name, city], i) => {
         const r = (
           <Rect y={-172 + i * 54} width={668} height={46} radius={10} fill={colors.clear} opacity={0}>
-            <Txt x={-300} offsetX={-1} text={String(id)} fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
-            <Txt x={-170} offsetX={-1} text={name} fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
+            <Txt
+              x={-300}
+              offsetX={-1}
+              text={String(id)}
+              fontFamily={fonts.mono}
+              fontWeight={700}
+              fontSize={24}
+              fill={colors.ink}
+            />
+            <Txt
+              x={-170}
+              offsetX={-1}
+              text={name}
+              fontFamily={fonts.mono}
+              fontWeight={700}
+              fontSize={24}
+              fill={colors.ink}
+            />
             <Txt x={60} offsetX={-1} text={city} fontFamily={fonts.mono} fontSize={24} fill={colors.mute} />
           </Rect>
         ) as Rect;

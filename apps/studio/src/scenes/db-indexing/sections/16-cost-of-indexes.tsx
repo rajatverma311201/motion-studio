@@ -125,7 +125,9 @@ export function* costOfIndexesSection(view: View2D): ThreadGenerator {
     'PAGES ≈ 70% FULL',
     colors.pink,
   );
-  yield* say('Key choice matters too. Auto-increment ids always insert at the right edge, so leaves fill up completely.');
+  yield* say(
+    'Key choice matters too. Auto-increment ids always insert at the right edge, so leaves fill up completely.',
+  );
   yield* all(seq.t.opacity(1, 0.3), seq.g.opacity(1, 0.3));
   yield* all(...seq.blocks.map((b, i) => delay(i * 0.08, b.fill.height(seq.fills[i] * 122, 0.5))));
   yield* pop(seq.n, 0.3);
@@ -135,6 +137,9 @@ export function* costOfIndexesSection(view: View2D): ThreadGenerator {
   yield* all(...rnd.blocks.map((b, i) => delay(i * 0.08, b.fill.height(rnd.fills[i] * 122, 0.5))));
   yield* pop(rnd.n, 0.3);
   yield* waitFor(2.4);
-  yield* say('More pages means more I/O and a colder cache. Time-ordered ids (UUIDv7, ULID, snowflake) avoid that.', 4.2);
+  yield* say(
+    'More pages means more I/O and a colder cache. Time-ordered ids (UUIDv7, ULID, snowflake) avoid that.',
+    4.2,
+  );
   yield* leave(root());
 }

@@ -27,12 +27,28 @@ export function* recapSection(view: View2D): ThreadGenerator {
           opacity={0}
         >
           <Txt y={-62} text={h} fontFamily={fonts.mono} fontWeight={700} fontSize={30} letterSpacing={4} fill={col} />
-          <Txt y={25} width={490} textWrap textAlign="center" text={t} fontFamily={fonts.sans} fontWeight={600} fontSize={26} fill={colors.ink} />
+          <Txt
+            y={25}
+            width={490}
+            textWrap
+            textAlign="center"
+            text={t}
+            fontFamily={fonts.sans}
+            fontWeight={600}
+            fontSize={26}
+            fill={colors.ink}
+          />
         </Rect>
       ) as Rect,
   );
   const title = chip('RECAP', colors.lime, {y: -370, fs: 40, sh: 8, rot: -2}) as Rect;
-  const thanks = chip('INDEX THE QUERIES YOU RUN. MEASURE WITH EXPLAIN.', colors.yellow, {y: 350, fs: 28, sh: 8, rot: 1, mono: false}) as Rect;
+  const thanks = chip('INDEX THE QUERIES YOU RUN. MEASURE WITH EXPLAIN.', colors.yellow, {
+    y: 350,
+    fs: 28,
+    sh: 8,
+    rot: 1,
+    mono: false,
+  }) as Rect;
   title.opacity(0);
   thanks.opacity(0);
   view.add(

@@ -13,8 +13,24 @@ export function* whyBplustreeWinsSection(view: View2D): ThreadGenerator {
   ];
   const head = (
     <Node y={-300}>
-      <Txt x={-170} text="B-TREE" fontFamily={fonts.mono} fontWeight={700} fontSize={26} letterSpacing={3} fill={colors.violet} />
-      <Txt x={250} text="B+TREE" fontFamily={fonts.mono} fontWeight={700} fontSize={26} letterSpacing={3} fill={colors.lime} />
+      <Txt
+        x={-170}
+        text="B-TREE"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={26}
+        letterSpacing={3}
+        fill={colors.violet}
+      />
+      <Txt
+        x={250}
+        text="B+TREE"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={26}
+        letterSpacing={3}
+        fill={colors.lime}
+      />
     </Node>
   ) as Node;
   const table: Rect[] = [];
@@ -39,7 +55,13 @@ export function* whyBplustreeWinsSection(view: View2D): ThreadGenerator {
     ) as Rect;
     table.push(r);
   });
-  const verdict = chip('MOST DATABASES: B+TREE', colors.pink, {y: 285, fs: 46, sh: 10, rot: -1.5, color: colors.dark}) as Rect;
+  const verdict = chip('MOST DATABASES: B+TREE', colors.pink, {
+    y: 285,
+    fs: 46,
+    sh: 10,
+    rot: -1.5,
+    color: colors.dark,
+  }) as Rect;
   verdict.opacity(0);
   const names = chip('MYSQL INNODB · POSTGRESQL · ORACLE · SQL SERVER · SQLITE', colors.surf2, {
     y: 365,

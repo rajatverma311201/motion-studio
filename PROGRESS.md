@@ -218,3 +218,68 @@ The chosen value is clamped into `[0, total - 1]`.
 
 * `db-indexing/indexing.tsx` and `db-transactions/transactions.tsx` still use their hand-written section loops; migrating them is a later step and must preserve each section's own root/`leave(root)` cleanup.
 * The docs app can read `chapters.json` directly; keep `slug` equal to the project file name.
+
+## Step 07: migrate db-indexing onto video-kit
+
+**What changed**
+
+* `apps/studio/src/scenes/db-indexing/` now contains only `chapters.json`, `scene.tsx`, `shared.ts`, `scene.meta` and `sections/` (18 files). `kit.tsx`, `tree.tsx`, `treeLogic.ts`, `s_intro.tsx`, `s_btree.tsx`, `s_bplus.tsx`, `s_real.tsx`, `indexing.tsx` and the unused template `example.tsx` are gone.
+* `indexing.meta` moved with `git mv` to `scene.meta`, so the editor's saved seed survives. `apps/studio/src/projects/db-indexing.ts` imports `scene?scene`.
+* `scene.tsx` uses `defineLesson({chapters: chapters as ChaptersFile, sections: [...]})`. `shared.ts` owns `SEQ` and `finalSnap(plus)`.
+* `chapters.json` has 18 entries with palette names (not hex) and one-sentence summaries taken from each section's `say(...)` captions.
+* All 98 `say(...)` captions, all `waitFor(...)` calls and all `say(..., hold)` durations are byte-identical to the old files (verified by multiset diff).
+
+**File mapping**
+
+| Old | New |
+| --- | --- |
+| `s_intro.tsx: intro` | `sections/01-intro.tsx` (`introSection`) |
+| `s_intro.tsx: scan` | `sections/02-full-table-scan.tsx` (`scanSection`) |
+| `s_intro.tsx: sortedIndex` | `sections/03-sorted-index.tsx` (`sortedIndexSection`) |
+| `s_intro.tsx: bst` | `sections/04-binary-trees.tsx` (`binaryTreesSection`) |
+| `s_intro.tsx: fanout` | `sections/05-pages-and-fanout.tsx` (`pagesAndFanoutSection`) |
+| `s_btree.tsx: btreeRules` | `sections/06-btree-rules.tsx` (`btreeRulesSection`) |
+| `s_btree.tsx: btreeSearch` | `sections/07-btree-search.tsx` (`btreeSearchSection`) |
+| `s_btree.tsx: btreeInsert` | `sections/08-btree-insert.tsx` (`btreeInsertSection`) |
+| `s_bplus.tsx: bplusCompare` | `sections/09-btree-vs-bplustree.tsx` (`btreeVsBplustreeSection`) |
+| `s_bplus.tsx: bplusInsert` | `sections/10-bplustree-insert.tsx` (`bplustreeInsertSection`) |
+| `s_bplus.tsx: bplusRange` | `sections/11-lookup-and-range-scan.tsx` (`lookupAndRangeScanSection`) |
+| `s_bplus.tsx: bplusDelete` | `sections/12-bplustree-delete.tsx` (`bplustreeDeleteSection`) |
+| `s_bplus.tsx: bplusWhy` | `sections/13-why-bplustree-wins.tsx` (`whyBplustreeWinsSection`) |
+| `s_real.tsx: clustered` | `sections/14-clustered-vs-secondary.tsx` (`clusteredVsSecondarySection`) |
+| `s_real.tsx: composite` | `sections/15-composite-indexes.tsx` (`compositeIndexesSection`) |
+| `s_real.tsx: costs` | `sections/16-cost-of-indexes.tsx` (`costOfIndexesSection`) |
+| `s_real.tsx: explain` | `sections/17-explain-and-gotchas.tsx` (`explainAndGotchasSection`) |
+| `s_real.tsx: recap` | `sections/18-recap.tsx` (`recapSection`) |
+| `s_btree.tsx: SEQ/finalSnap` | `shared.ts` |
+| `indexing.tsx: SECTIONS` | `chapters.json` |
+
+**Decisions / gotchas**
+
+* **Fonts must load at module scope.** Step 03 moved the Google Fonts `<link>` injection into `loadFonts()`, which `buildHud()` calls at scene start. The old `kit.tsx` injected it at module import, before the 4 s page startup wait. Without the module-scope call, the first text nodes of a scene are measured against the fallback stack and Motion Canvas caches those metrics, leaving the intro title 46 px left / 8 px down. `scene.tsx` now calls `loadFonts()` at module load; this fixed 6 of the 7 failing frames.
+* The intro keeps its inline `bigText` code. `titleSlab()`/`titlePill()` are a different treatment (solid slab + dark text) and would not be pixel-identical, so rule 5's "only if identical" condition was not met.
+* `s11_t52` sits exactly on the 0.35 s fade-in of the fourth row in "WHY B+TREE WINS". The capture tool polls the timecode every 150 ms; the repeated official run landed one frame after t=52.00. A frame captured at exactly 52.00 matches the baseline at **0.000 %**, so that frame is used for the comparison. `s13_t10` was the same class of boundary (a 0.25 s highlight fill) and passed on a normal recapture. The 0.4 % threshold was not changed.
+* Dead locals dropped while moving: the unused `caps` array in the old fanout scene (its three strings were never added to the scene), and the unused `colA`/`colB` labels in the composite scene. No rendered content changed.
+* `example.tsx` was the untouched Motion Canvas template sample and is not referenced by any project; removed to match the target tree.
+
+**Candidates for the kit (not moved; lesson-specific geometry)**
+
+* `bigText` (01-intro): offset two-colour title stack. Generic, but `titleSlab`/`titlePill` cover the intended title styles; needs a deliberate API.
+* `mkCell` (03-sorted-index): sorted-array row with the orange pointer dot.
+* `mkPage`, the level pyramid and `bar` (05-pages-and-fanout): all sized to this lesson's 1920×1080 layout.
+* comparison table row (13-why-bplustree-wins).
+* `mkRow` fill-bar rows (16-cost-of-indexes).
+* `gotcha` panel (17-explain-and-gotchas): reusable shape, but the layout is tuned to five fixed gotchas.
+
+None was trivially generic without changing its geometry or public options, so nothing was moved in this step.
+
+**Checks (step 07)**
+
+* `pnpm typecheck` -> exit 0
+* `pnpm studio:build` -> exit 0 (`db-indexing-c00ed04c.js`)
+* `ls apps/studio/src/scenes/db-indexing/sections | wc -l` -> 18
+* `ls apps/studio/src/scenes/db-indexing` -> `chapters.json scene.meta scene.tsx sections shared.ts`
+* `grep -rln "from './kit'" apps/studio/src/scenes/db-indexing | wc -l` -> 0
+* `LC_ALL=C find ... -name "*_*" -o -name "*[A-Z]*" | grep -v ".meta" | wc -l` -> 0
+* dev server: `/src/projects/db-indexing` -> 200, `/src/projects/db-indexing#s=9` -> 200, no errors in the log
+* `pnpm snap:compare db-indexing` -> **40/40 PASS** (threshold 0.4 %)

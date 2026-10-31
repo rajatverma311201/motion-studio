@@ -32,7 +32,15 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
           stroke={colors.dim}
           lineWidth={2.5}
         >
-          <Txt x={-250} offsetX={-1} text={l} fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
+          <Txt
+            x={-250}
+            offsetX={-1}
+            text={l}
+            fontFamily={fonts.mono}
+            fontWeight={700}
+            fontSize={22}
+            fill={colors.ink}
+          />
           <Txt x={0} offsetX={-1} text={f} fontFamily={fonts.mono} fontSize={22} fill={colors.mute} />
           <Txt x={236} offsetX={1} text={`#${i + 1}`} fontFamily={fonts.mono} fontSize={16} fill={colors.dim} />
         </Rect>
@@ -97,27 +105,48 @@ export function* compositeIndexesSection(view: View2D): ThreadGenerator {
   yield* waitFor(3.2);
 
   yield* say('Query 1: only last_name. All the Shahs sit next to each other: one slice, easy to find.');
-  yield* ask("WHERE last_name = 'Shah'", true, '✓ USES THE INDEX', 'Matches are contiguous in the sort order,', 'so the tree jumps straight to them.');
+  yield* ask(
+    "WHERE last_name = 'Shah'",
+    true,
+    '✓ USES THE INDEX',
+    'Matches are contiguous in the sort order,',
+    'so the tree jumps straight to them.',
+  );
   yield* paint([4, 5, 6], 'rgba(198,255,61,0.55)');
   yield* pop(verdict, 0.3);
   yield* waitFor(3.2);
 
   yield* say('Query 2: both columns. Even better: one exact entry.');
   yield* all(verdict.opacity(0, 0.2), paint([], colors.surf, 0.2));
-  yield* ask("WHERE last_name = 'Shah'\n AND first_name = 'Dev'", true, '✓ BEST CASE', 'The first column narrows to the Shahs,', 'the second picks Dev inside that group.');
+  yield* ask(
+    "WHERE last_name = 'Shah'\n AND first_name = 'Dev'",
+    true,
+    '✓ BEST CASE',
+    'The first column narrows to the Shahs,',
+    'the second picks Dev inside that group.',
+  );
   yield* paint([5], 'rgba(198,255,61,0.7)');
   yield* pop(verdict, 0.3);
   yield* waitFor(3);
 
   yield* say('Query 3: only first_name. The Devs are scattered across the whole index. Sorting does not help.');
   yield* all(verdict.opacity(0, 0.2), paint([], colors.surf, 0.2));
-  yield* ask("WHERE first_name = 'Dev'", false, '✗ CANNOT USE IT WELL', 'Matches are spread everywhere,', 'so the database scans the entire index.');
+  yield* ask(
+    "WHERE first_name = 'Dev'",
+    false,
+    '✗ CANNOT USE IT WELL',
+    'Matches are spread everywhere,',
+    'so the database scans the entire index.',
+  );
   yield* paint([2, 5], 'rgba(255,77,77,0.55)');
   yield* pop(verdict, 0.3);
   yield* shake(verdict, 6, 4);
   yield* waitFor(3.4);
 
-  yield* say('So an index on (a, b) helps queries on a, and on a + b, but not on b alone. Order of columns matters.', 4);
+  yield* say(
+    'So an index on (a, b) helps queries on a, and on a + b, but not on b alone. Order of columns matters.',
+    4,
+  );
   yield* pop(rule, 0.35);
   yield* say('Rule of thumb: equality columns first, then the range or sort column last.', 3.6);
   yield* leave(root());

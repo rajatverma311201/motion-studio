@@ -32,7 +32,14 @@ export function* lookupAndRangeScanSection(view: View2D): ThreadGenerator {
       fill={colors.code}
       {...neubrutal(colors.cyan, 5, 3.5)}
     >
-      <Txt ref={q} text="SELECT * FROM t WHERE id = 25;" fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
+      <Txt
+        ref={q}
+        text="SELECT * FROM t WHERE id = 25;"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={22}
+        fill={colors.ink}
+      />
     </Rect>
   ) as Rect;
   const reads = statCard(-600, 318, 330, 110, 'PAGE READS', colors.orange);

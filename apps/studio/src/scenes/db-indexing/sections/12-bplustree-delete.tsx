@@ -112,7 +112,13 @@ export function* bplustreeDeleteSection(view: View2D): ThreadGenerator {
   yield* tv.mark(['b'], colors.lime, 0.2);
   yield* waitFor(2.4);
   yield* tv.unmark();
-  yield* say('If merges ripple up and the root is left with one child, the tree shrinks a level. It stays balanced.', 4);
-  yield* say('That is the rhythm: splits on insert, borrows and merges on delete. Every page stays reasonably full.', 3.6);
+  yield* say(
+    'If merges ripple up and the root is left with one child, the tree shrinks a level. It stays balanced.',
+    4,
+  );
+  yield* say(
+    'That is the rhythm: splits on insert, borrows and merges on delete. Every page stays reasonably full.',
+    3.6,
+  );
   yield* leave(root());
 }

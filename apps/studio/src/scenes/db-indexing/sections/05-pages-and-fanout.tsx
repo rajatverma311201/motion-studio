@@ -1,17 +1,6 @@
 import {Line, Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, delay, easeInOutCubic, waitFor} from '@motion-canvas/core';
-import {
-  chip,
-  colors,
-  countTo,
-  fonts,
-  formatNumber,
-  label,
-  leave,
-  neubrutal,
-  pop,
-  say,
-} from '@motion-studio/video-kit';
+import {chip, colors, countTo, fonts, formatNumber, label, leave, neubrutal, pop, say} from '@motion-studio/video-kit';
 
 // ================================================================ PAGES + FANOUT
 export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
@@ -37,7 +26,15 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
       page.add(<Rect x={-209 + c * 38} y={-85 + r * 38} width={30} height={30} radius={7} fill={colors.lime} />);
     }
     page.add(
-      <Txt y={-135} text={title} fontFamily={fonts.mono} fontWeight={700} fontSize={20} letterSpacing={2} fill={color} />,
+      <Txt
+        y={-135}
+        text={title}
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={20}
+        letterSpacing={2}
+        fill={color}
+      />,
     );
     stage.add(page);
     const s = label(sub, x, 200, {fs: 20, fill: colors.ink});
@@ -63,7 +60,9 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
   yield* all(stage.opacity(0, 0.4));
   stage.removeChildren();
   stage.opacity(1);
-  yield* say('Each level multiplies capacity by 500. The root reaches 500 keys, level 2 reaches 250,000, and the leaves reach 125 million.');
+  yield* say(
+    'Each level multiplies capacity by 500. The root reaches 500 keys, level 2 reaches 250,000, and the leaves reach 125 million.',
+  );
   const lvY = [-250, -100, 60];
   const names = ['ROOT PAGE · 1', 'LEVEL 2 · 500 PAGES', 'LEAF LEVEL · 250,000 PAGES'];
   const rowsN: Node[] = [];
@@ -130,7 +129,15 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
       const xa = -250 + (Math.floor((j * nA) / nB) - (nA - 1) / 2) * (wA + gA);
       const xb = -250 + (j - (nB - 1) / 2) * (wB + gB);
       const ln = (
-        <Line points={[[xa, lvY[l] + 35], [xb, lvY[l + 1] - 35]]} stroke={colors.dim} lineWidth={3} opacity={0} />
+        <Line
+          points={[
+            [xa, lvY[l] + 35],
+            [xb, lvY[l + 1] - 35],
+          ]}
+          stroke={colors.dim}
+          lineWidth={3}
+          opacity={0}
+        />
       ) as Line;
       stage.add(ln);
       lines.push(ln);
@@ -145,12 +152,21 @@ export function* pagesAndFanoutSection(view: View2D): ThreadGenerator {
     yield* countTo(capTx[l], 0, [500, 250_000, 125_000_000][l], 1.2, n => `${formatNumber(n)} keys`);
     yield* waitFor(0.8);
   }
-  const verdict = chip('10,000,000 ROWS FIT IN 3 LEVELS', colors.yellow, {y: 270, fs: 32, sh: 8, rot: -1, mono: false}) as Rect;
+  const verdict = chip('10,000,000 ROWS FIT IN 3 LEVELS', colors.yellow, {
+    y: 270,
+    fs: 32,
+    sh: 8,
+    rot: -1,
+    mono: false,
+  }) as Rect;
   stage.add(verdict);
   yield* say('125 million keys in just three levels. Ten million rows need only three page reads.');
   yield* pop(verdict, 0.4);
   yield* waitFor(3.4);
-  yield* say('And the root and upper levels are hot, so they stay cached in RAM. Often only 1 or 2 reads hit the disk.', 4);
+  yield* say(
+    'And the root and upper levels are hot, so they stay cached in RAM. Often only 1 or 2 reads hit the disk.',
+    4,
+  );
 
   // ---- C: compare bars
   yield* all(stage.opacity(0, 0.4));

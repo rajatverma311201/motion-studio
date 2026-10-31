@@ -1,6 +1,16 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, createRef, waitFor} from '@motion-canvas/core';
-import {TreeView, colors, fonts, indexLegend, leave, neubrutal, playSearch, say, searchPlan} from '@motion-studio/video-kit';
+import {
+  TreeView,
+  colors,
+  fonts,
+  indexLegend,
+  leave,
+  neubrutal,
+  playSearch,
+  say,
+  searchPlan,
+} from '@motion-studio/video-kit';
 import {finalSnap} from '../shared';
 
 // ================================================================ B-TREE SEARCH
@@ -21,12 +31,27 @@ export function* btreeSearchSection(view: View2D): ThreadGenerator {
       fill={colors.code}
       {...neubrutal(colors.cyan, 5, 3.5)}
     >
-      <Txt ref={q} text="SELECT * FROM t WHERE id = 25;" fontFamily={fonts.mono} fontWeight={700} fontSize={22} fill={colors.ink} />
+      <Txt
+        ref={q}
+        text="SELECT * FROM t WHERE id = 25;"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={22}
+        fill={colors.ink}
+      />
     </Rect>
   ) as Rect;
   const readBox = (
     <Rect x={-560} y={290} width={380} height={110} radius={20} fill={colors.surf} {...neubrutal(colors.orange, 8, 4)}>
-      <Txt y={-28} text="PAGE READS" fontFamily={fonts.mono} fontWeight={700} fontSize={20} letterSpacing={3} fill={colors.mute} />
+      <Txt
+        y={-28}
+        text="PAGE READS"
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={20}
+        letterSpacing={3}
+        fill={colors.mute}
+      />
       <Txt ref={reads} y={16} text="0" fontFamily={fonts.mono} fontWeight={700} fontSize={56} fill={colors.ink} />
     </Rect>
   ) as Rect;

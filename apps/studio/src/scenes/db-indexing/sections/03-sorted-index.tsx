@@ -25,7 +25,15 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
   const xAt = (i: number) => X0 + i * CW;
   const mkCell = (k: number, i: number) =>
     (
-      <Rect x={xAt(i)} y={Y} width={100} height={84} radius={14} fill={colors.surf2} {...neubrutal(colors.lime, 5, 3.5)}>
+      <Rect
+        x={xAt(i)}
+        y={Y}
+        width={100}
+        height={84}
+        radius={14}
+        fill={colors.surf2}
+        {...neubrutal(colors.lime, 5, 3.5)}
+      >
         <Txt y={-8} text={String(k)} fontFamily={fonts.mono} fontWeight={700} fontSize={34} fill={colors.ink} />
         <Circle y={26} size={11} fill={colors.orange} />
       </Rect>
@@ -68,7 +76,14 @@ export function* sortedIndexSection(view: View2D): ThreadGenerator {
             fill={colors.mute}
           />
           {rows.map((r, j) => (
-            <Txt y={-18 + j * 36} text={`id ${r}`} fontFamily={fonts.mono} fontWeight={700} fontSize={24} fill={colors.ink} />
+            <Txt
+              y={-18 + j * 36}
+              text={`id ${r}`}
+              fontFamily={fonts.mono}
+              fontWeight={700}
+              fontSize={24}
+              fill={colors.ink}
+            />
           ))}
         </Rect>
       ) as Rect,

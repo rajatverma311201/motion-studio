@@ -11,7 +11,13 @@ export function* btreeInsertSection(view: View2D): ThreadGenerator {
   const tv = new TreeView({x: 0, y: -250, scale: 1.4});
   const insChip = chip('INSERT ▸ —', colors.yellow, {x: -620, y: -400, fs: 26, sh: 6}) as Rect;
   const lg = indexLegend(250, 340, false);
-  const maxChip = chip('MAX 3 KEYS PER NODE', colors.surf2, {x: -620, y: 340, fs: 18, sh: 0, color: colors.ink}) as Rect;
+  const maxChip = chip('MAX 3 KEYS PER NODE', colors.surf2, {
+    x: -620,
+    y: 340,
+    fs: 18,
+    sh: 0,
+    color: colors.ink,
+  }) as Rect;
   view.add(
     <Node ref={root} opacity={0}>
       {insChip}

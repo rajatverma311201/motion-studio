@@ -1,6 +1,19 @@
 import {Node, Rect, Txt, View2D} from '@motion-canvas/2d';
 import {ThreadGenerator, all, createRef, waitFor} from '@motion-canvas/core';
-import {chip, codePanel, colors, fonts, focusLine, label, leave, neubrutal, pop, revealLines, say, shake} from '@motion-studio/video-kit';
+import {
+  chip,
+  codePanel,
+  colors,
+  fonts,
+  focusLine,
+  label,
+  leave,
+  neubrutal,
+  pop,
+  revealLines,
+  say,
+  shake,
+} from '@motion-studio/video-kit';
 
 // ================================================================ EXPLAIN + GOTCHAS
 export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
@@ -50,9 +63,19 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
     lang: 'plan',
     accent: colors.lime,
     fs: 22,
-    code: ['Index Scan using idx_users_email', '  on users  (cost=0.43..8.45 rows=1)', "  Index Cond: (email = 'ria@x.in')"],
+    code: [
+      'Index Scan using idx_users_email',
+      '  on users  (cost=0.43..8.45 rows=1)',
+      "  Index Cond: (email = 'ria@x.in')",
+    ],
   });
-  const bChip = chip('BEFORE · READS ALL 100,000 PAGES', colors.red, {x: -470, y: 60, fs: 22, sh: 6, color: colors.ink}) as Rect;
+  const bChip = chip('BEFORE · READS ALL 100,000 PAGES', colors.red, {
+    x: -470,
+    y: 60,
+    fs: 22,
+    sh: 6,
+    color: colors.ink,
+  }) as Rect;
   const aChip = chip('AFTER · READS ~4 PAGES', colors.lime, {x: 470, y: 60, fs: 22, sh: 6}) as Rect;
   const illus = label('(illustrative PostgreSQL-style output)', 0, 150, {fs: 18, fill: colors.mute});
   [sql, bChip, aChip, illus].forEach(n => n.opacity(0));
@@ -74,7 +97,10 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
   yield* revealLines(after);
   yield* focusLine(after, 0, colors.lime);
   yield* pop(aChip, 0.35);
-  yield* say('Index Scan means it walks the B+tree. The cost estimate drops from hundreds of thousands to single digits.', 4);
+  yield* say(
+    'Index Scan means it walks the B+tree. The cost estimate drops from hundreds of thousands to single digits.',
+    4,
+  );
   yield* say('Run EXPLAIN ANALYZE to see real timings. Never guess about performance.', 3.2);
   yield* stageA.opacity(0, 0.4);
 
@@ -116,15 +142,50 @@ export function* explainAndGotchasSection(view: View2D): ThreadGenerator {
   const gt = createRef<Txt>();
   const wt = createRef<Txt>();
   const gotcha = (
-    <Rect y={-20} width={1620} height={620} radius={26} fill={colors.surf} {...neubrutal(colors.orange, 10, 4)} opacity={0}>
-      <Txt ref={tt} y={-250} text="" fontFamily={fonts.mono} fontWeight={700} fontSize={30} letterSpacing={3} fill={colors.orange} />
+    <Rect
+      y={-20}
+      width={1620}
+      height={620}
+      radius={26}
+      fill={colors.surf}
+      {...neubrutal(colors.orange, 10, 4)}
+      opacity={0}
+    >
+      <Txt
+        ref={tt}
+        y={-250}
+        text=""
+        fontFamily={fonts.mono}
+        fontWeight={700}
+        fontSize={30}
+        letterSpacing={3}
+        fill={colors.orange}
+      />
       <Rect y={-120} width={1500} height={96} radius={16} fill="rgba(255,77,77,0.14)" stroke={colors.red} lineWidth={4}>
         <Txt x={-690} offsetX={-1} text="✗" fontFamily={fonts.sans} fontWeight={700} fontSize={44} fill={colors.red} />
-        <Txt ref={bt} x={-620} offsetX={-1} text="" fontFamily={fonts.mono} fontWeight={700} fontSize={30} fill={colors.ink} />
+        <Txt
+          ref={bt}
+          x={-620}
+          offsetX={-1}
+          text=""
+          fontFamily={fonts.mono}
+          fontWeight={700}
+          fontSize={30}
+          fill={colors.ink}
+        />
       </Rect>
       <Rect y={10} width={1500} height={96} radius={16} fill="rgba(198,255,61,0.12)" stroke={colors.lime} lineWidth={4}>
         <Txt x={-690} offsetX={-1} text="✓" fontFamily={fonts.sans} fontWeight={700} fontSize={44} fill={colors.lime} />
-        <Txt ref={gt} x={-620} offsetX={-1} text="" fontFamily={fonts.mono} fontWeight={700} fontSize={30} fill={colors.ink} />
+        <Txt
+          ref={gt}
+          x={-620}
+          offsetX={-1}
+          text=""
+          fontFamily={fonts.mono}
+          fontWeight={700}
+          fontSize={30}
+          fill={colors.ink}
+        />
       </Rect>
       <Txt
         ref={wt}

@@ -35,7 +35,15 @@ export function* btreeRulesSection(view: View2D): ThreadGenerator {
           <Rect x={-310} width={44} height={44} radius={12} fill={col}>
             <Txt text={n} fontFamily={fonts.mono} fontWeight={700} fontSize={26} fill={colors.dark} />
           </Rect>
-          <Txt x={-270} offsetX={-1} text={t} fontFamily={fonts.sans} fontWeight={700} fontSize={24} fill={colors.ink} />
+          <Txt
+            x={-270}
+            offsetX={-1}
+            text={t}
+            fontFamily={fonts.sans}
+            fontWeight={700}
+            fontSize={24}
+            fill={colors.ink}
+          />
         </Rect>
       ) as Rect,
   );
@@ -86,7 +94,12 @@ export function* btreeRulesSection(view: View2D): ThreadGenerator {
   const rc = ['< 20', '20 – 39', '≥ 40'].map((t, i) => {
     const kid = tv.at(['a', 'b', 'c'][i]);
     const r = tv.at('r');
-    return chip(t, colors.pink, {x: (kid.x * 2 + r.x) / 3 + (i - 1) * 6, y: (kid.y + r.y) / 2 + 2, fs: 18, sh: 3}) as Rect;
+    return chip(t, colors.pink, {
+      x: (kid.x * 2 + r.x) / 3 + (i - 1) * 6,
+      y: (kid.y + r.y) / 2 + 2,
+      fs: 18,
+      sh: 3,
+    }) as Rect;
   });
   root().add(rc);
   yield* sequence(0.25, ...rc.map(c => pop(c, 0.3)));
