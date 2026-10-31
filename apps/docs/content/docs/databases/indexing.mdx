@@ -2,6 +2,7 @@
 title: 'DB Indexing: B-tree and B+tree'
 description: How databases find one row among millions, and why almost every index is a B+tree.
 video: db-indexing
+status: published
 duration: 12 min
 level: intermediate
 tags: [databases, indexes, b-tree, b+tree, postgresql, mysql]
@@ -9,91 +10,259 @@ tags: [databases, indexes, b-tree, b+tree, postgresql, mysql]
 
 <LessonVideo slug="db-indexing" />
 
-## What you will learn
+## Summary points
 
-- Why an unindexed lookup reads every row: O(n).
-- How a sorted index enables binary search, and why inserts rewrite pages.
-- Why binary search trees degenerate, and why disks care about pages.
-- How a fanout near 500 keeps ten million rows in three levels.
-- Why B+trees win for ranges, and what secondary and composite indexes cost.
+<SummaryPoints slug="db-indexing" />
 
-## Chapters
+## Chapters and voiceover notes
 
-<LessonChapters slug="db-indexing" />
+### 01 · INTRO
 
-## The idea in one minute
+<VoiceoverNotes>
 
-Without an index, the database reads every row and page: O(n). A sorted key list with row pointers enables binary search, O(log n), but keeping it sorted shifts entries on every insert. A tree avoids the shifting, yet a plain binary search tree can degenerate, and a balanced one still costs a disk read per level. Disks read whole pages, so a B-tree packs a node with hundreds of keys: a fanout near 500 puts ten million rows in three levels. A B+tree keeps every entry in linked leaves and uses internal nodes as signposts, so lookups are predictable and ranges walk sideways. Index what you query, and prove it with `EXPLAIN`.
+- Why is a lookup instant with an index, and painfully slow without one?
+- The answer is a second data structure that the database maintains for you.
+- We will build it step by step: full scan, sorted list, binary tree, B-tree, then B+tree.
+- By the end you will know why almost every database index is a B+tree.
 
-## Chapter notes
+</VoiceoverNotes>
 
-### 1. Intro
+A lookup is instant with an index and slow without one. The lesson moves from O(n) to O(log n), one structure at a time.
 
-A lookup is instant with an index, slow without one. The lesson moves from O(n) to O(log n).
+### 02 · FULL TABLE SCAN
 
-### 2. Full table scan
+<VoiceoverNotes>
 
-`SELECT * FROM users WHERE name = 'Ria';` reads every row, and duplicate names mean it cannot stop early. Rows live on 8 KB pages, so the scan reads every page.
+- Start with a simple query: find users whose name is Ria.
+- There is no index on name, so the database has no choice: it reads every row.
+- It finds two matches, but names are not unique, so it cannot stop early.
+- Rows live on 8 KB pages, so a full scan reads every page of the table.
+- Double the rows and you double the work. That is O(n).
 
-### 3. Sorted index
+</VoiceoverNotes>
 
-A sorted key-plus-pointer list enables binary search: 12 keys take four steps, ten million about 24. Inserting 50 shifts entries and rewrites pages.
+```sql
+SELECT * FROM users WHERE name = 'Ria';
+```
 
-### 4. Binary trees
+Without an index the database reads every row and page. Duplicate names mean it cannot stop at the first match, and the cost grows linearly with the table.
 
-Smaller keys go left, bigger right, so inserts need no shifting. Sorted input degenerates it into a linked list, and a balanced tree still reads one page per level.
+### 03 · SORTED INDEX
 
-### 5. Pages and fanout
+<VoiceoverNotes>
 
-Disks read whole 8 KB pages, so a node holds hundreds of keys. A fanout near 500 puts ten million rows in three levels; upper levels stay cached.
+- Now keep a second structure, sorted by key, where each key points to its row.
+- Because the keys are sorted, we can use binary search: check the middle first.
+- Each step halves the search space: four steps for twelve keys, about twenty-four for ten million.
+- The pointer takes us to the row, so the lookup is O(log n) plus one read.
+- But the list must stay sorted, and inserting 50 shifts everything after it.
 
-### 6. B-tree rules
+</VoiceoverNotes>
 
-A node is a sorted key list with one more child than keys. Leaves share a depth, ranges partition children, and non-root nodes stay half full.
+A sorted key-plus-pointer list enables binary search, but every insert has to shift entries and rewrite pages. Fast reads, slow writes.
 
-### 7. B-tree search
+### 04 · BINARY TREES
 
-Compare the key at each node; each visited node is one page read. A lookup can stop early in an internal node, and a miss still costs one node per level.
+<VoiceoverNotes>
 
-### 8. B-tree insert
+- A tree avoids shifting: smaller keys go left, bigger keys go right.
+- Look up 50 by comparing at each node and following one branch.
+- If keys arrive sorted, like auto-increment ids, the tree degenerates into a linked list.
+- Self-balancing trees fix the shape, but disks add a second problem.
+- Even balanced, ten million keys need about twenty-four levels, and each level can be a disk read.
 
-Find the leaf, insert, and split when full. The tree grows only at the root, so leaves stay level, and splits cost extra writes.
+</VoiceoverNotes>
 
-### 9. B-tree vs B+tree
+A binary search tree avoids shifting, but sorted input degenerates it into a linked list. A balanced tree still costs one disk read per level, which is too many.
+
+### 05 · PAGES AND FANOUT
+
+<VoiceoverNotes>
+
+- Disks and SSDs read whole pages, typically 8 KB, so one page read is one I/O.
+- Pack the whole page with keys, so one node holds hundreds of keys.
+- The number of children per node is the fanout. With 8-byte keys it is around 500.
+- Each level multiplies capacity by 500: 500, then 250,000, then 125 million.
+- The upper levels are hot and stay cached, so often only one or two reads hit disk.
+
+</VoiceoverNotes>
+
+Disks read whole 8 KB pages, so packing a page with keys gives a fanout near 500. Ten million rows fit in three levels, and the upper levels stay cached.
+
+### 06 · B-TREE RULES
+
+<VoiceoverNotes>
+
+- A B-tree node is a sorted list of keys, with one more child than keys.
+- Each child covers a key range: left of 20, between 20 and 40, right of 40.
+- All leaves are on the same level, so every lookup costs the same number of steps.
+- Nodes stay at least half full, so we do not waste nearly empty pages.
+- Splits on insert and merges on delete keep those rules true.
+
+</VoiceoverNotes>
+
+A node is a sorted key list with one more child than keys. Leaves share a depth, ranges partition the children, and non-root nodes stay half full.
+
+### 07 · B-TREE SEARCH
+
+<VoiceoverNotes>
+
+- Start at the root and compare the key against the keys in the node.
+- Follow the range that can contain the key: one page read per level.
+- A B-tree can stop early if the key sits in an internal node.
+- A miss still costs one node per level, because the tree always descends.
+- Even with millions of keys the tree stays shallow because every node is wide.
+
+</VoiceoverNotes>
+
+A lookup reads one node per level and can stop early when the key sits in an internal node. A miss still costs one node per level.
+
+### 08 · B-TREE INSERT
+
+<VoiceoverNotes>
+
+- Find the right leaf and drop the key in, keeping it sorted.
+- If the leaf is full, split it and move the median up to the parent.
+- Splits can ripple upward, and the tree grows only at the root.
+- Every leaf stays at the same depth, so the tree is always balanced.
+- Page splits are why inserting into a full index page costs extra writes.
+
+</VoiceoverNotes>
+
+Inserts fill the target leaf and split full nodes upward. The tree only grows at the root, so leaves stay level, and splits cost extra writes.
+
+### 09 · B-TREE VS B+TREE
+
+<VoiceoverNotes>
+
+- In a B-tree, every node carries keys and row pointers, and each key lives in exactly one place.
+- In a B+tree, internal nodes are only signposts; all real entries sit in the leaves.
+- The leaves are linked, so the whole tree can be scanned sideways.
+- Internal nodes hold only keys, so more fit per page and the tree is shallower.
+- The trade is that a B+tree lookup always descends to a leaf and cannot stop early.
+
+</VoiceoverNotes>
 
 A B-tree puts keys and row pointers in every node. A B+tree keeps row pointers in the leaves, copies separators up, and links the leaves.
 
-### 10. B+tree insert
+### 10 · B+TREE INSERT
+
+<VoiceoverNotes>
+
+- Run the same inserts into a B+tree and watch the leaf split.
+- The separator is copied up, so 15 stays in the parent and in the right leaf.
+- Internal splits move the median up, but leaves always keep every key.
+- Every key lives in a leaf, and the leaves are chained together.
+- That chain is the secret weapon for range scans.
+
+</VoiceoverNotes>
 
 A leaf split copies the separator up, so 15 stays in the parent and in the right leaf. Internal splits move the median, but leaves keep every key.
 
-### 11. Lookup and range scan
+### 11 · LOOKUP AND RANGE SCAN
+
+<VoiceoverNotes>
+
+- A point lookup always travels all the way down to a leaf.
+- Every lookup costs exactly the height of the tree, so latency is predictable.
+- For a range query, first find the left edge of the range.
+- Then follow the leaf links to the right until you pass the end; do not climb back up.
+- That is why ORDER BY, BETWEEN and sorted scans are cheap on a B+tree.
+
+</VoiceoverNotes>
 
 A point lookup always reaches a leaf, so cost equals tree height. For a range, find the left edge and follow the leaf links right.
 
-### 12. B+tree delete
+### 12 · B+TREE DELETE
+
+<VoiceoverNotes>
+
+- Delete is insert in reverse: remove the key, then fix any node that became too empty.
+- If the leaf still has enough keys, nothing else happens.
+- On underflow, borrow a spare key from a sibling and update the parent signpost.
+- If the sibling cannot spare a key, merge the two leaves and delete a separator.
+- Merges can ripple up; if the root has one child left, the tree shrinks a level.
+
+</VoiceoverNotes>
 
 Delete the key, then fix any too-empty node. A leaf borrows a spare key or merges with a neighbour; if the root loses its last child, the tree shrinks a level.
 
-### 13. Why B+tree wins
+### 13 · WHY B+TREE WINS
+
+<VoiceoverNotes>
+
+- Internal nodes hold only keys, so more fit per page and the tree is shallower.
+- Lookups are predictable because every lookup reaches a leaf.
+- Ranges walk the linked leaves instead of bouncing through parents.
+- A full scan reads only the dense leaf level.
+- The cost is that lookups never stop early, which is small compared with better scans.
+
+</VoiceoverNotes>
 
 Internal nodes hold only keys, so more fit per page and the tree is shallower. Lookups are predictable, ranges walk the leaves, and a full scan reads only the leaf level.
 
-### 14. Clustered vs secondary
+### 14 · CLUSTERED VS SECONDARY
+
+<VoiceoverNotes>
+
+- In MySQL InnoDB the table itself is a B+tree sorted by primary key, with full rows in the leaves.
+- A secondary index is a separate B+tree whose leaves hold the indexed key plus the primary key.
+- Look up a user by email: walk the secondary index, get the primary key, then walk the clustered index.
+- Two tree walks for one row is the price of a secondary index.
+- PostgreSQL stores rows in a heap instead, so every index is a secondary index.
+- A covering index removes the second walk when the query needs only indexed columns.
+
+</VoiceoverNotes>
 
 InnoDB's table is a B+tree sorted by primary key, with full rows in the leaves. A secondary index stores the key plus the primary key, so a lookup needs two walks unless it covers the query.
 
-### 15. Composite indexes
+### 15 · COMPOSITE INDEXES
 
-An index on `(last_name, first_name)` sorts by last name, then first name inside each group. It serves `last_name` and both columns, not `first_name` alone; equality columns come first.
+<VoiceoverNotes>
 
-### 16. The cost of indexes
+- A composite index sorts by the first column, then by the second inside each group, like a phone book.
+- Query on last name only: all the Shahs sit together, so one slice is enough.
+- Query on both columns: even better, one exact entry.
+- Query on first name only: the Devs are scattered, so the sorting does not help.
+- Rule of thumb: equality columns first, then the range or sort column last.
+
+</VoiceoverNotes>
+
+An index on `(last_name, first_name)` sorts by last name, then first name inside each group. It serves `last_name` and both columns, not `first_name` alone.
+
+```sql
+CREATE INDEX idx_users_name ON users (last_name, first_name);
+```
+
+### 16 · THE COST OF INDEXES
+
+<VoiceoverNotes>
+
+- Every index is its own B+tree, kept in sync on every write.
+- One INSERT updates every index, so five indexes mean five times the write work.
+- Updates to an indexed column and deletes pay the same tax.
+- Index what your queries filter, join and sort on. Nothing more.
+- Random keys like UUIDv4 split pages at random, leaving them about 70 percent full.
+- Time-ordered ids such as UUIDv7 or ULID insert at the right edge and fill pages.
+
+</VoiceoverNotes>
 
 Every index is a B+tree kept in sync on writes, so five indexes mean five times the write work. Random UUIDv4 keys split at random and leave pages about 70% full.
 
-### 17. EXPLAIN and gotchas
+### 17 · EXPLAIN AND GOTCHAS
 
-`EXPLAIN` shows `Seq Scan` versus `Index Scan`, and `EXPLAIN ANALYZE` adds timings. Indexes are ignored when a function wraps the column, a wildcard leads, types mismatch, selectivity is low, or indexes are too many.
+<VoiceoverNotes>
+
+- Ask the database: EXPLAIN shows the query plan.
+- Seq Scan means the whole table is read row after row; Index Scan means it walks the B+tree.
+- EXPLAIN ANALYZE adds real timings, so never guess about performance.
+- An index is ignored when a function wraps the column, a wildcard leads, or types mismatch.
+- Low selectivity or too many indexes can also make the planner skip it.
+- Fix the query or the index, then check the plan again.
+
+</VoiceoverNotes>
+
+`EXPLAIN` shows `Seq Scan` versus `Index Scan`, and `EXPLAIN ANALYZE` adds timings.
 
 ```sql
 EXPLAIN SELECT * FROM users WHERE email = 'ria@x.in';
@@ -103,23 +272,6 @@ Seq Scan on users
   (cost=0.00..208334.00 rows=1)
   Filter: (email = 'ria@x.in')
 ```
-
-### 18. Recap
-
-Six cards close the lesson: sorted copy, B-tree, B+tree, secondary, composite, and cost. Index the queries you run and measure with `EXPLAIN`.
-
-## Cheat sheet
-
-| Concept         | One-line rule                                           | When it matters                     |
-| --------------- | ------------------------------------------------------- | ----------------------------------- |
-| Full scan       | No index reads every row and page, O(n).                | Large unindexed tables.             |
-| B-tree          | Wide, shallow, balanced; nodes carry row pointers.      | Point lookups.                      |
-| B+tree          | Entries in linked leaves; internal nodes are signposts. | Ranges and `ORDER BY`.              |
-| Secondary index | Index, then primary key, then row.                      | InnoDB and PostgreSQL heap lookups. |
-| Composite index | `(a, b)` serves `a` and `a + b`, not `b`.               | Multi-column filters.               |
-| Index cost      | Every index slows writes and takes space.               | Write-heavy tables.                 |
-
-## Common mistakes
 
 <Callout type="warn" title="Function on the column">
   `LOWER(email)` cannot use an index sorted by raw email.
@@ -137,9 +289,7 @@ Six cards close the lesson: sorted copy, B-tree, B+tree, secondary, composite, a
   Every write maintains every index. Drop the unused ones.
 </Callout>
 
-## Try it yourself
-
-Scratch PostgreSQL examples:
+Scratch PostgreSQL example:
 
 ```sql
 CREATE TABLE users (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, email text NOT NULL);
@@ -152,7 +302,35 @@ CREATE INDEX idx_users_email ON users (email);
 EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'user42@example.com';
 ```
 
-## Go deeper
+### 18 · RECAP
+
+<VoiceoverNotes>
+
+- Indexes turn linear scans into logarithmic lookups.
+- B-trees keep keys and pointers in every node; B+trees keep entries in linked leaves.
+- Wide, shallow trees keep disk reads low.
+- Secondary indexes cost a second walk unless they cover the query.
+- Composite indexes follow the leftmost prefix rule.
+- Every index costs writes, so prove each one with EXPLAIN.
+
+</VoiceoverNotes>
+
+Six cards close the lesson: sorted copy, B-tree, B+tree, secondary, composite, and cost. Index the queries you run and measure with `EXPLAIN`.
+
+| Concept         | One-line rule                                           | When it matters                     |
+| --------------- | ------------------------------------------------------- | ----------------------------------- |
+| Full scan       | No index reads every row and page, O(n).                | Large unindexed tables.             |
+| B-tree          | Wide, shallow, balanced; nodes carry row pointers.      | Point lookups.                      |
+| B+tree          | Entries in linked leaves; internal nodes are signposts. | Ranges and `ORDER BY`.              |
+| Secondary index | Index, then primary key, then row.                      | InnoDB and PostgreSQL heap lookups. |
+| Composite index | `(a, b)` serves `a` and `a + b`, not `b`.               | Multi-column filters.               |
+| Index cost      | Every index slows writes and takes space.               | Write-heavy tables.                 |
+
+Go deeper:
 
 - [PostgreSQL: Indexes](https://www.postgresql.org/docs/current/indexes.html)
 - [MySQL 8.0: Clustered and Secondary Indexes](https://dev.mysql.com/doc/refman/8.0/en/innodb-index-types.html)
+
+## YouTube description
+
+<YoutubeDescription slug="db-indexing" />

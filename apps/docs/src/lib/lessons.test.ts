@@ -20,7 +20,9 @@ describe('courseName', () => {
 describe('lookLabel', () => {
   it('joins the theme name and mode', () => {
     expect(lookLabel({theme: 'tokyo-night', themeName: 'Tokyo Night', mode: 'light'})).toBe('Tokyo Night · Light');
-    expect(lookLabel({theme: 'neubrutal', themeName: 'Neubrutal', mode: 'dark'})).toBe('Neubrutal · Dark');
+    expect(lookLabel({theme: 'terminal-green', themeName: 'Terminal Green', mode: 'dark'})).toBe(
+      'Terminal Green · Dark',
+    );
   });
 
   it('returns an empty label without studio data', () => {

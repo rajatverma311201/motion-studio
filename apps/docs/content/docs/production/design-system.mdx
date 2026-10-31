@@ -3,9 +3,9 @@ title: Design system
 description: The theme data files, the two site typefaces, the drawing rules, and the video-kit components every lesson reuses.
 ---
 
-<p className="eyebrow">Production</p>
+This page describes the **video** design system. The docs site does not use it: it uses the stock Fumadocs look with Fumadocs' built-in light/dark toggle, so do not carry these colours or shadows into `apps/docs`.
 
-Every frame reads its look from a theme: colours, radii, border widths, shadow style and HUD chrome. The default is Neubrutal dark — a near-black canvas, cream borders, flat accent fills and hard offset shadows — but the same components render the other themes without changes.
+Every video frame reads its look from a theme: colours, radii, border widths, shadow style and HUD chrome. The default is Neubrutal dark — a near-black canvas, cream borders, flat accent fills and hard offset shadows — but the same components render the other themes without changes.
 
 ## Palette
 
@@ -13,13 +13,13 @@ Colours are data. Every file in `packages/video-kit/src/themes/` declares a comp
 
 <ColorSwatches theme="neubrutal" />
 
-The docs mirror the neubrutal dark values as CSS custom properties in `apps/docs/src/styles/neubrutalism.css` so the site and the default videos feel like one product. Other themes change the video, not the docs.
+The docs site is deliberately independent: it uses the stock Fumadocs neutral palette in both light and dark mode. Theme changes affect the videos, never the docs chrome.
 
 The `neubrutal` dark slots and what they mean to the kit:
 
 | Token            | Value                 | Used for                                   |
 | ---------------- | --------------------- | ------------------------------------------ |
-| `bg`             | `#0B0B10`             | Video background and page background       |
+| `bg`             | `#0B0B10`             | Video background                           |
 | `surf` / `surf2` | `#15151D` / `#1F1F2B` | Cards, panels, code panels                 |
 | `ink`            | `#F4F1EA`             | Cream borders, body text on dark           |
 | `lime`           | `#C6FF3D`             | Primary accent, title slabs, links         |
@@ -46,16 +46,16 @@ The full precedence and the render steps are in [Render a video in a look](/docs
 
 ## Type
 
-| Role                      | Family             | Where                                                     |
-| ------------------------- | ------------------ | --------------------------------------------------------- |
-| Headlines, body, captions | **Space Grotesk**  | `fonts.sans` in the default theme, Fontsource in the docs |
-| Labels, code, HUD pills   | **JetBrains Mono** | `fonts.mono` in the default theme, Fontsource in the docs |
+| Role                      | Family             | Where                             |
+| ------------------------- | ------------------ | --------------------------------- |
+| Headlines, body, captions | **Space Grotesk**  | `fonts.sans` in the default theme |
+| Labels, code, HUD pills   | **JetBrains Mono** | `fonts.mono` in the default theme |
 
 Other themes declare their own stacks; `JetBrains Mono`, Roboto Mono and IBM Plex Mono all keep the 0.6 em advance the code panel depends on. The studio injects the active theme's Google Fonts stylesheet at module load through `loadFonts()`. This is not cosmetic: Motion Canvas measures text when a `Txt` node is created, so loading fonts after the first frame leaves the intro titles shifted. Keep the module-scope `loadFonts()` call in every `scene.tsx`.
 
 ## Rules
 
-1. **Borders come from the theme.** The docs use 2 px on cards and callouts; videos use `borderWidth()` because they are scaled down in the player. A theme with `borderWidthScale: 0` draws none.
+1. **Borders come from the theme.** Videos use `borderWidth()` because they are scaled down in the player. A theme with `borderWidthScale: 0` draws none. The docs use Fumadocs' own borders.
 2. **Shadows come from the theme.** Neubrutal uses hard offset shadows with no blur; notebook uses soft shadows, tokyo-night has none. The kit's `boxStyle()` builds the matching stroke and offset. No ad-hoc `box-shadow` blur.
 3. **Flat fills.** Accents are solid colours; gradients are reserved for the faint grid and the transparency checkerboard.
 4. **Text on accents uses `colors.onAccent`.** HUD chrome uses `colors.onBrand`, not `colors.onAccent`.

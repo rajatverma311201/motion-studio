@@ -1,5 +1,5 @@
 {
   "title": "Production",
   "root": true,
-  "pages": ["how-videos-are-made", "design-system", "adding-a-lesson", "render-in-a-look"]
+  "pages": ["how-videos-are-made", "design-system", "adding-a-lesson", "recording-workflow", "render-in-a-look"]
 }

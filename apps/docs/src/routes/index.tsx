@@ -72,6 +72,7 @@ function TrackerPage() {
                   key={status}
                   type="button"
                   data-status-filter={status}
+                  data-status-count={counts[status]}
                   aria-pressed={active}
                   onClick={() => setStatusFilter(current => (current === status ? null : status))}
                   className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors hover:bg-fd-accent ${

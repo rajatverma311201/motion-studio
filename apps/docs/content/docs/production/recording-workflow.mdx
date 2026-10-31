@@ -1,0 +1,97 @@
+---
+title: Recording workflow
+description: The routine for every video, from picking the look to setting status published and pasting the YouTube description.
+---
+
+This is the repeatable routine. It assumes the scene and the voiceover notes already exist; [Adding a lesson](/docs/production/adding-a-lesson) covers the skeleton.
+
+## 1. Pick the look
+
+```sh
+pnpm studio --theme tokyo-night --mode light
+```
+
+The flags override `video.config.json` for this session, and a lesson's own `chapters.json` still wins over the config when the flags are omitted. The editor prints the winning layers on every scene start:
+
+```text
+[video-kit] look: tokyo-night / light  (theme from cli, mode from lesson)
+```
+
+Check that line before you render. The full precedence is in [Render a video in a look](/docs/production/render-in-a-look).
+
+## 2. Preview the whole video
+
+Open `http://localhost:9000/src/projects/<slug>` and play it once from the start. You are checking the pacing and the chapter boundaries, not only the look. If a section drags, fix the scene now; the `at` timestamps come later.
+
+## 3. Render the MP4
+
+In the editor, open **Render** → choose **Video (FFmpeg)** → press **Render**. The file lands in `apps/studio/output/`:
+
+```text
+apps/studio/output/<slug>--<theme>--<mode>.mp4
+```
+
+The built-in look still renders to `<slug>.mp4`. Nothing is committed from `output/`.
+
+## 4. Record the voiceover
+
+Start the docs:
+
+```sh
+pnpm docs:dev
+```
+
+Open the lesson page and work down the chapter list. The player is sticky at the top of the content column on wide screens; the `Say this` blocks scroll underneath it. Click a chapter to restart the video there and bring its heading into view. Record one chapter at a time, re-listening to the render while you speak.
+
+If the notes are wrong, edit the MDX page; the page is the source of truth for the voiceover, not the on-screen captions.
+
+## 5. Fill the chapter timestamps
+
+After the final render, put the start time of each chapter into `apps/studio/src/scenes/<slug>/chapters.json`:
+
+```json
+{"name": "INTRO", "color": "lime", "summary": "One sentence.", "at": "0:00"}
+```
+
+Use `m:ss` or `h:mm:ss`. Then run:
+
+```sh
+pnpm sync
+```
+
+The lesson page rebuilds the chapter list and clears the `timestamps missing` warning once every chapter has an `at`.
+
+## 6. Copy the YouTube description
+
+On the lesson page, scroll to **YouTube description** and press **Copy**. It contains the page description, `In this video:` with the summary points, and `Chapters:` with the timestamps. Paste it into YouTube, then add your links in the empty line at the end.
+
+## 7. Upload and publish
+
+Upload the MP4, then update the lesson frontmatter:
+
+```yaml
+status: published
+youtube: https://youtu.be/...
+recorded: 2026-11-02
+```
+
+`recorded` is the day you recorded the voiceover. `youtube` is the public link. `pnpm status` and the tracker should both show the video as published with the link.
+
+## 8. Finish
+
+```sh
+pnpm check
+pnpm build
+```
+
+Then commit the scene, `chapters.json`, the MDX page and any `.meta` files the editor wrote. The tracker picks up the new status and the YouTube link from the frontmatter.
+
+## Status reference
+
+| Status      | When to set it                                |
+| ----------- | --------------------------------------------- |
+| `outline`   | The skeleton exists and the notes are TODO.   |
+| `animated`  | The sections are animated and previewable.    |
+| `rendered`  | The MP4 exists in `apps/studio/output/`.      |
+| `voiced`    | The voiceover is recorded.                    |
+| `published` | The video is on YouTube and `youtube` is set. |

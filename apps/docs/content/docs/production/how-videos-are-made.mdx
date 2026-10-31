@@ -3,9 +3,16 @@ title: How videos are made
 description: The pipeline from a Motion Canvas scene in apps/studio to the player bundle embedded beside every lesson.
 ---
 
-<p className="eyebrow">Production</p>
+This site is the owner's recording companion, not a viewer-facing blog. It holds the voiceover notes for every chapter, the video tracker, the embedded player, and a copy-ready YouTube description. The videos themselves are Motion Canvas scenes: they live in `apps/studio`, share their visual building blocks through `packages/video-kit`, and are built into player bundles that this site embeds. Rendering the final MP4 is a separate step in the studio editor.
 
-Every lesson is a Motion Canvas scene. The scene lives in `apps/studio`, shares its visual building blocks with the other lessons through `packages/video-kit`, is built into a player bundle, and that bundle is embedded in this docs site with the Motion Canvas player. Rendering the final MP4 is a separate step, done from the studio editor.
+## What this site is for
+
+- **Voiceover notes.** Each chapter has a `Say this` block with the points to speak while it plays.
+- **Video tracker.** The home page lists every video with its status, chapters, duration, look, YouTube link and recording date.
+- **The player.** The lesson page plays the chapter next to the notes, with the player sticky on wide screens.
+- **The YouTube description.** Every lesson page builds the summary points and chapter timestamps into a text block with a Copy button.
+
+The docs site uses the **stock Fumadocs look** with its light/dark toggle. Neubrutalism belongs to the videos only.
 
 ## The repository at a glance
 
@@ -24,7 +31,7 @@ motion-studio/
 │   │               ├── scene.meta      editor metadata (commit this)
 │   │               └── sections/       01-intro.tsx, 02-... in chapter order
 │   └── docs/                    TanStack Start + Fumadocs site (Vite 8)
-│       ├── content/docs/        MDX lesson pages and these production pages
+│       ├── content/docs/        recording pages, tracker data and these guides
 │       ├── src/generated/       lessons.json + themes.json (git-ignored)
 │       └── public/videos/       built player bundles (git-ignored)
 ├── packages/
@@ -47,9 +54,9 @@ motion-studio/
 
 1. **Write the scene.** `apps/studio/src/scenes/<slug>/scene.tsx` calls `defineLesson()` from `video-kit` with `chapters.json` and one generator per section. A project file in `apps/studio/src/projects/<slug>.ts` exposes it to the editor.
 2. **Share the look.** Palette, fonts, the caption bar, code panels and tree components come from `packages/video-kit`. The kit is TypeScript source with no build step; both the studio and its tests consume it directly.
-3. **Generate the docs data.** `pnpm sync` runs two scripts. `sync-themes` copies the theme ids, names and colours into `themes.json`; `sync-lessons` validates every `chapters.json` (including its optional `theme` and `mode`), resolves each lesson's look against `video.config.json`, and writes `lessons.json` with a `look: {theme, themeName, mode}` field. Neither script imports the kit into the docs app.
+3. **Generate the docs data.** `pnpm sync` runs two scripts. `sync-themes` copies the theme ids, names and colours into `themes.json`; `sync-lessons` validates every `chapters.json` (including its optional `theme`, `mode`, `summaryPoints` and per-chapter `at` timestamps), resolves each lesson's look against `video.config.json`, and writes `lessons.json` with the points, timestamps and a `look: {theme, themeName, mode}` field. Neither script imports the kit into the docs app.
 4. **Build the player bundle.** `pnpm videos:build` runs the sync and then the studio's Vite build. The studio writes straight into `apps/docs/public/videos`: one entry per project at `projects/src/projects/<slug>.js`, plus shared chunks.
-5. **Play it on the docs page.** `<LessonVideo slug="<slug>" />` loads `/videos/projects/src/projects/<slug>.js` into the Motion Canvas player. `<LessonChapters>` renders the chapter cards from `lessons.json`. A chapter starts the bundle at that section.
+5. **Play it on the docs page.** `<LessonVideo slug="<slug>" />` loads `/videos/projects/src/projects/<slug>.js` into the Motion Canvas player and shows the lesson's own render look. A chapter starts the bundle at that section and scrolls the matching `### NN ·` voiceover heading into view.
 6. **Render the MP4.** Start the editor with `pnpm studio` (optionally in a look, see [Render a video in a look](/docs/production/render-in-a-look)), pick the project, check the console line `[video-kit] look: ...`, and press Render with the `Video (FFmpeg)` exporter. The MP4 lands in `apps/studio/output`. It is an artefact for YouTube; it is not committed and the docs do not depend on it.
 
 ## Commands

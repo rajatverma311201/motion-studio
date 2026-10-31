@@ -72,6 +72,7 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 | `pnpm sync`                                          | Regenerate `themes.json` and `lessons.json` (themes first).                          |
 | `pnpm new:lesson <slug> "<Title>" --course <course>` | Scaffold a lesson: project, scene, sections, MDX page and sidebar entry.             |
 | `pnpm new:theme <id> "<Name>" --from <theme>`        | Copy an existing theme, register it and sync the docs data.                          |
+| `pnpm status`                                        | Print slug, status, duration and YouTube link for every lesson page.                 |
 | `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.               |
 | `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                        |
 | `pnpm snap:themes`                                   | Capture the theme showcase in 7 themes × 2 modes and write `.snapshots/themes.html`. |
@@ -144,7 +145,7 @@ The generator refuses to overwrite anything. It creates the project file, `chapt
 
 1. Preview at `http://localhost:9000/src/projects/<slug>`. Start at a section with `#s=N` (zero-based).
 2. Replace the `TODO` captions in `sections/*.tsx` and the placeholder chapters in `chapters.json`. Keep the chapter count and the section count equal; `defineLesson()` throws otherwise.
-3. Fill in the MDX page and set `status: published` when the video is ready.
+3. Fill in the MDX page (voiceover notes, summary points), then move `status` through `outline`, `animated`, `rendered`, `voiced`, `published`. Add `at` timestamps after the render and `youtube` when it is live; `pnpm status` prints the table.
 4. Commit the `.meta` files the editor writes next to the scene and the project.
 5. Run `pnpm check` and `pnpm build`.
 

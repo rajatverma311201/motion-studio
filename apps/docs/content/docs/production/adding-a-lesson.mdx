@@ -1,11 +1,9 @@
 ---
 title: Adding a lesson
-description: Generate a lesson, preview it in the editor, map chapters to the video, publish the page and commit the editor metadata.
+description: Generate a lesson, preview it in the editor, write the voiceover notes, track its status and publish the YouTube description.
 ---
 
-<p className="eyebrow">Production</p>
-
-A lesson is three things that must agree: a scene in `apps/studio`, a `chapters.json` shared by the player and the docs, and an MDX page in `apps/docs/content/docs`. The generator creates the skeleton for all three.
+A lesson is three things that must agree: a scene in `apps/studio`, a `chapters.json` shared by the player and the docs, and an MDX recording page in `apps/docs/content/docs`. The generator creates the skeleton for all three.
 
 ## 1. Generate the skeleton
 
@@ -40,6 +38,8 @@ apps/docs/content/docs/<course>/<slug>.mdx
 
 It also appends the slug to the course's `meta.json`, runs `pnpm sync:lessons`, and prints the editor URL plus the file list. Every generated chapter is a valid, previewable section: the intro shows a title block, the others show a chip and a caption, and each ends with `leave(root)`.
 
+The new page starts at `status: outline`, `duration: TBD`, and `summaryPoints: ["TODO"]`. Nothing is invented for you.
+
 ## 2. Preview in the editor
 
 ```sh
@@ -62,10 +62,10 @@ Only one editor page may be open per project: the editor rewrites the `.meta` fi
 
 - the `i`-th entry of `sections` in `scene.tsx`,
 - the `i`-th HUD pill,
-- the `i`-th chapter card on the docs page,
+- the `i`-th `### NN ·` voiceover heading on the docs page,
 - section index `i` in `#s=N` and in the player's chapter list.
 
-The counts must match exactly. `defineLesson()` throws at definition time when `sections.length !== chapters.length`, and the message names the slug and both counts. Chapter names are short and upper-case (`INTRO`, `B+TREE INSERT`); the colour is a palette key, not a hex value. The `summary` is one sentence shown only on the docs page.
+The counts must match exactly. `defineLesson()` throws at definition time when `sections.length !== chapters.length`, and the message names the slug and both counts. Chapter names are short and upper-case (`INTRO`, `B+TREE INSERT`); the colour is a palette key, not a hex value. The `summary` is one sentence shown in the chapter cards.
 
 To change a chapter after generation, edit `chapters.json` and the matching section file together, then run:
 
@@ -75,33 +75,118 @@ pnpm sync:lessons
 
 `pnpm dev` runs the sync once at startup; it does not watch `chapters.json`. Restart `pnpm dev` after editing it if you need the docs chapter cards to update.
 
-## 4. Fill in the lesson page
+## 4. Fill the recording page
 
-Open `apps/docs/content/docs/<course>/<slug>.mdx`. The template has the lesson headings: what you will learn, chapters, the idea in one minute, chapter notes, cheat sheet, common mistakes, try it yourself, go deeper. Replace every `TODO`.
+Open `apps/docs/content/docs/<course>/<slug>.mdx`. The template is:
 
-The frontmatter is validated at build time:
+```mdx
+---
+title: ...
+description: ...
+video: <slug>
+status: outline
+duration: TBD
+---
 
-```yaml
-title: 'MVCC and Isolation Levels'
-description: 'One sentence for the card and search result.'
-video: mvcc-and-isolation # must equal the studio project slug
-duration: 12 min
-level: intermediate # beginner | intermediate | advanced
-tags: [databases, mvcc]
-status: draft # draft | published
+<LessonVideo slug="<slug>" />
+
+## Summary points
+
+<SummaryPoints slug="<slug>" />
+
+## Chapters and voiceover notes
+
+### 01 · INTRO
+
+<VoiceoverNotes>
+
+- TODO: first thing to say
+- TODO: second point
+
+</VoiceoverNotes>
+
+(repeat per chapter, same numbering and names as chapters.json)
+
+## YouTube description
+
+<YoutubeDescription slug="<slug>" />
 ```
 
-## 5. Publish
+- `status` is one of `outline`, `animated`, `rendered`, `voiced`, `published`.
+- `duration` is the final length (`12:40`) or `TBD` until the render exists.
+- `youtube` is added when the video is live.
+- `recorded` is the voiceover date (`YYYY-MM-DD`).
 
-Draft pages are rendered at their URL but filtered out of the landing page's lesson grid. When the video is ready, set:
+The five statuses describe the pipeline:
+
+| Status      | Meaning                                    | Next action                    |
+| ----------- | ------------------------------------------ | ------------------------------ |
+| `outline`   | The skeleton exists; the notes are TODO.   | Write the notes.               |
+| `animated`  | The sections are animated and previewable. | Render the MP4.                |
+| `rendered`  | The MP4 exists.                            | Record the voiceover.          |
+| `voiced`    | The voiceover is recorded.                 | Publish and add the link.      |
+| `published` | The video is on YouTube; `youtube` is set. | Nothing; keep the notes fresh. |
+
+`pnpm status` prints the slug, status, duration and YouTube link for every lesson page.
+
+## 5. Fill summary points and timestamps
+
+`summaryPoints` lives in `chapters.json`, not in the MDX page. It is an array of 3 to 8 short strings; the page and the YouTube description both read it. The generator writes `["TODO"]`; replace it before publishing.
+
+```json
+{
+  "slug": "mvcc-and-isolation",
+  "title": "MVCC AND ISOLATION",
+  "summaryPoints": [
+    "Why readers and writers need separate versions of a row.",
+    "How a snapshot makes a read repeatable."
+  ],
+  "chapters": [{"name": "INTRO", "color": "lime", "summary": "One sentence."}]
+}
+```
+
+Each chapter gets an optional `at` timestamp in `m:ss` or `h:mm:ss`. Fill these in after the final render, when the chapter boundaries are fixed:
+
+```json
+{"name": "INTRO", "color": "lime", "summary": "One sentence.", "at": "0:00"}
+```
+
+`pnpm sync:lessons` rejects malformed timestamps and summary arrays. Leave `at` out until the render exists; the YouTube description shows `--:--` and a `timestamps missing` warning in the meantime.
+
+## 6. Write the voiceover notes
+
+Each chapter has a `Say this` block. The bullets are what you say while that chapter plays, not a summary of the visuals. Three to six short sentences is the useful range. Use `- TODO: ...` when the material is too thin to write something true.
+
+The player is sticky on wide screens, so you can watch the chapter while reading the notes. Clicking a chapter restarts the video at that section and scrolls the matching `### NN ·` heading into view.
+
+## 7. Copy the YouTube description
+
+The last section of the lesson page builds the description from the page description, `summaryPoints`, and every chapter with its `at` timestamp. Press **Copy** and paste it into YouTube. The chapter list is already in the right format:
+
+```text
+In this video:
+- Why readers and writers need separate versions of a row.
+
+Chapters:
+0:00 Intro
+1:12 The problem
+```
+
+The empty line at the end is reserved for links.
+
+## 8. Publish
+
+Set the status as the video moves through the pipeline, and when the upload is done:
 
 ```yaml
 status: published
+youtube: https://youtu.be/...
+recorded: 2026-11-02
 ```
 
 A published page needs a built bundle. `pnpm videos:build` creates `apps/docs/public/videos/projects/src/projects/<slug>.js`; without it the player shows "Video bundle not found". `pnpm build` does both in the right order.
 
-## 6. Commit the editor metadata
+## 9. Commit the editor metadata
 
 Opening a scene or a project in the editor writes `.meta` files next to it:
 
@@ -112,11 +197,12 @@ apps/studio/src/projects/<slug>.meta
 
 Commit them. They hold the editor's saved state and are part of the project; never hand-edit them and never add them to `.gitignore`. The standalone `.meta` files are also excluded from Prettier and ESLint on purpose.
 
-## 7. Run the checks
+## 10. Run the checks
 
 ```sh
 pnpm check # typecheck + lint + tests + format
 pnpm build # videos + docs
+pnpm status
 ```
 
 `pnpm check` enforces the file-naming rules: every new file must be kebab-case, except the numbered section files (`01-intro.tsx`) and the TanStack route files.

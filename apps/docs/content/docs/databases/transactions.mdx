@@ -2,6 +2,7 @@
 title: 'DB Transactions: ACID and isolation'
 description: How a transaction keeps a bank transfer all-or-nothing, and what ACID, isolation levels, and the WAL actually guarantee.
 video: db-transactions
+status: published
 duration: 4 min
 level: beginner
 tags: [databases, transactions, acid, isolation, wal, quarkus]
@@ -9,37 +10,50 @@ tags: [databases, transactions, acid, isolation, wal, quarkus]
 
 <LessonVideo slug="db-transactions" />
 
-## What you will learn
+## Summary points
 
-- Why two separate `UPDATE` statements lose ₹300 when the server dies between them.
-- How `BEGIN`, `COMMIT`, and `ROLLBACK` make a group of writes atomic.
-- What atomicity, consistency, isolation, and durability each guarantee.
-- How dirty reads, non-repeatable reads, and phantom reads appear.
-- What the four SQL isolation levels block, and how engine defaults differ.
-- How the write-ahead log makes a commit durable.
-- Why Quarkus `@Transactional` rolls back on runtime exceptions but commits on checked ones by default.
+<SummaryPoints slug="db-transactions" />
 
-## Chapters
+## Chapters and voiceover notes
 
-<LessonChapters slug="db-transactions" />
+### 01 · INTRO
 
-## The idea in one minute
+<VoiceoverNotes>
 
-A bank transfer is two writes: debit Alice ₹300, credit Bob ₹300. If the server dies between them, the money leaves Alice and never reaches Bob, so the books no longer add up. A transaction groups the writes so they all happen or none do: `COMMIT` makes every pending change permanent at one instant, and `ROLLBACK` undoes them as if nothing happened. Atomicity and durability cover crashes; isolation covers concurrent transactions and the dirty, non-repeatable, and phantom reads they can cause. The isolation levels decide how much of that is allowed, trading concurrency for safety. Durability comes from the write-ahead log, flushed before `COMMIT` returns so a restart can replay the change. In code, Quarkus wraps a method in a transaction with `@Transactional`.
+- A transaction groups many steps into one unit: all of them happen, or none do.
+- The bank transfer makes the cost of a half-finished unit visible.
+- Think of it as one promise that covers several writes.
+- By the end you will know what ACID, isolation levels and the WAL actually guarantee.
 
-## Chapter notes
+</VoiceoverNotes>
 
-### 1. Intro
+A transaction groups many writes into one unit: all happen, or none do. The bank transfer makes the cost of a half-finished unit visible.
 
-A transaction groups many steps into one unit: all happen, or none do. The bank transfer makes the cost of a half-finished unit visible.
+### 02 · THE PROBLEM
 
-### 2. The problem
+<VoiceoverNotes>
 
-Alice sends ₹300 to Bob in two `UPDATE` statements. Step 1 debits Alice, the server dies before step 2, and Bob never receives the money, so the books no longer add up.
+- Alice sends ₹300 to Bob. In SQL that is two separate UPDATE statements.
+- Step one debits Alice. The server dies before step two runs.
+- Bob never receives the money, and the books no longer add up.
+- The database is now inconsistent. We need all-or-nothing.
+- Ask yourself what the balances should be after the crash.
 
-### 3. BEGIN · COMMIT · ROLLBACK
+</VoiceoverNotes>
 
-Wrapping both updates in `BEGIN … COMMIT` makes them one transaction. Changes stay pending, `COMMIT` makes both permanent at the same instant, and `ROLLBACK` undoes everything if the crash arrives first.
+Two separate `UPDATE` statements lose ₹300 when the server dies between them. The money leaves Alice and never reaches Bob, so the books no longer add up.
+
+### 03 · BEGIN · COMMIT · ROLLBACK
+
+<VoiceoverNotes>
+
+- Wrap both updates in BEGIN and COMMIT, and they become one transaction.
+- Inside the transaction the changes are pending; nobody else treats them as final.
+- COMMIT makes both changes permanent at the same instant.
+- Replay the crash before COMMIT: the database notices the unfinished transaction.
+- ROLLBACK undoes every pending change, as if nothing happened.
+
+</VoiceoverNotes>
 
 ```sql
 BEGIN;
@@ -49,17 +63,51 @@ COMMIT;
 -- or, if anything fails: ROLLBACK;
 ```
 
-### 4. ACID
+<Callout type="warn" title="Two updates, no transaction">
+  A crash between the statements leaves the database inconsistent. Wrap them in one transaction.
+</Callout>
 
-Atomicity undoes a failed transaction; consistency rejects a change that breaks a constraint; isolation keeps concurrent work apart; durability keeps a committed change on disk. Atomicity and durability cover crashes, isolation covers concurrency.
+### 04 · ACID
 
-### 5. Isolation anomalies
+<VoiceoverNotes>
+
+- ACID is four guarantees that make a database transaction trustworthy.
+- Atomicity: a failure anywhere undoes the whole transaction.
+- Consistency: every commit leaves the data valid under the rules.
+- Isolation: concurrent transactions behave as if they ran separately.
+- Durability: a committed change survives a crash.
+- Atomicity and durability cover crashes; isolation covers concurrency.
+
+</VoiceoverNotes>
+
+Atomicity undoes a failed transaction; consistency rejects a change that breaks a constraint; isolation keeps concurrent work apart; durability keeps a committed change on disk.
+
+### 05 · ISOLATION ANOMALIES
+
+<VoiceoverNotes>
+
+- A dirty read uses a value another transaction has not committed and may still roll back.
+- A non-repeatable read sees the same row change inside one transaction.
+- A phantom read sees a new row appear in a repeated range query.
+- Show T1 and T2 touching the same data at the same time.
+- These anomalies are exactly what isolation levels exist to prevent.
+
+</VoiceoverNotes>
 
 A dirty read uses an uncommitted value that is later rolled back. A non-repeatable read sees the same row change inside one transaction, and a phantom read sees new rows appear in a repeated range.
 
-### 6. Isolation levels
+### 06 · ISOLATION LEVELS
 
-Read Uncommitted allows all three anomalies, Read Committed blocks dirty reads, Repeatable Read keeps read rows stable, and Serializable behaves as if transactions ran one at a time. More isolation means less concurrency, so pick the weakest safe level; PostgreSQL defaults to Read Committed and MySQL InnoDB to Repeatable Read. The table is the SQL-standard view, and PostgreSQL's Repeatable Read also blocks phantoms.
+<VoiceoverNotes>
+
+- The SQL standard defines four levels, each blocking more anomalies.
+- Read Uncommitted allows all three; Read Committed blocks dirty reads.
+- Repeatable Read keeps read rows stable; Serializable behaves as if transactions ran one at a time.
+- More isolation means less concurrency, so pick the weakest safe level.
+- Defaults differ: PostgreSQL uses Read Committed, MySQL InnoDB uses Repeatable Read.
+- PostgreSQL's Repeatable Read also blocks phantoms, even though the standard does not require it.
+
+</VoiceoverNotes>
 
 | Level            | Dirty read | Non-repeatable read | Phantom read |
 | ---------------- | ---------- | ------------------- | ------------ |
@@ -68,13 +116,39 @@ Read Uncommitted allows all three anomalies, Read Committed blocks dirty reads, 
 | Repeatable Read  | prevented  | prevented           | possible     |
 | Serializable     | prevented  | prevented           | prevented    |
 
-### 7. Durability · WAL
+<Callout type="warn" title="Always choosing Serializable">
+  More isolation means less concurrency. Pick the weakest level that is safe.
+</Callout>
+
+<Callout type="warn" title="Assuming every engine has the same default">
+  PostgreSQL defaults to Read Committed; MySQL InnoDB to Repeatable Read.
+</Callout>
+
+### 07 · DURABILITY · WAL
+
+<VoiceoverNotes>
+
+- Writing every change straight to data files would be slow random I/O.
+- The change first lands in memory, on a cached page.
+- Before COMMIT returns, the log records are appended to the WAL and flushed.
+- Only then does the client hear COMMIT OK, so the commit is durable.
+- On a crash, memory is wiped but the log survives; the database replays committed changes.
+
+</VoiceoverNotes>
 
 Changes first land in memory on a cached page. Before `COMMIT` returns, the log records are appended to the write-ahead log and flushed; after a crash, the database replays every committed change from that log.
 
-### 8. In code
+### 08 · IN CODE
 
-`@Transactional` starts a transaction before the method and commits after it returns. A runtime exception rolls back, a checked exception commits by default, and `rollbackOn` opts in to rollback for checked exceptions; keep the boundary short.
+<VoiceoverNotes>
+
+- In Quarkus one annotation gives you all of this: @Transactional.
+- The interceptor starts a transaction before the method and commits after it returns.
+- A runtime exception rolls back the whole transaction.
+- Checked exceptions do not roll back by default; opt in with rollbackOn.
+- Keep transactions short so locks are held for as little time as possible.
+
+</VoiceoverNotes>
 
 ```java
 @ApplicationScoped
@@ -87,11 +161,27 @@ public class TransferService {
 }
 ```
 
-### 9. Recap
+<Callout type="warn" title="Expecting a checked exception to roll back">
+  In Quarkus, a checked exception still commits by default. Opt in with `@Transactional(rollbackOn = …)`.
+</Callout>
+
+<Callout type="warn" title="Holding a transaction open">
+  Locks are held until the transaction ends. Keep HTTP calls and sleeps outside it.
+</Callout>
+
+### 09 · RECAP
+
+<VoiceoverNotes>
+
+- Four guarantees, one idea: group the steps and treat them as a single unit.
+- A transaction either fully happens or never happened.
+- Atomicity and durability cover crashes; isolation covers concurrent readers and writers.
+- In Quarkus, @Transactional is the boundary; keep it short.
+- Next lesson: how an index finds one row among millions.
+
+</VoiceoverNotes>
 
 The four guarantees reduce to one idea: group the steps and treat them as one unit. A transaction either fully happens or never happened.
-
-## Cheat sheet
 
 | Concept                  | One-line rule                                                 | When it matters                     |
 | ------------------------ | ------------------------------------------------------------- | ----------------------------------- |
@@ -103,48 +193,12 @@ The four guarantees reduce to one idea: group the steps and treat them as one un
 | Durability / WAL         | Log flushed before COMMIT returns.                            | Crash recovery.                     |
 | Quarkus `@Transactional` | Runtime exceptions roll back; checked ones commit by default. | Service methods.                    |
 
-## Common mistakes
-
-<Callout type="warn" title="Two updates, no transaction">
-  A crash between the statements leaves the database inconsistent. Wrap them in one transaction.
-</Callout>
-
-<Callout type="warn" title="Expecting a checked exception to roll back">
-  In Quarkus, a checked exception still commits by default. Opt in with `@Transactional(rollbackOn = …)`.
-</Callout>
-
-<Callout type="warn" title="Holding a transaction open">
-  Locks are held until the transaction ends. Keep HTTP calls and sleeps outside it.
-</Callout>
-
-<Callout type="warn" title="Always choosing Serializable">
-  More isolation means less concurrency. Pick the weakest level that is safe.
-</Callout>
-
-<Callout type="warn" title="Assuming every engine has the same default">
-  PostgreSQL defaults to Read Committed; MySQL InnoDB to Repeatable Read.
-</Callout>
-
-## Try it yourself
-
-These are examples you can run in a scratch PostgreSQL database, not output from the video.
-
-```sql
--- example: move ₹300 or do nothing
-BEGIN;
-UPDATE accounts SET balance = balance - 300 WHERE id = 'alice';
-UPDATE accounts SET balance = balance + 300 WHERE id = 'bob';
-COMMIT;
-
--- example: change the isolation level for this transaction
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SELECT balance FROM accounts WHERE id = 'alice';
-COMMIT;
-```
-
-## Go deeper
+Go deeper:
 
 - [PostgreSQL: Transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html)
 - [MySQL 8.0: Transaction Isolation Levels](https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html)
 - [Quarkus: Using transactions](https://quarkus.io/guides/transaction)
+
+## YouTube description
+
+<YoutubeDescription slug="db-transactions" />

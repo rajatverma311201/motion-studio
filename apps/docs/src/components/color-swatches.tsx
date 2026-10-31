@@ -14,12 +14,12 @@ const data = themesData as {defaultThemeId: string; themes: ThemeEntry[]};
 const MODES: ThemeMode[] = ['dark', 'light'];
 
 interface ColorSwatchesProps {
-  /** Theme id, e.g. "tokyo-night". Defaults to `neubrutal`. */
+  /** Theme id, e.g. "tokyo-night". Defaults to the generated default theme. */
   theme?: string;
 }
 
 /** Dark and light colour rows for one theme, read from the generated theme data. */
-export function ColorSwatches({theme = 'neubrutal'}: ColorSwatchesProps): ReactElement {
+export function ColorSwatches({theme = data.defaultThemeId}: ColorSwatchesProps): ReactElement {
   const entry =
     data.themes.find(item => item.id === theme) ?? data.themes.find(item => item.id === data.defaultThemeId);
   if (!entry) {
