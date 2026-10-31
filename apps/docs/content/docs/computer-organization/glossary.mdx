@@ -1,0 +1,39 @@
+---
+title: Glossary
+description: The terms used in the instruction cycle lesson, in one place.
+---
+
+<p className="eyebrow">Reference</p>
+
+Short definitions for the vocabulary the lesson uses. The same words mean the same thing from the first chapter to the last.
+
+## Terms
+
+| Term                | Meaning                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| ACC                 | The accumulator: an 8-bit register that holds the value being calculated.                                 |
+| Address             | The number of a memory box. TinyCPU uses 4 bits, so it has 16 addresses.                                  |
+| ALU                 | Arithmetic logic unit: the circuit that adds and subtracts.                                               |
+| Bus                 | Shared wires between CPU and memory: address bus (where), data bus (what), control lines (read or write). |
+| Byte                | Eight bits. One byte fills one memory box in TinyCPU.                                                     |
+| Clock tick          | One beat of the CPU clock. Each micro-step takes one tick.                                                |
+| Compiler            | A program that turns source code into machine instructions.                                               |
+| Control unit        | The part that decodes the opcode and switches on the signals the next phase needs.                        |
+| Decode              | The phase that splits the instruction into opcode and operand and decides what to do.                     |
+| Execute             | The phase that does the work; it is the only phase that differs per instruction.                          |
+| Fetch               | The phase that copies the next instruction from memory into IR and moves the PC on.                       |
+| Flag (Z)            | A one-bit register that is 1 when the last result was zero.                                               |
+| IR                  | Instruction register: holds the instruction being worked on right now.                                    |
+| Instruction         | An 8-bit command: a 4-bit opcode plus a 4-bit operand.                                                    |
+| Loader              | The part of the operating system that copies a program into memory and sets the PC.                       |
+| MAR                 | Memory address register: holds the address of the box to open.                                            |
+| MDR                 | Memory data register: holds the value read from, or written to, that box.                                 |
+| Memory (RAM)        | Numbered boxes of bytes that hold both code and data while the power is on.                               |
+| Opcode              | The top four bits of an instruction: the operation to perform.                                            |
+| Operand             | The bottom four bits: usually the address of the data.                                                    |
+| PC                  | Program counter: holds the address of the next instruction.                                               |
+| Program             | A list of instructions stored in memory.                                                                  |
+| Register            | A small, fast storage slot inside the CPU.                                                                |
+| Stored-program idea | Programs and data live in the same memory, so the CPU can treat either as bytes.                          |
+
+Read the full story in [The Instruction Cycle](/docs/computer-organization/instruction-cycle).

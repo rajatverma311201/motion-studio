@@ -1,0 +1,5 @@
+{
+  "title": "Computer Organization",
+  "root": true,
+  "pages": ["index", "instruction-cycle", "glossary"]
+}

@@ -1,0 +1,65 @@
+{
+  "slug": "instruction-cycle",
+  "title": "INSTRUCTION CYCLE",
+  "summaryPoints": [
+    "A program is a list of numbered instructions stored as bytes in memory, right next to its data.",
+    "Registers are the CPU's tiny, fast storage: PC, MAR, MDR, IR, ACC and the Z flag.",
+    "Loading copies the program from disk into memory and points the PC at the first instruction.",
+    "Fetch: PC to MAR, read memory into MDR, copy to IR, then add 1 to the PC.",
+    "Decode: the opcode picks the action and the operand names the address.",
+    "Execute: the ALU, memory or the PC does the work; only this phase differs per instruction.",
+    "A jump overwrites the PC, which is how loops and if-statements work."
+  ],
+  "chapters": [
+    {
+      "name": "INTRO",
+      "color": "lime",
+      "summary": "Every program is a list of tiny steps, and one loop runs them: fetch, decode, execute."
+    },
+    {
+      "name": "MEMORY",
+      "color": "cyan",
+      "summary": "Memory is numbered boxes of bytes; the same bits can be a number or an instruction, so programs live in memory next to their data."
+    },
+    {
+      "name": "CPU PARTS",
+      "color": "pink",
+      "summary": "Registers, the ALU, the control unit and the buses are the parts the cycle moves values between."
+    },
+    {
+      "name": "LOADING",
+      "color": "yellow",
+      "summary": "The loader copies a program from disk into memory and points the PC at its first instruction."
+    },
+    {
+      "name": "FETCH",
+      "color": "violet",
+      "summary": "Fetch copies the next instruction from memory into IR and moves the PC on."
+    },
+    {
+      "name": "DECODE",
+      "color": "orange",
+      "summary": "Decode splits the instruction into opcode and operand and lights the right control signal."
+    },
+    {
+      "name": "EXECUTE",
+      "color": "red",
+      "summary": "Execute does the work; it is the only phase that differs between instructions."
+    },
+    {
+      "name": "FULL RUN",
+      "color": "lime",
+      "summary": "Running the whole program shows the rhythm: fetch, decode, execute, repeat, until HALT."
+    },
+    {
+      "name": "JUMPS",
+      "color": "cyan",
+      "summary": "A jump overwrites the PC, and that is how loops and ifs work."
+    },
+    {
+      "name": "RECAP",
+      "color": "pink",
+      "summary": "One loop runs every program; real CPUs speed it up by overlapping the phases."
+    }
+  ]
+}

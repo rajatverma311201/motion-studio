@@ -1,0 +1,37 @@
+---
+title: Course overview
+description: A beginner-friendly course on how a CPU turns stored bytes into a running program, one instruction cycle at a time.
+---
+
+<p className="eyebrow">Course</p>
+
+A CPU looks like magic until you watch it work. This course opens the lid on one small, honest machine: 16 memory boxes, five registers and a zero flag. Every value the hardware holds is shown in binary, and every register change is animated, so the fetch–decode–execute loop stops being a slogan and becomes something you can trace by hand.
+
+## What you will learn
+
+- A program is a list of numbered instructions stored as bytes in memory, right next to its data.
+- Registers are the CPU's tiny, fast storage: PC, MAR, MDR, IR, ACC and the Z flag.
+- Loading copies the program from disk into memory and points the PC at the first instruction.
+- Fetch: PC to MAR, read memory into MDR, copy to IR, then add 1 to the PC.
+- Decode: the opcode picks the action and the operand names the address.
+- Execute: the ALU, memory or the PC does the work; only this phase differs per instruction.
+- A jump overwrites the PC, which is how loops and if-statements work.
+
+## Lessons
+
+<Cards>
+  <Card
+    href="/docs/computer-organization/instruction-cycle"
+    title="1. The Instruction Cycle"
+    description="Memory, registers, program loading, and fetch–decode–execute on a tiny CPU you can trace by hand."
+  />
+  <Card
+    href="/docs/computer-organization/glossary"
+    title="Glossary"
+    description="The terms from the lesson, defined in one place."
+  />
+</Cards>
+
+## Suggested order
+
+Watch **The Instruction Cycle** (about 13 minutes) from start to finish. It is the only lesson, it stands alone, and the same toy machine is used in every chapter, so nothing later depends on a term introduced earlier.
