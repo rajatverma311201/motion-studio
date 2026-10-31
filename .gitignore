@@ -26,3 +26,6 @@ dist
 apps/docs/public/videos
 apps/docs/src/generated
 .snapshots
+
+# local repository dumps
+project-dump*.md
