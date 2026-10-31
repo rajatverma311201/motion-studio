@@ -26,7 +26,8 @@
     "format:check": "prettier --check .",
     "snap:capture": "pnpm --filter @motion-studio/snapshots capture --",
     "snap:compare": "pnpm --filter @motion-studio/snapshots compare --",
-    "snap:quick": "pnpm snap:capture current --quick && pnpm snap:compare --quick"
+    "snap:quick": "pnpm snap:capture current --quick && pnpm snap:compare --quick",
+    "snap:themes": "pnpm --filter @motion-studio/snapshots exec node --import tsx themes-run.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

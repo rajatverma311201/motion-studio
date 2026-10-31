@@ -4,12 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "capture": "node capture.mjs",
+    "capture": "node --import tsx capture.mjs",
     "compare": "node compare.mjs"
   },
   "dependencies": {
     "pixelmatch": "^6.0.0",
     "playwright": "^1.49.0",
     "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
   }
 }

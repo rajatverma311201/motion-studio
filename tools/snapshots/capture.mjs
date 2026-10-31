@@ -2,9 +2,12 @@
 /**
  * Capture stage frames from the Motion Canvas editor.
  *
- *   node capture.mjs <baseline|current> [--quick] [slug ...]
+ *   node capture.mjs <label> [--quick] [--theme <id>] [--mode dark|light] [slug ...]
  *
  * `--quick` captures only frames marked `"quick": true` in frames.json.
+ * `--theme` appends `theme=<id>&mode=<mode>` to the section hash and stores the
+ * frames in `<label>/<slug>--<theme>--<mode>/`. A missing `--mode` uses that
+ * theme's `defaultMode`.
  * Playback is real time, so the script plays the scene with Space and polls the
  * editor timecode until the wanted second is reached before screenshotting the
  * stage. Pages are opened one at a time on purpose: the editor rewrites .meta
@@ -14,6 +17,7 @@ import {chromium} from 'playwright';
 import {mkdir, readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {themes} from '../../packages/video-kit/src/themes/registry.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STAGE_CLIP = {x: 454, y: 22, width: 1536, height: 864};
@@ -26,13 +30,42 @@ const SNAPSHOT_DIR = path.resolve(HERE, '../../.snapshots');
 const rawArgs = process.argv.slice(2);
 // The root scripts end in `--`; pnpm 12 forwards that separator literally.
 const quick = rawArgs.includes('--quick');
-const args = rawArgs.filter(arg => arg !== '--' && arg !== '--quick');
+let theme;
+let mode;
+const args = [];
+for (let i = 0; i < rawArgs.length; i++) {
+  const arg = rawArgs[i];
+  if (arg === '--' || arg === '--quick') continue;
+  if (arg === '--theme') {
+    theme = rawArgs[++i];
+    continue;
+  }
+  if (arg === '--mode') {
+    mode = rawArgs[++i];
+    continue;
+  }
+  args.push(arg);
+}
 
 const label = args[0];
-if (label !== 'baseline' && label !== 'current') {
-  console.error('usage: node capture.mjs <baseline|current> [--quick] [slug ...]');
+if (!label || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(label)) {
+  console.error('usage: node capture.mjs <label> [--quick] [--theme <id>] [--mode dark|light] [slug ...]');
   process.exit(2);
 }
+
+if (theme !== undefined && themes[theme] === undefined) {
+  console.error(`unknown theme "${theme}"; known ids: ${Object.keys(themes).join(', ')}`);
+  process.exit(2);
+}
+if (mode !== undefined && mode !== 'dark' && mode !== 'light') {
+  console.error(`unknown mode "${mode}"; use dark or light`);
+  process.exit(2);
+}
+if (mode !== undefined && theme === undefined) {
+  console.error('--mode requires --theme');
+  process.exit(2);
+}
+const resolvedMode = theme === undefined ? undefined : (mode ?? themes[theme].defaultMode);
 
 const frames = JSON.parse(await readFile(path.join(HERE, 'frames.json'), 'utf8'));
 const requested = args.slice(1);
@@ -102,8 +135,16 @@ for (const slug of slugs) {
   for (const capture of captures) {
     const section = project.sectionAware ? capture.section : null;
     const sectionName = section == null ? 'all' : `s${section}`;
-    const url = `${STUDIO_URL}/src/projects/${slug}` + (section == null ? '' : `#s=${section}`);
-    const outDir = path.join(SNAPSHOT_DIR, label, slug);
+    const hash = [];
+    if (section != null) hash.push(`s=${section}`);
+    if (theme !== undefined) {
+      hash.push(`theme=${theme}`);
+      hash.push(`mode=${resolvedMode}`);
+    }
+    const url = `${STUDIO_URL}/src/projects/${slug}` + (hash.length > 0 ? `#${hash.join('&')}` : '');
+    const folder = theme === undefined ? slug : `${slug}--${theme}--${resolvedMode}`;
+    const outDir = path.join(SNAPSHOT_DIR, label, folder);
+    const look = theme === undefined ? '' : ` ${theme}/${resolvedMode}`;
     await mkdir(outDir, {recursive: true});
 
     const page = await browser.newPage({viewport: {width: 2000, height: 1150}});
@@ -132,27 +173,27 @@ for (const slug of slugs) {
         const elapsed = ((Date.now() - frameStarted) / 1000).toFixed(1);
         if (!result.ok) {
           const reason = result.reason === 'stalled' ? 'timeout' : 'deadline';
-          failures.push(`${slug} ${sectionName} ${reason} at ${time}`);
-          console.log(`[${label}] ${slug} ${sectionName} ${reason} at ${time} (${elapsed}s)`);
+          failures.push(`${slug}${look} ${sectionName} ${reason} at ${time}`);
+          console.log(`[${label}]${look} ${slug} ${sectionName} ${reason} at ${time} (${elapsed}s)`);
           continue;
         }
 
         const file = path.join(outDir, `${sectionName}_t${time}.png`);
         await page.screenshot({path: file, clip: STAGE_CLIP});
         capturedFrames += 1;
-        console.log(`[${label}] ${slug} ${sectionName} t${time} ok (${elapsed}s)`);
+        console.log(`[${label}]${look} ${slug} ${sectionName} t${time} ok (${elapsed}s)`);
       }
     } catch (error) {
-      failures.push(`${slug} ${sectionName} ${String(error.message).split('\n')[0]}`);
-      console.log(`[${label}] ${slug} ${sectionName} FAILED ${error.message}`);
+      failures.push(`${slug}${look} ${sectionName} ${String(error.message).split('\n')[0]}`);
+      console.log(`[${label}]${look} ${slug} ${sectionName} FAILED ${error.message}`);
     } finally {
       await page.close();
     }
 
     for (const error of errors) {
-      console.log(`[${label}] ${slug} ${sectionName} ${error}`);
+      console.log(`[${label}]${look} ${slug} ${sectionName} ${error}`);
     }
-    if (errors.length > 0) realErrors.push(...errors.map(error => `${slug} ${sectionName} ${error}`));
+    if (errors.length > 0) realErrors.push(...errors.map(error => `${slug}${look} ${sectionName} ${error}`));
   }
 }
 

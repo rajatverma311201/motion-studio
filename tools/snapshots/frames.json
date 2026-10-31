@@ -39,5 +39,16 @@
       {"section": 7, "times": [4]},
       {"section": 8, "times": [4, 12]}
     ]
+  },
+  "theme-showcase": {
+    "sectionAware": true,
+    "captures": [
+      {"section": 0, "times": [4]},
+      {"section": 1, "times": [5]},
+      {"section": 2, "times": [5]},
+      {"section": 3, "times": [6]},
+      {"section": 4, "times": [7]},
+      {"section": 5, "times": [5]}
+    ]
   }
 }

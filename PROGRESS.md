@@ -714,6 +714,83 @@ Two non-palette hexes had no exact slot: `#FF5C7A` (isolation-levels row) -> `co
 - `colors` is a Proxy over `{}`, so `Object.keys(colors)` is empty. No current caller enumerates it; use `themeIds`/`themes` instead.
 - `titleBlock({style: 'plain'})` uses a 160 px brand underline; step 14 may want to tune it per theme.
 
+## Step 14: theme catalogue and showcase
+
+**What changed**
+
+- Six new theme files in `packages/video-kit/src/themes/`: `shadcn.ts`, `notebook.ts`, `tokyo-night.ts`, `terminal-green.ts`, `paper-editorial.ts`, `blueprint.ts`, each exporting `<camelCaseId>Theme` with `variants.dark` and `variants.light`. `registry.ts` registers all seven themes in catalogue order and `themes/index.ts` exports them.
+- `neubrutal.ts` only changed its `description` (the prompt's one-liner for the catalogue). The dark tokens, shape and HUD are untouched; the light table was already in place and needed no tuning.
+- `registry.test.ts` now also checks that the mode is real (dark: bg luminance < 0.2 and ink lighter; light: bg luminance > 0.5 and ink darker), `contrastRatio(onBrand, brand) >= 4.5`, the red/lime channel semantics in both variants, and that both variants plus a valid `defaultMode` exist. All 14 theme x mode cases pass.
+- New `theme-showcase` lesson: `apps/studio/src/projects/theme-showcase.ts`, `apps/studio/src/scenes/theme-showcase/{chapters.json,scene.tsx,sections/01..06,scene.meta}`, project `.meta`. Six chapters (TITLE, PALETTE, COMPONENTS, CODE, TREE, HUD) built only from kit components. The subtitle chip reads `getTheme().name` and `.mode` at render time.
+- Snapshot tooling: `capture.mjs` accepts `--theme <id>` and `--mode dark|light`, appends `theme=<id>&mode=<mode>` after `#s=N`, and writes to `<label>/<slug>--<theme>--<mode>/`; a missing mode uses the registry's `defaultMode`. `frames.json` lists the six showcase captures. New `themes-run.mjs` loops the registry (loaded through `tsx`) and writes `.snapshots/themes.html`: one block per theme, Dark and Light rows, six chapter thumbnails per row; `--only <id>` runs one theme. Root script `snap:themes`.
+- README gained the theme catalogue table, the "every theme has dark and light" sentence and the inspired-by framing. The kit README lists the new files, the catalogue, the 0.6 em rule and `borderWidth`/`tintedSurface`.
+
+**Fonts**
+
+- `shadcn`, `tokyo-night`: Inter + JetBrains Mono.
+- `notebook`: **Google Sans** + Roboto Mono. Google Sans is offered by Google Fonts (both the CSS2 API and `fonts.google.com/specimen/Google+Sans` serve it), so the DM Sans fallback was not needed; the stack keeps DM Sans as the fallback.
+- `terminal-green`: JetBrains Mono for sans, mono and display.
+- `paper-editorial`: Fraunces (display) + Inter + JetBrains Mono.
+- `blueprint`: IBM Plex Sans + IBM Plex Mono.
+- Mono advance measured in Chromium with `measureText('MMMMMMMMMM').width / 10 / fontSize`: Roboto Mono 0.6001, JetBrains Mono 0.6000, IBM Plex Mono 0.6000 (all within 0.01 of 0.6).
+
+**Final accent hexes after contrast tuning**
+
+No accent needed a lightness change: all 14 variants passed the first registry run. The final values are exactly the prompt tables.
+
+| Theme / mode            | lime      | pink      | cyan      | yellow    | violet    | orange    | red       |
+| ----------------------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |
+| `neubrutal` dark        | `#C6FF3D` | `#FF4D8D` | `#3DE3FF` | `#FFD23D` | `#9B7BFF` | `#FF8A3D` | `#FF4D4D` |
+| `neubrutal` light       | `#15803D` | `#BE185D` | `#0E7490` | `#A16207` | `#6D28D9` | `#C2410C` | `#B91C1C` |
+| `shadcn` dark           | `#4ADE80` | `#F472B6` | `#22D3EE` | `#FACC15` | `#A78BFA` | `#FB923C` | `#F87171` |
+| `shadcn` light          | `#15803D` | `#BE185D` | `#0E7490` | `#A16207` | `#6D28D9` | `#C2410C` | `#B91C1C` |
+| `notebook` light        | `#188038` | `#C2185B` | `#00658B` | `#B06000` | `#6750A4` | `#B04E00` | `#B3261E` |
+| `notebook` dark         | `#81C995` | `#FF8BCB` | `#78D9EC` | `#FDD663` | `#D0BCFF` | `#FCAD70` | `#F28B82` |
+| `tokyo-night` dark      | `#9ECE6A` | `#F7768E` | `#7DCFFF` | `#E0AF68` | `#BB9AF7` | `#FF9E64` | `#DB4B4B` |
+| `tokyo-night` light     | `#4F7A1F` | `#B0305F` | `#0F6E8C` | `#8C6C3E` | `#7847BD` | `#B15C00` | `#C64343` |
+| `terminal-green` dark   | `#39FF6A` | `#FF5FA2` | `#37E6D0` | `#E6E637` | `#9D8CFF` | `#FFA640` | `#FF4B4B` |
+| `terminal-green` light  | `#1B7F3A` | `#B3246A` | `#0E7C72` | `#8A6A00` | `#5B3FB0` | `#B14F00` | `#B3261E` |
+| `paper-editorial` light | `#2F6B3A` | `#A8305E` | `#1F5F7A` | `#8A6410` | `#5B3E91` | `#B2561A` | `#B5341F` |
+| `paper-editorial` dark  | `#8FC98F` | `#E88AAE` | `#7CC4DE` | `#E0B656` | `#B79CEB` | `#EE9A5C` | `#E8643F` |
+| `blueprint` dark        | `#B8F2A0` | `#FF9EBB` | `#7BDFF2` | `#FFE066` | `#B8A1FF` | `#FFB26B` | `#FF7F7F` |
+| `blueprint` light       | `#1E7A3C` | `#B3246A` | `#00708F` | `#8F6200` | `#5B3FB0` | `#B14A00` | `#B3261E` |
+
+**Kit fixes found in the visual review**
+
+- Added `borderWidth(base)` and used it for the HUD logo, the outline caption bar/label and the code-panel title divider. Themes with `borderWidthScale: 0` (notebook) are now genuinely borderless; shadcn gets its hairline; neubrutal dark keeps the exact 3.5/4/1.5 px values, so the golden look is unchanged.
+- Added `tintedSurface(accent)`: returns `colors.surf` when the elevation shows the accent (hard/glow) and a 22 % accent tint for soft/flat themes. `TreeView` and `miniTree` use it so internal vs leaf nodes stay distinguishable when a theme has no hard shadow. Neubrutal dark is unchanged.
+- `TreeView.unmark()` and `miniTree.clearStroke()` now restore `colors.border` at the theme's `borderWidth(3.5)` instead of always `colors.ink` at 3.5. Notebook no longer grows outlines after a highlight.
+- The HUD section chip text uses `colors.onBrand` (it sits on a `brand` fill); it was `colors.onAccent`. Identical for neubrutal dark; correct for light variants.
+
+**Decisions / gotchas**
+
+- The root `snap:themes` script is `pnpm --filter @motion-studio/snapshots exec node --import tsx themes-run.mjs`. The prompt's literal `node --import tsx tools/snapshots/themes-run.mjs` cannot resolve `tsx` from the workspace root under pnpm's isolated `node_modules` (verified: `ERR_MODULE_NOT_FOUND`). The filtered form runs with the snapshots package's cwd, where `tsx` resolves, and `pnpm snap:themes` is still the public command.
+- `capture.mjs` now accepts any kebab-case label (needed for `themes`), not only `baseline`/`current`. The existing scripts are unchanged.
+- The theme sheet and PNGs live under `.snapshots/`, which is git-ignored; only the runner and `frames.json` are committed.
+- `theme-showcase` is a real studio project and `sync-generated.mjs` will include it in `lessons.json`, but it has no MDX page, so it does not appear on the docs site.
+- `themes/shadows.ts` moved to `theme/shadows.ts`. It is a design-token helper, not a theme; the acceptance grep `ls packages/video-kit/src/themes/*.ts | grep -vE ... | wc -l` now returns the intended 7. No rendering changed.
+- Chapter timings (estimated from the explicit animation durations): TITLE ~6.2 s, PALETTE ~6.4 s, COMPONENTS ~6.4 s, CODE ~6.2 s, TREE ~8.7 s, HUD ~7.9 s. The TREE chapter uses `IndexTree(3)` with keys 10/20/5 (one root leaf, no overflow), so `playInsert` does not hit its fixed 1.5 s overflow/new-root waits; the split version ran ~13 s and was over the 6-9 s target.
+- Full baseline compare: **58/58 PASS**. Two frames needed a paused recapture at the stable side of a fade: `s11_t52` (known since step 07) at frame 1561, and `s4_t40` at frame 1206. The latter is new: `s4_t40` lands inside the 0.4 s legend/demo fade that starts section 05; the baseline was captured at the stable end, so frames 1206+ match at 0.000% while frame 1200 is mid-fade (0.718%). Both files keep their original names in `.snapshots/current`.
+
+## Theme issues in existing lessons
+
+Four looks smoke-tested: `neubrutal` light, `notebook` light, `notebook` dark and `tokyo-night` light, on `db-indexing` `#s=5`, `#s=9`, `#s=13` and `db-transactions` `#s=3`. Screenshots are in `.snapshots/_smoke/` (git-ignored). The kit components (HUD, caption styles, tree nodes/links, chips, legends) held up in all four looks. The defects below come from scene-local code, so they are listed, not fixed here.
+
+- **`db-transactions` section 03 (ACID), light modes (seen in `notebook` light and `tokyo-night` light)**: `04-acid.tsx:240` dims the inactive A/I/D cards with `opacity(0.4)`. On a light page the pale tinted fills plus the low opacity make the big letters, the descriptions and the `UPDATE 1` / `UPDATE 2` / `ROLLBACK: NOTHING APPLIED` pills nearly invisible; `UPDATE 1` is pale grey on pale grey. The active C card is fine. Fix in `04-acid.tsx` by dimming through `colors.mute`/`colors.surf2` or a lower-contrast surface instead of whole-card opacity.
+- **`db-transactions` section 03 (ACID), borderless/flat themes**: the local card markup uses `stroke={colors.ink}` with fixed `lineWidth` 3/4/5 (`04-acid.tsx:113-125`), so `notebook` (`borderWidthScale: 0`) still gets outlines on the ACID cards and the big letters. The theme's no-outline intent is not honoured. Fix locally with `borderWidth(...)` or `boxStyle(...)`, not in the kit.
+- **`db-indexing` sections 05/09/13, leaf highlights in borderless themes**: the highlight code animates `stroke`/`lineWidth` directly (for example the orange 6 px border on the selected secondary leaf in section 13). It is readable and deliberately marks the selection, but it is the only outline in `notebook` and does not follow `borderWidthScale`. Listed as a scene-local inconsistency, not fixed.
+- **Not defects**: the notebook soft shadows and the tokyo-night flat surfaces correctly remove the hard colour shadows from the tree/rule rows; the number badges, chips and legends still carry the accents. Caption bars, HUD pills and the seven-accent legend are readable in all four looks. The section 5 rule rows and the section 13 leaves keep their semantic tints after the `tintedSurface` kit fix.
+
+**Checks (step 14)**
+
+- `pnpm check` -> exit 0: typecheck (studio, video-kit, docs), ESLint 0 errors / 69 warnings, tests (docs 5/5, video-kit 77/77, tools/scripts 5/5), Prettier clean.
+- `pnpm --filter @motion-studio/video-kit exec vitest run src/themes/registry.test.ts` -> **14/14** theme x mode cases pass.
+- `ls packages/video-kit/src/themes/*.ts | grep -vE "test|types|utils|active|registry|index" | wc -l` -> **7**.
+- `pnpm snap:themes` -> 14 looks x 6 chapters = **84 frames**; `.snapshots/themes.html` has **7 theme blocks x 2 rows x 6 thumbnails**, 0 missing. All 7 blocks and full-size frames in both modes inspected.
+- `pnpm snap:compare` -> **58/58 PASS** (max 0.361% on `s10_t52`; everything else <= 0.229%). Boundary frames after paused recaptures: `s11_t52` at frame 1561 (0.001%) and `s4_t40` at frame 1206 (0.000%).
+- Existing-lesson smoke: 4 looks x 4 frames = **16/16** screenshots, no browser errors; the defects are listed above.
+- The `theme-showcase` `.meta` files are committed. The sheet and smoke PNGs stay under `.snapshots/` (ignored).
+
 ## Summary
 
 Every commit from `git log --oneline --reverse`, grouped by step.
@@ -734,6 +811,7 @@ Every commit from `git log --oneline --reverse`, grouped by step.
 | 11   | player, chapters and build pipeline      | `201db8f feat(docs): embed motion canvas player with chapters and build pipeline`                                                                                                                               |
 | 12   | lint, generator, production docs, README | `b043a26`, `8d2ac86`, `85c582c`, `7bbc5fc`, `5cdae08`, plus the commit that adds this summary (`git log -1`)                                                                                                    |
 | 13   | theme system core                        | `3d667c5 test(video-kit): freeze the current neubrutal look as golden values`, `a181920 test(snapshots): add quick six-frame capture and compare subset`, plus the commit that adds this section (`git log -1`) |
+| 14   | theme catalogue and showcase             | `feat(video-kit): add six themes with dark and light variants`, `feat(video-kit): add theme-showcase lesson`, `feat(tools): add per-look snapshot runner and contact sheet`                                     |
 
 ### Tech debt
 
@@ -748,10 +826,11 @@ Every commit from `git log --oneline --reverse`, grouped by step.
 - Docs build prints two cosmetic Fumadocs CSS warnings (`::highlight(fd-search)`) and the `node:fs/promises` browser-externalization warning from `fumadocs-mdx`. The build and the page work.
 - `new-lesson` requires a course folder with `meta.json`; it does not create a new course. `--chapters` only changes the skeleton, not the docs `###` note count after editing.
 - The MP4 render is manual in the editor; there is no CI job that renders or uploads a video.
-- `pnpm snap:quick` covers six of the 58 baseline frames. The full 40+18 compare is intentionally not run in steps 13-16 except as a fallback when a quick failure is unclear.
+- `pnpm snap:quick` covers six of the 58 baseline frames. Step 14 ran the full 58-frame compare (58/58 PASS); later steps can use the quick subset unless a kit change touches more components.
 - The two non-palette hexes in the old scenes are now `colors.pink` (`#FF5C7A`) and `colors.violet` (`#B7A0FF`); those two frames shift slightly. Exact parity needs a theme slot if it matters.
 - `colors` is a Proxy over an empty target, so `Object.keys(colors)` is empty. Use `getTheme().colors` or `themes` when enumeration is needed.
 - `apps/docs/src/generated/palette.json` is stale until step 15: the sync script warns and keeps the last file instead of regenerating it from the Proxy.
+- The `db-transactions` ACID inactive cards use scene-local `opacity(0.4)` and fixed strokes; they lose contrast in light themes and ignore `borderWidthScale` (see `## Theme issues in existing lessons`).
 
 ### Candidates for the kit
 
