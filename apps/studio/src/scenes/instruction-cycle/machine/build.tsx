@@ -19,6 +19,7 @@ import {
   tintedSurface,
   type CpuState,
   type InstructionTrace,
+  type Lamp,
   type MemoryPanel,
   type MicroStep,
   type Phase,
@@ -61,7 +62,7 @@ export interface Machine {
   banner: {set(chipText: string, color: string, line: string): ThreadGenerator};
   tick: {set(n: number): void};
   state: CpuState;
-  sync(state: CpuState, opts?: {memory?: boolean; decoded?: boolean}): void;
+  sync(state: CpuState, opts?: {memory?: boolean; decoded?: boolean; keepTicks?: boolean}): void;
   play(step: MicroStep, speed: Speed): ThreadGenerator;
   playInstruction(trace: InstructionTrace, speed: Speed): ThreadGenerator;
   runAll(traces: readonly InstructionTrace[], speed: (index: number) => Speed): ThreadGenerator;
@@ -76,6 +77,12 @@ export interface Machine {
     banner: Rect;
     tick: Rect;
     pcMarker: Line;
+    opcodeBracket: Line;
+    operandBracket: Line;
+    opcodeLabel: Txt;
+    operandLabel: Txt;
+    decodeHint: Txt;
+    signals: {READ: Lamp; WRITE: Lamp; ADD: Lamp; SUB: Lamp};
   };
 }
 
@@ -553,7 +560,7 @@ export function buildMachine(view: View2D, options: BuildMachineOptions): Machin
     operandLabel().opacity(on ? 1 : 0);
   };
 
-  const sync = (next: CpuState, opts: {memory?: boolean; decoded?: boolean} = {}): void => {
+  const sync = (next: CpuState, opts: {memory?: boolean; decoded?: boolean; keepTicks?: boolean} = {}): void => {
     state = next;
     setRegister(regs.PC, next.pc, String(next.pc));
     setRegister(regs.MAR, next.mar, String(next.mar));
@@ -561,8 +568,10 @@ export function buildMachine(view: View2D, options: BuildMachineOptions): Machin
     setRegister(regs.IR, next.ir, opts.decoded ? disassemble(next.ir) : '');
     setRegister(regs.ACC, next.acc, String(next.acc));
     setRegister(regs.Z, next.z ? 1 : 0);
-    tickCount = 0;
-    tickText().text('TICK 0');
+    if (!opts.keepTicks) {
+      tickCount = 0;
+      tickText().text('TICK 0');
+    }
     aluOp().text('—');
     decoderLamps.forEach(decoder => decoder.lamp.setNow(false));
     clearSignals();
@@ -723,6 +732,12 @@ export function buildMachine(view: View2D, options: BuildMachineOptions): Machin
       banner: bannerNode,
       tick: tickNode,
       pcMarker: marker,
+      opcodeBracket: opcodeBracket(),
+      operandBracket: operandBracket(),
+      opcodeLabel: opcodeLabel(),
+      operandLabel: operandLabel(),
+      decodeHint: decodeHint(),
+      signals,
     },
   };
 }

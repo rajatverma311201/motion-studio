@@ -54,10 +54,15 @@
   "instruction-cycle": {
     "sectionAware": true,
     "captures": [
-      {"section": 1, "times": [12, 60]},
-      {"section": 2, "times": [60, 84]},
-      {"section": 3, "times": [4, 36]},
-      {"section": 4, "times": [12, 70]}
+      {"section": 1, "times": [60]},
+      {"section": 2, "times": [84]},
+      {"section": 3, "times": [36]},
+      {"section": 4, "times": [70]},
+      {"section": 5, "times": [8]},
+      {"section": 6, "times": [50, 68]},
+      {"section": 7, "times": [52]},
+      {"section": 8, "times": [30, 78]},
+      {"section": 9, "times": [33]}
     ]
   }
 }
