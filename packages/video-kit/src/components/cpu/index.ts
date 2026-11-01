@@ -6,7 +6,15 @@ export {
   type RegisterBoxOptions,
   type WriteRegisterOptions,
 } from './register-box';
-export {memoryPanel, highlightRow, setCell, writeCell, type MemoryPanel, type MemoryPanelOptions} from './memory-panel';
+export {
+  memoryPanel,
+  highlightRow,
+  setCell,
+  setRowTint,
+  writeCell,
+  type MemoryPanel,
+  type MemoryPanelOptions,
+} from './memory-panel';
 export {memoryRowY} from './memory-geometry';
 export {lamp, lampOn, type Lamp, type LampOptions} from './lamp';
 export {valuePacket, flyAlong} from './value-packet';

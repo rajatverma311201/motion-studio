@@ -119,7 +119,7 @@ export function memoryPanel(options: MemoryPanelOptions): MemoryPanel {
       letterSpacing={1}
       fill={colors.mute}
     />,
-  ]);
+  ]).flat();
 
   const node = (
     <Rect x={x} y={y} width={w} height={h} radius={radius(18)} fill={colors.surf} {...boxStyle(accent, 8, 4)}>
@@ -203,6 +203,19 @@ export function* highlightRow(panel: MemoryPanel, i: number, color: string, on: 
   if (!highlight) return;
   highlight.fill(withAlpha(color, 0.24));
   yield* highlight.opacity(on ? 1 : 0, 0.2);
+}
+
+/**
+ * Set a row tint with no animation, for jumping the machine to a known state.
+ *
+ * @example
+ * setRowTint(mem, 4, colors.yellow, true);
+ */
+export function setRowTint(panel: MemoryPanel, i: number, color: string, on: boolean): void {
+  const highlight = highlightsByPanel.get(panel)?.[i];
+  if (!highlight) return;
+  highlight.fill(withAlpha(color, 0.24));
+  highlight.opacity(on ? 1 : 0);
 }
 
 /** Re-export the lamp helper so a scene can drive the memory header directly. */

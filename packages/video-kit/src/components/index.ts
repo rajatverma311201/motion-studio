@@ -35,6 +35,7 @@ export {
   registerBox,
   setCell,
   setRegister,
+  setRowTint,
   valuePacket,
   writeCell,
   writeRegister,
