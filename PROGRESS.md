@@ -16,6 +16,8 @@ Repo layout (six parts):
 Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 
 - Docs gallery at `/themes`: all 14 video looks, a live preview of `theme-showcase`, and copy-ready command, `chapters.json` and `video.config.json` snippets.
+- Course `Computer Organization` in the docs, with an overview, the `instruction-cycle` lesson and a glossary. The lesson has ten chapters; chapters 0-4 (intro, memory, CPU parts, loading, fetch) are animated, chapters 5-9 are still placeholders.
+- Instruction-cycle measured chapter lengths so far: 22.7 s intro, 91.5 s memory, 107.8 s CPU parts, 68.8 s loading, 80.5 s fetch (targets 25 / 95 / 110 / 70 / 80, all within ±25 %).
 
 Commands:
 
@@ -44,6 +46,8 @@ Commands:
 - `colors` is a Proxy over an empty target; enumerate with `getTheme().colors` or `themes`, not `Object.keys(colors)` (step 13).
 - Fonts must load at module scope through `loadFonts()`; otherwise Motion Canvas caches fallback metrics and the intro title shifts (step 07).
 - The neubrutalist identity belongs to the videos only; `apps/docs` keeps the stock Fumadocs look with its light/dark toggle (step 16).
+- The toy ISA is fixed in `packages/video-kit/src/cpu`; the tests freeze its micro-step ids, texts and traces. The lesson animates the model, never re-implements the rules (step 20).
+- The `instruction-cycle` machine (`build.tsx`, `play.ts`) is lesson code for now. A generic version could move into the kit once a second architecture lesson needs it (step 20).
 
 ## Tech debt and open items
 
@@ -78,6 +82,9 @@ Commands:
 - The MP4 render is manual in the editor; no CI job renders or uploads a video (step 16).
 - Two non-palette hexes map to `colors.pink`/`colors.violet`; two frames shift slightly, exact parity needs a theme slot (step 16).
 - The docs player sticks at `top-0` because Fumadocs 16 has no desktop top navbar; if one appears, use `top-16` and re-check the TOC (step 16).
+- `instruction-cycle` chapters 5-9 are placeholder sections until phase 3 of step 20.
+- The toy flag model is simplified: `LOAD` also sets Z, while real CPUs usually set flags from arithmetic or compare instructions (step 20).
+- The `Machine` helpers (`build.tsx`, `play.ts`) are candidates for the kit; they compose the kit primitives but are specific to this lesson (step 20).
 
 ## Blocked
 

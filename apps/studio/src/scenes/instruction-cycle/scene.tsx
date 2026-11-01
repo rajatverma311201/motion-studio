@@ -1,10 +1,10 @@
 import {defineLesson, loadFonts, type ChaptersFile} from '@motion-studio/video-kit';
 import chapters from './chapters.json';
 import {introSection} from './sections/01-intro';
-import {chapter2Section} from './sections/02-chapter-2';
-import {chapter3Section} from './sections/03-chapter-3';
-import {chapter4Section} from './sections/04-chapter-4';
-import {chapter5Section} from './sections/05-chapter-5';
+import {memorySection} from './sections/02-memory';
+import {cpuPartsSection} from './sections/03-cpu-parts';
+import {loadingSection} from './sections/04-loading';
+import {fetchSection} from './sections/05-fetch';
 import {chapter6Section} from './sections/06-chapter-6';
 import {chapter7Section} from './sections/07-chapter-7';
 import {chapter8Section} from './sections/08-chapter-8';
@@ -17,14 +17,18 @@ export default defineLesson({
   chapters: chapters as ChaptersFile,
   sections: [
     introSection,
-    chapter2Section,
-    chapter3Section,
-    chapter4Section,
-    chapter5Section,
+    memorySection,
+    cpuPartsSection,
+    loadingSection,
+    fetchSection,
     chapter6Section,
     chapter7Section,
     chapter8Section,
     chapter9Section,
     chapter10Section,
   ],
+  hud: {
+    sectionChipX: -470,
+    pills: {startX: 500, step: 42, width: 32, activeWidth: 58},
+  },
 });

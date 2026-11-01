@@ -50,5 +50,14 @@
       {"section": 4, "times": [7]},
       {"section": 5, "times": [5]}
     ]
+  },
+  "instruction-cycle": {
+    "sectionAware": true,
+    "captures": [
+      {"section": 1, "times": [12, 60]},
+      {"section": 2, "times": [60, 84]},
+      {"section": 3, "times": [4, 36]},
+      {"section": 4, "times": [12, 70]}
+    ]
   }
 }
