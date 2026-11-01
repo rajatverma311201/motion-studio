@@ -1,9 +1,11 @@
 ---
-title: 'The Instruction Cycle'
-description: 'TODO: one sentence about this lesson.'
+title: 'The Instruction Cycle: fetch, decode, execute'
+description: 'How a tiny CPU loads a program into memory and runs it one instruction at a time: fetch, decode, execute, repeat.'
 video: instruction-cycle
-status: outline
+status: animated
 duration: TBD
+level: beginner
+tags: [computer-organization, cpu, instruction-cycle, registers, fetch-decode-execute]
 ---
 
 <LessonVideo slug="instruction-cycle" />
@@ -18,91 +20,311 @@ duration: TBD
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Every program you run, from a calculator to a game, is a long list of tiny instructions.
+- The CPU does not understand the whole program at once. It follows one instruction at a time.
+- It uses one simple loop: fetch the next instruction, decode what it means, execute it, then repeat.
+- This video builds a tiny CPU you can hold in your head: 16 memory boxes, five registers and a flag.
+- By the end you can trace a program by hand, register by register.
 
 </VoiceoverNotes>
 
-### 02 · CHAPTER 2
+Every program is a list of tiny steps, and one loop runs them: fetch, decode, execute.
+
+### 02 · MEMORY
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Memory is a long row of boxes, and each box has a number called its address.
+- Our toy memory has 16 boxes, so an address needs 4 bits (2⁴ = 16). Real memory has billions of boxes.
+- Each box holds 8 bits, one byte. A byte is just eight on/off switches.
+- The same byte can be a number or an instruction. The bits alone do not say which; how they are used does.
+- Our instructions are 8 bits: the top 4 bits are the opcode (what to do), the bottom 4 are the operand (usually an address).
+- There are seven instructions: HALT, LOAD, ADD, SUB, STORE, JUMP and JZ.
+- A compiler turns code like `c = a + b` into these instructions. The program and its data end up side by side in memory. This is the stored-program idea.
 
 </VoiceoverNotes>
 
-### 03 · CHAPTER 3
+Memory is numbered boxes of bytes; the same bits can be a number or an instruction, so programs live in memory next to their data.
+
+| Cells | What lives there in the video     |
+| ----- | --------------------------------- |
+| 0–3   | reserved for the operating system |
+| 4–7   | the program code                  |
+| 12–14 | the data the program uses         |
+
+```text
+0001 1100
+---- ----
+op   operand
+LOAD 12
+```
+
+### 03 · CPU PARTS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- The CPU is a fast but simple worker. It can only do tiny steps, very quickly.
+- Registers are the CPU's own tiny storage, much faster than memory.
+- PC holds the address of the next instruction. Think of a finger on the current line of a recipe.
+- MAR holds the address we want to open. MDR holds the data that comes out of, or goes into, that box.
+- IR holds the instruction we are working on right now. ACC holds the working value. Z remembers whether the result was zero.
+- The ALU is the calculator. The control unit is the manager: it reads the instruction and sends signals.
+- Buses are shared wires: the address bus says which box, the data bus carries the value, control lines say read or write.
+- Registers are fastest, memory is slower, disk is slowest. Registers and RAM forget everything when the power goes off.
+- Real CPUs have many more registers. Ours has five and a flag so you can watch every one.
 
 </VoiceoverNotes>
 
-### 04 · CHAPTER 4
+Registers, the ALU, the control unit and the buses are the parts the cycle moves values between.
+
+| Register | Size   | Job                                     |
+| -------- | ------ | --------------------------------------- |
+| PC       | 4 bits | address of the next instruction         |
+| MAR      | 4 bits | address of the box to open              |
+| MDR      | 8 bits | data read from, or written to, that box |
+| IR       | 8 bits | the instruction in hand                 |
+| ACC      | 8 bits | the working value                       |
+| Z        | 1 bit  | 1 when the last result was zero         |
+
+### 04 · LOADING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- On disk, a program is just a file of bytes: the code and its starting data.
+- The CPU can only run what is in memory, so something has to copy the program there.
+- That is the operating system's loader. It picks free memory: here boxes 4 to 7 for code and 12 to 14 for data.
+- Then it sets the PC to the address of the first instruction. That address is the entry point.
+- Loading is only copying. Running starts when the PC is set and the CPU begins its loop.
+- Real systems use virtual memory and load pieces on demand, and at power-on the PC starts at a fixed address where the firmware lives. The idea is the same.
 
 </VoiceoverNotes>
 
-### 05 · CHAPTER 5
+The loader copies a program from disk into memory and points the PC at its first instruction.
+
+| Address | Byte       | Meaning          |
+| ------- | ---------- | ---------------- |
+| 4       | `00011100` | `LOAD 12`        |
+| 5       | `00101101` | `ADD 13`         |
+| 6       | `01001110` | `STORE 14`       |
+| 7       | `00000000` | `HALT`           |
+| 12      | `00000101` | data: 5          |
+| 13      | `00000011` | data: 3          |
+| 14      | `00000000` | data: the result |
+
+After loading, `PC = 4`: the address of the first instruction.
+
+### 05 · FETCH
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Fetch means getting the next instruction from memory into the CPU.
+- Step one: copy the PC into MAR and put it on the address bus.
+- Step two: the control unit sends READ. Memory puts the byte on the data bus and it lands in MDR. Memory keeps its own copy.
+- Step three: copy MDR into IR.
+- Step four: add 1 to the PC, so it already points at the next instruction. That is why the PC is one ahead while an instruction runs.
+- Fetch is identical for every instruction. It takes four ticks in our toy.
 
 </VoiceoverNotes>
 
-### 06 · CHAPTER 6
+Fetch copies the next instruction from memory into IR and moves the PC on.
+
+```text
+F1  MAR ← PC
+F2  MDR ← M[MAR]     (READ)
+F3  IR  ← MDR
+F4  PC  ← PC + 1
+```
+
+### 06 · DECODE
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Decode means working out what the instruction in IR means.
+- Split the byte: the opcode is the top 4 bits, the operand is the bottom 4.
+- The control unit has a decoder: each opcode switches on exactly one line. 0001 switches on LOAD.
+- That line turns on the signals the execute phase needs.
+- A different opcode switches on a different line. An opcode nobody defined is an illegal instruction and the CPU stops with an error.
+- Real decoders are circuits of logic gates, not a lookup in software, but the effect is the same.
 
 </VoiceoverNotes>
 
-### 07 · CHAPTER 7
+Decode splits the instruction into opcode and operand and lights the right control signal.
+
+```text
+IR = 0001 1100
+     ---- ----
+     LOAD   12
+```
+
+### 07 · EXECUTE
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Execute does the real work, and it is the only phase that differs between instructions.
+- LOAD 12: MAR gets 12, memory is read into MDR, MDR is copied into ACC, and Z is updated.
+- ADD 13: the same start, then ACC and MDR go into the ALU and the sum goes back into ACC.
+- STORE 14: the other direction. ACC goes to MDR, then MDR is written into box 14.
+- A read copies a value out of memory and changes nothing. A write replaces what was in the box.
+- In the video we skip the fetch and decode for ADD and STORE to save time. They happen exactly as before.
 
 </VoiceoverNotes>
 
-### 08 · CHAPTER 8
+Execute does the work; it is the only phase that differs between instructions.
+
+| Instruction | Execute steps                                  |
+| ----------- | ---------------------------------------------- |
+| `LOAD 12`   | `MAR ← 12` · `MDR ← M[12]` · `ACC ← MDR`       |
+| `ADD 13`    | `MAR ← 13` · `MDR ← M[13]` · `ACC ← ACC + MDR` |
+| `STORE 14`  | `MAR ← 14` · `MDR ← ACC` · `M[14] ← MDR`       |
+
+### 08 · FULL RUN
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Now watch the whole program with no pauses: LOAD, ADD, STORE, HALT.
+- The PC walks 4, 5, 6, 7 because every fetch adds 1.
+- ACC goes 0, then 5, then 8. Box 14 goes from 0 to 8. That is 5 + 3.
+- HALT stops the clock.
+- That is 30 ticks for four instructions. A modern CPU makes billions of ticks every second.
+- This is a toy. Real instructions have different lengths and take different times, and the phases overlap.
 
 </VoiceoverNotes>
 
-### 09 · CHAPTER 9
+Running the whole program shows the rhythm: fetch, decode, execute, repeat, until HALT.
+
+| Final PC | Final ACC | Final M[14] | Final Z | Clock ticks |
+| -------- | --------- | ----------- | ------- | ----------- |
+| 8        | 8         | 8           | 0       | 30          |
+
+### 09 · JUMPS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Normally the PC just goes up by one. A jump overwrites it.
+- JUMP a always sets the PC to a. JZ a sets it only if Z is 1.
+- A loop is a jump backwards. An if is a jump forwards over the code you skip.
+- The countdown is: LOAD n, JZ end, SUB 1, STORE n, JUMP top.
+- In our toy, LOAD also sets Z. Real CPUs usually set flags from arithmetic or compare instructions.
+- Every while, for and if in your code ends up as jumps like these.
 
 </VoiceoverNotes>
 
-### 10 · CHAPTER 10
+A jump overwrites the PC, and that is how loops and ifs work.
+
+| Address | Bits       | Instruction |
+| ------- | ---------- | ----------- |
+| 4       | `00011101` | `LOAD 13`   |
+| 5       | `01101001` | `JZ 9`      |
+| 6       | `00111110` | `SUB 14`    |
+| 7       | `01001101` | `STORE 13`  |
+| 8       | `01010100` | `JUMP 4`    |
+| 9       | `00000000` | `HALT`      |
+
+<Callout type="info" title="Toy CPU note">
+  In our toy CPU, `LOAD` also sets Z. Real CPUs usually set flags from arithmetic or compare instructions.
+</Callout>
+
+### 10 · RECAP
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- One loop runs every program: fetch, decode, execute, repeat.
+- Fetch: PC to MAR, read memory into MDR, copy to IR, then PC plus 1.
+- Decode: the opcode picks the action, the operand supplies the address or number.
+- Execute: the ALU, memory or the PC does the work.
+- Registers: PC is next, MAR is where, MDR is what, IR is current, ACC is working, Z asks "was it zero?".
+- Real CPUs overlap the phases (pipelining), keep recent data close (caches) and react to events (interrupts). Good follow-up videos.
 
 </VoiceoverNotes>
+
+One loop runs every program; real CPUs speed it up by overlapping the phases.
+
+## Cheat sheet
+
+### Registers
+
+| Name | Size   | Job                                     |
+| ---- | ------ | --------------------------------------- |
+| PC   | 4 bits | address of the next instruction         |
+| MAR  | 4 bits | address of the box to open              |
+| MDR  | 8 bits | data read from, or written to, that box |
+| IR   | 8 bits | the current instruction                 |
+| ACC  | 8 bits | the working value                       |
+| Z    | 1 bit  | 1 when the last result was zero         |
+
+### The cycle
+
+| Phase        | Id  | Transfer                   | Ticks  |
+| ------------ | --- | -------------------------- | ------ |
+| fetch        | F1  | `MAR ← PC`                 |        |
+| fetch        | F2  | `MDR ← M[MAR]` (READ)      |        |
+| fetch        | F3  | `IR ← MDR`                 |        |
+| fetch        | F4  | `PC ← PC + 1`              | 4      |
+| decode       | D1  | `DECODE IR`                | 1      |
+| `LOAD`       | E1  | `MAR ← IR.addr`            |        |
+| `LOAD`       | E2  | `MDR ← M[MAR]`             |        |
+| `LOAD`       | E3  | `ACC ← MDR` (sets Z)       | 3      |
+| `ADD`        | E1  | `MAR ← IR.addr`            |        |
+| `ADD`        | E2  | `MDR ← M[MAR]`             |        |
+| `ADD`        | E3  | `ACC ← ACC + MDR` (sets Z) | 3      |
+| `SUB`        | E1  | `MAR ← IR.addr`            |        |
+| `SUB`        | E2  | `MDR ← M[MAR]`             |        |
+| `SUB`        | E3  | `ACC ← ACC − MDR` (sets Z) | 3      |
+| `STORE`      | E1  | `MAR ← IR.addr`            |        |
+| `STORE`      | E2  | `MDR ← ACC`                |        |
+| `STORE`      | E3  | `M[MAR] ← MDR` (WRITE)     | 3      |
+| `JUMP`       | E1  | `PC ← IR.addr`             | 1      |
+| `JZ`         | E1  | `Z = 1 ?`                  |        |
+| `JZ` (taken) | E2  | `PC ← IR.addr`             | 1 or 2 |
+| `HALT`       | E1  | stop the clock             | 1      |
+
+### The seven instructions
+
+| Opcode | Mnemonic  | Meaning                                |
+| ------ | --------- | -------------------------------------- |
+| `0000` | `HALT`    | stop the clock; the operand is ignored |
+| `0001` | `LOAD a`  | `ACC ← M[a]`, update Z                 |
+| `0010` | `ADD a`   | `ACC ← ACC + M[a]`, update Z           |
+| `0011` | `SUB a`   | `ACC ← ACC − M[a]`, update Z           |
+| `0100` | `STORE a` | `M[a] ← ACC`                           |
+| `0101` | `JUMP a`  | `PC ← a`                               |
+| `0110` | `JZ a`    | if `Z = 1`, `PC ← a`                   |
+
+## Try it yourself
+
+### Question 1
+
+Memory holds `M[4] = LOAD 12`, `M[5] = SUB 13`, `M[6] = STORE 14`, `M[7] = HALT`, `M[12] = 9`, `M[13] = 4`. Start with `PC = 4`. What are `M[14]`, `PC`, `ACC` and `Z` at the end?
+
+<Callout type="info" title="Answer">
+  `M[14] = 5` (`00000101`), `PC = 8`, `ACC = 5`, `Z = 0`. The program computes 9 − 4 and stores 5.
+</Callout>
+
+### Question 2
+
+Write the byte for `ADD 9`.
+
+<Callout type="info" title="Answer">
+  The opcode for ADD is `0010` and the operand 9 is `1001`, so the byte is `00101001` (hex `29`).
+</Callout>
+
+### Question 3
+
+What happens if the PC is wrongly set to 12 (a data cell holding `00000101`) in the first program?
+
+<Callout type="info" title="Answer">
+  The CPU fetches the data as an instruction. The opcode `0000` is `HALT`, so it stops at once. The bits were valid;
+  their meaning was not.
+</Callout>
+
+### Question 4
+
+Why is the PC already 5 while `LOAD 12` (at address 4) is executing?
+
+<Callout type="info" title="Answer">
+  Step F4 adds 1 during fetch, so the PC always points at the next instruction. While the current instruction executes,
+  the PC is already one ahead.
+</Callout>
 
 ## YouTube description
 
