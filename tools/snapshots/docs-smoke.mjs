@@ -184,6 +184,19 @@ try {
     throw new Error(`motion-canvas-player did not appear within ${PLAYER_TIMEOUT / 1000}s`);
   }
 
+  assert(
+    (await lessonPage.locator('[data-lesson-player-sticky] [data-player-controls]').count()) === 1,
+    'player controls are not inside the sticky player',
+  );
+  assert(
+    (await lessonPage.locator('[data-lesson-player-sticky] [data-player-play]').count()) === 1,
+    'lesson page does not show the play/pause button',
+  );
+  assert(
+    (await lessonPage.locator('[data-lesson-player-sticky] [data-player-seek]').count()) === 1,
+    'lesson page does not show the seek bar',
+  );
+
   const body = await lessonPage.locator('body').innerText();
   assert(body.includes(firstChapter), `page does not contain chapter 1 name "${firstChapter}"`);
   assert(body.includes('Renders in:'), 'lesson page does not show the render look line');
@@ -224,6 +237,19 @@ try {
       () => document.querySelector('motion-canvas-player')?.shadowRoot?.querySelector('canvas')?.className ?? 'missing',
     );
     throw new Error(`player did not become ready after chapter navigation (canvas class: ${state})`);
+  }
+
+  try {
+    await lessonPage.waitForFunction(
+      () => {
+        const seek = document.querySelector('[data-player-seek]');
+        return seek !== null && seek.tagName === 'INPUT' && !seek.disabled && Number(seek.getAttribute('max')) > 1;
+      },
+      null,
+      {timeout: 15000},
+    );
+  } catch {
+    throw new Error('player timeline did not attach after chapter navigation');
   }
 
   await lessonPage.waitForFunction(
