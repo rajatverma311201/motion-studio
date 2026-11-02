@@ -1,15 +1,15 @@
 import {defineLesson, loadFonts, type ChaptersFile} from '@motion-studio/video-kit';
 import chapters from './chapters.json';
-import {introSection} from './sections/01-intro';
-import {chapter2Section} from './sections/02-chapter-2';
-import {chapter3Section} from './sections/03-chapter-3';
-import {chapter4Section} from './sections/04-chapter-4';
-import {chapter5Section} from './sections/05-chapter-5';
-import {chapter6Section} from './sections/06-chapter-6';
+import {hookSection} from './sections/01-hook';
+import {partsSection} from './sections/02-parts';
+import {readableSection} from './sections/03-readable';
+import {signatureSection} from './sections/04-signature';
+import {tamperSection} from './sections/05-tamper';
+import {takeawaySection} from './sections/06-takeaway';
 
 loadFonts();
 
 export default defineLesson({
   chapters: chapters as ChaptersFile,
-  sections: [introSection, chapter2Section, chapter3Section, chapter4Section, chapter5Section, chapter6Section],
+  sections: [hookSection, partsSection, readableSection, signatureSection, tamperSection, takeawaySection],
 });
