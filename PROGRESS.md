@@ -19,15 +19,17 @@ Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 - Course `Computer Organization` in the docs, with an overview, the `instruction-cycle` lesson and a glossary. The lesson has ten animated chapters; the page has summary points, per-chapter voiceover notes, a cheat sheet and four practice questions.
 - Instruction-cycle measured chapter lengths: 22.7 s intro, 91.5 s memory, 107.8 s CPU parts, 68.8 s loading, 80.5 s fetch, 50.5 s decode, 103.5 s execute, 60.9 s full run, 123.2 s jumps, 40.2 s recap (targets 25 / 95 / 110 / 70 / 80 / 60 / 120 / 75 / 110 / 45, all within ±25 %).
 - Docs video player: play/pause, restart and a filled seek bar for the selected chapter range; the controls stay visible in the sticky player after a chapter jump.
+- Course `Security Basics` in the docs, with the vertical Short `JWT in 60 Seconds` (1080 × 1920, six chapters, captions only) and a glossary. The player renders Shorts at 9:16 and the tracker shows a `SHORT` badge.
+- Shorts support in the kit: `ChaptersFile.format`, `buildShortHud` with a chapter progress bar, `SHORT_ZONES` / `progressSegments` / `readSeconds` (pure and tested), and the JWT pieces: pure Base64URL and token parsing, fixtures verified against Node's `crypto`, `tokenStrip`, `hmacMachine`, `keyIcon`, `lockIcon`, `stamp` and `slam`.
 
 Commands:
 
 - `pnpm dev` — sync generated data, then the studio bundle watcher and the docs dev server.
 - `pnpm studio` — start the editor; add `--theme <id>` / `--mode dark|light` for this session.
 - `pnpm studio:dev` — start the editor with no flags; the look comes from the lesson and config.
-- `pnpm new:lesson <slug> "<Title>" --course <course>` — scaffold a lesson.
+- `pnpm new:lesson <slug> "<Title>" --course <course> [--format short]` — scaffold a lesson; `short` writes a 1080 × 1920 project meta.
 - `pnpm new:theme <id> "<Name>" --from <theme>` — copy and register a theme.
-- `pnpm status` — print slug, status, duration and YouTube link for every lesson.
+- `pnpm status` — print slug, format (`SHORT`), status, duration and YouTube link for every lesson.
 - `pnpm snap:quick` — capture and compare the six quick frames.
 - `pnpm snap:themes` — two quick chapters × 14 looks; add `-- --only <id>`, `-- --mode dark|light` or `-- --full`.
 - `pnpm check` — typecheck, lint, tests and Prettier check.
@@ -84,10 +86,16 @@ Commands:
 - The MP4 render is manual in the editor; no CI job renders or uploads a video (step 16).
 - Two non-palette hexes map to `colors.pink`/`colors.violet`; two frames shift slightly, exact parity needs a theme slot (step 16).
 - The docs player sticks at `top-0` because Fumadocs 16 has no desktop top navbar; if one appears, use `top-16` and re-check the TOC (step 16).
+- A Short's project `.meta` is written by `new:lesson --format short` with `shared.size` 1080 × 1920. This is the one allowed `.meta` write: the portrait HUD must measure the canvas before the editor first opens the project; afterwards the editor owns the file (step 21).
 - `instruction-cycle` is `status: animated`, `duration: TBD`; the MP4 render, timestamps and voiceover are still to do.
+- `jwt-short` is `status: animated`, `duration: TBD`; the MP4 render, timestamps, voiceover and the phone check of the Shorts safe zones are still to do.
 - The toy flag model is simplified: `LOAD` also sets Z, while real CPUs usually set flags from arithmetic or compare instructions (step 20).
 - The `Machine` helpers (`build.tsx`, `play.ts`) are candidates for the kit; they compose the kit primitives but are specific to this lesson (step 20).
 - The docs player reads the Motion Canvas player's internal `player` property for `requestSeek` and `togglePlayback`; the package exposes no seek API. The smoke test guards it, but re-check after upgrading `@motion-canvas/player`.
+- The Short HUD safe zones are estimates of the YouTube Shorts UI. The layout test keeps content out of them, but check the first render on a phone before publishing (step 21).
+- `tokenStrip` creates one `Txt` per same-colour run per line; a much longer token would need a cheaper renderer. The 187-character fixture is five runs per line at 34 px (step 21).
+- `hmacMachine` always uses the lime tag chip. A red "recomputed" tag is the lesson's comparison chip and INVALID stamp, not a machine option (step 21).
+- The Shorts page appends `#Shorts #JWT #Security` as a visible tag line below `<YoutubeDescription>`; the copy button does not include them (step 21).
 
 ## Blocked
 

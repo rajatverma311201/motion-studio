@@ -1,10 +1,12 @@
 ---
 title: 'JWT in 60 Seconds'
-description: 'TODO: one sentence about this lesson.'
+description: 'A JWT is three dotted parts; the first two are only Base64, so anyone can read them; the signature stops tampering.'
 video: jwt-short
 format: short
-status: outline
+status: animated
 duration: TBD
+level: beginner
+tags: [security, jwt, base64, hmac, shorts]
 ---
 
 <LessonVideo slug="jwt-short" />
@@ -13,62 +15,108 @@ duration: TBD
 
 <SummaryPoints slug="jwt-short" />
 
-## Chapters and voiceover notes
+## Beats and voiceover notes
 
-### 01 · INTRO
-
-<VoiceoverNotes>
-
-- TODO: first thing to say about this chapter
-- TODO: second point
-
-</VoiceoverNotes>
-
-### 02 · CHAPTER 2
+### 01 · HOOK
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Every time you log in, you get handed a long string.
+- Most of the web uses a format called a JSON Web Token, a JWT.
+- It looks random, but it has a precise structure.
 
 </VoiceoverNotes>
 
-### 03 · CHAPTER 3
+### 02 · PARTS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Look for the two dots.
+- They split the token into three parts: header, payload, signature.
+- Each part has its own job.
 
 </VoiceoverNotes>
 
-### 04 · CHAPTER 4
+### 03 · READABLE
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- The header and the payload are JSON text that has been turned into Base64URL.
+- That is encoding, not encryption.
+- Paste any token into a decoder and you can read everything.
+- The payload here says who the user is and that their role is user.
 
 </VoiceoverNotes>
 
-### 05 · CHAPTER 5
+### 04 · SIGNATURE
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- The third part is the signature.
+- The server takes header plus payload, runs HMAC-SHA256 with a secret key only it knows, and the result is the signature.
+- It is a seal on the first two parts.
 
 </VoiceoverNotes>
 
-### 06 · CHAPTER 6
+### 05 · TAMPER
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Suppose an attacker edits the payload to make themselves admin.
+- The seal was made for the old payload.
+- When the server recomputes it, the results differ and the token is rejected.
+- Without the secret key the attacker cannot produce a matching signature.
 
 </VoiceoverNotes>
+
+### 06 · TAKEAWAY
+
+<VoiceoverNotes>
+
+- Signed does not mean secret.
+- Anyone can read a JWT, so never put passwords or private data in it.
+- The signature only tells you it has not been changed.
+
+</VoiceoverNotes>
+
+## The numbers
+
+The demo token is 187 characters. It is signed with `demo-secret-do-not-use`, a demo value; never use it for anything real.
+
+```text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzQyIiwibmFtZSI6IkFzaGEiLCJyb2xlIjoidXNlciIsImlhdCI6MTc2NzIyNTYwMCwiZXhwIjoxNzY3MjI5MjAwfQ.XpQ15Es-zDMCww0SYkNdghfxin0vTSzIGtKylaGqnvI
+```
+
+The header decodes to four lines of JSON, the payload to seven lines:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+```json
+{
+  "sub": "user_42",
+  "name": "Asha",
+  "role": "user",
+  "iat": 1767225600,
+  "exp": 1767229200
+}
+```
+
+`iat` is 2026-01-01T00:00:00Z and `exp` is one hour later. The signature is `base64url(HMAC-SHA256(secret, header + "." + payload))`:
+
+| Signing input                        | HMAC-SHA256 signature (Base64URL)             |
+| ------------------------------------ | --------------------------------------------- |
+| `header.payload` (valid)             | `XpQ15Es-zDMCww0SYkNdghfxin0vTSzIGtKylaGqnvI` |
+| `header.tamperedPayload` (`"admin"`) | `_dyqMnm3m5YdyaMJ9eMfaPALsAVi29-pXUOoWxv_SEk` |
+
+The attacker changes the payload but keeps the old signature. The server recomputes the second row and gets a different value, so the token is rejected.
 
 ## YouTube description
 
 <YoutubeDescription slug="jwt-short" />
+
+Append the tags when you upload: `#Shorts` `#JWT` `#Security`
