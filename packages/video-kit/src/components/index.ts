@@ -2,11 +2,14 @@ export {accountCard, type AccountCard, type AccountCardOptions} from './account-
 export {bulletRow} from './bullet-row';
 export {card} from './card';
 export {
+  base64Visual,
   hmacMachine,
   keyIcon,
   layoutToken,
   lockIcon,
   tokenStrip,
+  type Base64Visual,
+  type Base64VisualOptions,
   type HmacMachine,
   type HmacMachineOptions,
   type HmacRunOptions,
@@ -19,6 +22,31 @@ export {
   type TokenStrip,
   type TokenStripOptions,
 } from './crypto';
+export {
+  compareTable,
+  sequenceDiagram,
+  sequenceLayout,
+  tableLayout,
+  timeBar,
+  timeToX,
+  wrapGrid,
+  type CompareColumn,
+  type CompareRow,
+  type CompareTable,
+  type CompareTableOptions,
+  type SequenceActor,
+  type SequenceDiagram,
+  type SequenceDiagramOptions,
+  type SequenceLayout,
+  type SequenceMessageOptions,
+  type SequenceNoteOptions,
+  type TableLayout,
+  type TableLayoutOptions,
+  type TimeBar,
+  type TimeBarOptions,
+  type TimeMarker,
+  type TimeZone,
+} from './diagrams';
 export {chip, chipText, type ChipOptions} from './chip';
 export {indexLegend} from './legend';
 export {logRow, type LogRowOptions} from './log-row';

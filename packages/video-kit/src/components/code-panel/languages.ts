@@ -1,5 +1,5 @@
 /** Languages understood by {@link tokenize}. */
-export type CodeLanguage = 'sql' | 'java' | 'plan' | 'json';
+export type CodeLanguage = 'sql' | 'java' | 'plan' | 'json' | 'properties' | 'http';
 
 /** Semantic accent key stored in a rule table; resolved through the active theme when tokenizing. */
 export type CodeColor = 'ink' | 'mute' | 'lime' | 'yellow' | 'pink' | 'cyan' | 'violet';
@@ -55,10 +55,39 @@ const JSON_RULES: readonly CodeRule[] = [
   [/^[\s\S]/, 'mute'],
 ];
 
+/** Java `.properties` files: dotted keys, `=`, plain values and `#` comments. */
+const PROPERTIES_RULES: readonly CodeRule[] = [
+  [/^\s+/, 'ink'],
+  [/^[#!].*/, 'mute'],
+  [/^[^=\s#][^=]*?(?=\s*=)/, 'cyan'],
+  [/^=/, 'mute'],
+  [/^https?:\/\/\S+/, 'lime'],
+  [/^-?\d+(?:\.\d+)?/, 'yellow'],
+  [/^\w+/, 'ink'],
+  [/^[\s\S]/, 'mute'],
+];
+
+/** One HTTP request line: method, path, header name, Bearer scheme and a token placeholder. */
+const HTTP_RULES: readonly CodeRule[] = [
+  [/^\s+/, 'ink'],
+  [/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b/, 'pink'],
+  [/^\/[^\s]*/, 'cyan'],
+  [/^HTTP\/[\d.]+/, 'violet'],
+  [/^[A-Z][A-Za-z-]*(?=:)/, 'yellow'],
+  [/^:/, 'mute'],
+  [/^Bearer\b/, 'violet'],
+  [/^<[^>]+>/, 'lime'],
+  [/^-?\d+/, 'yellow'],
+  [/^\w+/, 'ink'],
+  [/^[\s\S]/, 'mute'],
+];
+
 /** Rule tables keyed by language. */
 export const LANGUAGES: Record<CodeLanguage, readonly CodeRule[]> = {
   sql: SQL_RULES,
   java: JAVA_RULES,
   plan: PLAN_RULES,
   json: JSON_RULES,
+  properties: PROPERTIES_RULES,
+  http: HTTP_RULES,
 };

@@ -64,6 +64,36 @@ describe('tokenize', () => {
     expect(tokenize('"exp": null', 'json').find(([text]) => text === 'null')?.[1]).toBe(colors.violet);
   });
 
+  it('colours an alg none header and keeps the line lossless', () => {
+    const line = '  "alg": "none",';
+    const tokens = tokenize(line, 'json');
+    expect(tokens.find(([text]) => text === '"alg"')?.[1]).toBe(colors.pink);
+    expect(tokens.find(([text]) => text === '"none"')?.[1]).toBe(colors.lime);
+    expect(tokens.map(([text]) => text).join('')).toBe(line);
+  });
+
+  it('colours a Quarkus properties file', () => {
+    const line = 'mp.jwt.verify.issuer=https://auth.example.com';
+    const tokens = tokenize(line, 'properties');
+    expect(tokens.find(([text]) => text === 'mp.jwt.verify.issuer')?.[1]).toBe(colors.cyan);
+    expect(tokens.find(([text]) => text === 'https://auth.example.com')?.[1]).toBe(colors.lime);
+    expect(tokens.map(([text]) => text).join('')).toBe(line);
+
+    const comment = '# SmallRye JWT';
+    expect(tokenize(comment, 'properties')[0]).toEqual([comment, colors.mute]);
+  });
+
+  it('colours an HTTP request line with a Bearer header', () => {
+    const line = 'GET /orders  Authorization: Bearer <token>';
+    const tokens = tokenize(line, 'http');
+    expect(tokens.find(([text]) => text === 'GET')?.[1]).toBe(colors.pink);
+    expect(tokens.find(([text]) => text === '/orders')?.[1]).toBe(colors.cyan);
+    expect(tokens.find(([text]) => text === 'Authorization')?.[1]).toBe(colors.yellow);
+    expect(tokens.find(([text]) => text === 'Bearer')?.[1]).toBe(colors.violet);
+    expect(tokens.find(([text]) => text === '<token>')?.[1]).toBe(colors.lime);
+    expect(tokens.map(([text]) => text).join('')).toBe(line);
+  });
+
   it('colours a SQL comment to the end of the line as muted', () => {
     const line = 'SELECT 1; -- count users';
     const tokens = tokenize(line, 'sql');

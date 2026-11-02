@@ -1,6 +1,7 @@
 export {say} from './caption';
 export {buildHud, hudState, type BuildHudOptions, type HudPillLayout, type SectionDef} from './hud';
 export {leave} from './leave';
+export {pillRow, type PillBox, type PillRowOptions} from './pill-row';
 export {readSeconds} from './read-time';
 export {setSection} from './section';
 export {buildShortHud} from './short-hud';

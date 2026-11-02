@@ -4,6 +4,7 @@ import {borderWidth, boxStyle, colors, fonts, loadFonts, radius, SOFT_SHADOW_DAR
 import {getTheme} from '../themes/active-theme';
 import {withAlpha} from '../themes/color-utils';
 import type {ThemeHud} from '../themes/theme-types';
+import {pillRow} from './pill-row';
 
 /** One chapter of a lesson: its HUD label and accent colour. */
 export interface SectionDef {
@@ -158,13 +159,12 @@ export function buildHud(view: View2D, title: string, defs: SectionDef[], option
   view.add(<Node zIndex={-10}>{grid}</Node>);
 
   const n = defs.length;
-  const step = 38;
   const layout = options.pills;
-  const pillX = (i: number): number => (layout ? layout.startX + i * layout.step : 904 - (n - i) * step + step / 2);
+  const pills = pillRow(n, layout);
   hudState.pills = defs.map(
     (_, i) =>
       (
-        <Rect x={pillX(i)} y={-492} width={hudState.pillWidth} height={14} radius={radius(7)} fill={colors.dim} />
+        <Rect x={pills[i].x} y={-492} width={hudState.pillWidth} height={14} radius={radius(7)} fill={colors.dim} />
       ) as Rect,
   );
   const label = captionLabelChip(hud);
