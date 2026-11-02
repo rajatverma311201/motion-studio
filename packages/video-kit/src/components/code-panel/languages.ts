@@ -1,5 +1,5 @@
 /** Languages understood by {@link tokenize}. */
-export type CodeLanguage = 'sql' | 'java' | 'plan';
+export type CodeLanguage = 'sql' | 'java' | 'plan' | 'json';
 
 /** Semantic accent key stored in a rule table; resolved through the active theme when tokenizing. */
 export type CodeColor = 'ink' | 'mute' | 'lime' | 'yellow' | 'pink' | 'cyan' | 'violet';
@@ -44,9 +44,21 @@ const JAVA_RULES: readonly CodeRule[] = [
   [/^[\s\S]/, 'mute'],
 ];
 
+/** JSON claims. A key is a string followed by a colon, so it is painted differently from a value. */
+const JSON_RULES: readonly CodeRule[] = [
+  [/^\s+/, 'ink'],
+  [/^"(?:[^"\\]|\\.)*"(?=\s*:)/, 'pink'],
+  [/^"(?:[^"\\]|\\.)*"/, 'lime'],
+  [/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/, 'yellow'],
+  [/^(true|false|null)\b/, 'violet'],
+  [/^[{}[\],:]/, 'mute'],
+  [/^[\s\S]/, 'mute'],
+];
+
 /** Rule tables keyed by language. */
 export const LANGUAGES: Record<CodeLanguage, readonly CodeRule[]> = {
   sql: SQL_RULES,
   java: JAVA_RULES,
   plan: PLAN_RULES,
+  json: JSON_RULES,
 };

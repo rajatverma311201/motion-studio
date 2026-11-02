@@ -51,6 +51,19 @@ describe('tokenize', () => {
     expect(tokens[1]).toEqual(['(cost=0.00..208334.00 rows=1)', colors.mute]);
   });
 
+  it('colours JSON keys and string values differently', () => {
+    const line = '  "role": "user",';
+    const tokens = tokenize(line, 'json');
+    expect(tokens.find(([text]) => text === '"role"')?.[1]).toBe(colors.pink);
+    expect(tokens.find(([text]) => text === '"user"')?.[1]).toBe(colors.lime);
+    expect(tokens.map(([text]) => text).join('')).toBe(line);
+  });
+
+  it('colours JSON numbers and literals', () => {
+    expect(tokenize('"iat": 1767225600,', 'json').find(([text]) => text === '1767225600')?.[1]).toBe(colors.yellow);
+    expect(tokenize('"exp": null', 'json').find(([text]) => text === 'null')?.[1]).toBe(colors.violet);
+  });
+
   it('colours a SQL comment to the end of the line as muted', () => {
     const line = 'SELECT 1; -- count users';
     const tokens = tokenize(line, 'sql');
@@ -80,8 +93,13 @@ describe('tokenize', () => {
       ['Index Cond: (id = 42)', 'plan'],
       ['  (cost=0.00..208334.00 rows=1)', 'plan'],
       ['Index Only Scan using idx_email on users', 'plan'],
+      ['  "sub": "user_42",', 'json'],
+      ['  "iat": 1767225600,', 'json'],
+      ['  "exp": 1767229200', 'json'],
+      ['  "role": "user"', 'json'],
+      ['}', 'json'],
     ];
-    expect(corpus).toHaveLength(20);
+    expect(corpus).toHaveLength(25);
     for (const [line, lang] of corpus) {
       expect(
         tokenize(line, lang)

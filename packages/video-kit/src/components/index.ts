@@ -1,6 +1,24 @@
 export {accountCard, type AccountCard, type AccountCardOptions} from './account-card';
 export {bulletRow} from './bullet-row';
 export {card} from './card';
+export {
+  hmacMachine,
+  keyIcon,
+  layoutToken,
+  lockIcon,
+  tokenStrip,
+  type HmacMachine,
+  type HmacMachineOptions,
+  type HmacRunOptions,
+  type KeyIconOptions,
+  type LockIcon,
+  type LockIconOptions,
+  type TokenLine,
+  type TokenPart,
+  type TokenRun,
+  type TokenStrip,
+  type TokenStripOptions,
+} from './crypto';
 export {chip, chipText, type ChipOptions} from './chip';
 export {indexLegend} from './legend';
 export {logRow, type LogRowOptions} from './log-row';
@@ -19,6 +37,7 @@ export {
   type Token,
 } from './code-panel';
 export {label, type LabelOptions} from './label';
+export {stamp, type StampOptions} from './stamp';
 export {stackedTitle, type StackedTitleOptions} from './stacked-title';
 export {statCard, type StatCard} from './stat-card';
 export {timelineLane, type TimelineLaneOptions} from './timeline-lane';

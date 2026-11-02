@@ -31,7 +31,9 @@ src/
   animation/
     pop.ts                pop()
     shake.ts              shake()
+    slam.ts               slam()
     count-to.ts           countTo()
+    seeded-random.ts      seededRandom() (deterministic scenes)
   components/
     account-card.tsx      accountCard()
     chip.tsx              chip(), chipText()
@@ -60,6 +62,17 @@ src/
       tokenizer.test.ts   vitest unit tests
       code-panel.tsx      codePanel(), LINE_HEIGHT
       line-focus.ts       focusLine(), revealLines()
+    crypto/
+      token-strip.tsx     tokenStrip()
+      token-strip-layout.ts layoutToken() (pure)
+      hmac-machine.tsx    hmacMachine()
+      icons.tsx           keyIcon(), lockIcon()
+    stamp.tsx             stamp()
+  jwt/
+    base64url.ts          encodeBase64Url(), decodeBase64Url(), decodeBase64UrlText()
+    jwt-parse.ts          splitToken(), decodeJson(), describeToken()
+    jwt-fixtures.ts       demo header/payload/signatures, JWT_PART_COLOR
+    index.ts              barrel; exported from the package root
   cpu/
     cpu-types.ts          RegName, Phase, Mnemonic, CpuState, MicroStep, InstructionTrace, ToyProgram
     isa.ts                OPCODES, encode(), decodeByte(), disassemble(), assemble()
@@ -82,6 +95,9 @@ src/
     play-search.ts        playSearch()
   hud/
     hud.tsx               buildHud(), hudState
+    short-hud.tsx         buildShortHud() for 1080 x 1920 lessons
+    short-layout.ts       SHORT_SIZE, SHORT_ZONES, progressSegments() (pure)
+    read-time.ts          readSeconds() (pure)
     section.ts            setSection()
     caption.ts            say()
     leave.ts              leave()
@@ -339,7 +355,32 @@ yield * revealLines(panel);
 yield * focusLine(panel, 1, colors.lime);
 ```
 
-Supported languages are `'sql'`, `'java'` and `'plan'` (Postgres `EXPLAIN` output). `tokenize()` is pure and separately tested; import it directly when a scene needs the tokens without a panel.
+Supported languages are `'sql'`, `'java'`, `'plan'` (Postgres `EXPLAIN` output) and `'json'` (keys, values, numbers and literals use different accents). `tokenize()` is pure and separately tested; import it directly when a scene needs the tokens without a panel.
+
+## Shorts and the JWT pieces
+
+`ChaptersFile.format` defaults to `'landscape'`, so older lessons are unchanged. A Short sets `"format": "short"` and renders at 1080 x 1920; `defineLesson()` picks `buildShortHud()`, which keeps the same `hudState` refs as the landscape HUD, so `say()` and `setSection()` work unchanged. The portrait HUD draws a thin chapter progress bar at the top, a small title chip and a centred 920 px caption zone at 52 px. `SHORT_SIZE`, `SHORT_ZONES`, `shortSafeBox` and `progressSegments()` are pure and exported for layout tests; `readSeconds()` gives the minimum caption hold.
+
+`src/jwt/` is pure TypeScript (no Motion Canvas imports) and runs in Node tests. It ships Base64URL encode/decode without `Buffer` or `btoa`, token splitting/description, and the demo fixtures used by the JWT Short. The fixture test recomputes both HMAC-SHA256 signatures with Node's `crypto`, so a typo in a Base64URL part or signature fails the suite.
+
+```ts
+import {colors, JWT_TAMPERED_PAYLOAD, JWT_TOKEN, hmacMachine, slam, stamp, tokenStrip} from '@motion-studio/video-kit';
+
+const strip = tokenStrip({x: 0, y: -600, width: 920, fontSize: 34, token: JWT_TOKEN});
+const machine = hmacMachine({x: 0, y: 60, w: 880, h: 380});
+const invalid = stamp('INVALID', colors.red, {rot: -8, fs: 64});
+
+view.add(strip.node);
+view.add(machine.node);
+yield * strip.typeIn(1.2);
+yield * strip.focus('payload');
+yield * strip.replacePart('payload', JWT_TAMPERED_PAYLOAD);
+view.add(invalid);
+yield * slam(invalid);
+yield * machine.run({message: 'header.payload', key: 'SECRET', tag: 'XpQ15Es-…'});
+```
+
+`tokenStrip()` lays one `Txt` per same-colour run on a 0.6 em grid. `layoutToken(token, charsPerLine)` is the pure wrapper and is tested against the 187-character fixture. `hmacMachine()` never computes a signature: the caller passes the message, key and tag strings, and the machine only animates them. `stamp()` is a rotated double-bordered label; `slam()` scales it in and shakes it. `keyIcon()` and `lockIcon()` are vector shapes only; `lockIcon()` returns `{node, unlock(), lock()}`.
 
 ## TinyCPU model and primitives
 
