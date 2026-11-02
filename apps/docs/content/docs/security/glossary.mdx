@@ -1,0 +1,26 @@
+---
+title: Glossary
+description: The token and signature terms used across the security lessons, in one place.
+---
+
+<p className="eyebrow">Reference</p>
+
+Short definitions for the vocabulary of tokens, signatures and encoding.
+
+| Term              | Meaning                                                             |
+| ----------------- | ------------------------------------------------------------------- |
+| Algorithm (`alg`) | The signing algorithm named in the header, e.g. `HS256`.            |
+| Audience (`aud`)  | The service the token is meant for.                                 |
+| Base64URL         | A URL-safe text encoding of bytes; it is not encryption.            |
+| Claim             | A key-value fact in the payload, e.g. `sub` or `role`.              |
+| Expiry (`exp`)    | The time after which the token must be rejected.                    |
+| HMAC              | A keyed hash (HMAC-SHA256) used to sign a JWT with a shared secret. |
+| Header            | The first part: JSON that names the algorithm and token type.       |
+| Issuer (`iss`)    | The service that created the token.                                 |
+| JWS               | JSON Web Signature: a signed JWT, the usual case.                   |
+| JWT               | JSON Web Token: three Base64URL parts joined by dots.               |
+| Payload           | The second part: JSON claims about the user and the token.          |
+| Secret key        | The shared key only the server knows, used to sign and verify.      |
+| Signature         | The third part: proof that header and payload were not changed.     |
+| Subject (`sub`)   | The user or entity the token is about.                              |
+| Token             | A string a server issues and later checks instead of a password.    |

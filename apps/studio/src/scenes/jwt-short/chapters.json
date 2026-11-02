@@ -1,0 +1,44 @@
+{
+  "slug": "jwt-short",
+  "title": "JWT IN 60 SECONDS",
+  "format": "short",
+  "summaryPoints": [
+    "A JWT is a header, a payload and a signature joined by dots.",
+    "The header and payload are Base64URL text, not encrypted, so anyone can decode them.",
+    "The signature is made with a secret key and proves the token was not changed.",
+    "Changing the payload breaks the signature, so the server rejects the token.",
+    "Signed is not secret: never put passwords or private data in a JWT."
+  ],
+  "chapters": [
+    {
+      "name": "HOOK",
+      "color": "lime",
+      "summary": "Every login ends in a string called a JWT."
+    },
+    {
+      "name": "PARTS",
+      "color": "pink",
+      "summary": "A JWT is three parts joined by two dots."
+    },
+    {
+      "name": "READABLE",
+      "color": "cyan",
+      "summary": "The header and payload are only Base64, so anyone can read them."
+    },
+    {
+      "name": "SIGNATURE",
+      "color": "yellow",
+      "summary": "The signature is a seal made with a secret key only the server knows."
+    },
+    {
+      "name": "TAMPER",
+      "color": "red",
+      "summary": "Change one letter of the payload and the seal no longer matches."
+    },
+    {
+      "name": "TAKEAWAY",
+      "color": "violet",
+      "summary": "Signed does not mean secret: never put secrets in a JWT."
+    }
+  ]
+}

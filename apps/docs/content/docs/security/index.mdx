@@ -1,0 +1,35 @@
+---
+title: Course overview
+description: A beginner-friendly course on how tokens, signatures and encryption actually work.
+---
+
+<p className="eyebrow">Course</p>
+
+Most of the web hands you a string after login and trusts it on the next request. This course opens that string up: what a token contains, why anyone can read it, how a signature proves it was not changed, and where encoding stops and real encryption begins.
+
+## What you will learn
+
+- A JWT is a header, a payload and a signature joined by dots.
+- The header and payload are Base64URL text, not encrypted, so anyone can decode them.
+- The signature is made with a secret key and proves the token was not changed.
+- Changing the payload breaks the signature, so the server rejects the token.
+- Signed is not secret: never put passwords or private data in a JWT.
+
+## Lessons
+
+<Cards>
+  <Card
+    href="/docs/security/jwt-short"
+    title="JWT in 60 Seconds"
+    description="A vertical Short: three dotted parts, Base64URL, the signature and why signed is not secret."
+  />
+  <Card
+    href="/docs/security/glossary"
+    title="Glossary"
+    description="The token and signature terms from the course, defined in one place."
+  />
+</Cards>
+
+## Suggested order
+
+Start with **JWT in 60 Seconds** for the whole picture in under a minute, then use the glossary when a term is unfamiliar. More security lessons will be added to this course; each one will stand alone.
