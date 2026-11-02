@@ -67,11 +67,23 @@ src/
       token-strip-layout.ts layoutToken() (pure)
       hmac-machine.tsx    hmacMachine()
       icons.tsx           keyIcon(), lockIcon()
+      base64-visual.tsx   base64Visual() with its step-by-step Base64 animation
+    diagrams/
+      sequence-diagram.tsx sequenceDiagram()
+      sequence-layout.ts  sequenceLayout() (pure)
+      compare-table.tsx   compareTable()
+      table-layout.ts     tableLayout(), wrapGrid() (pure)
+      time-bar.tsx        timeBar()
+      time-to-x.ts        timeToX() (pure)
     stamp.tsx             stamp()
   jwt/
     base64url.ts          encodeBase64Url(), decodeBase64Url(), decodeBase64UrlText()
+    base64-steps.ts       base64Steps(), base64Alphabet, toUrlSafe() (pure)
+    claim-info.ts         REGISTERED_CLAIMS
+    validate-claims.ts    validateClaims() (pure)
     jwt-parse.ts          splitToken(), decodeJson(), describeToken()
     jwt-fixtures.ts       demo header/payload/signatures, JWT_PART_COLOR
+    jwt-es256-fixture.ts  generated ES256 token and public JWK
     index.ts              barrel; exported from the package root
   cpu/
     cpu-types.ts          RegName, Phase, Mnemonic, CpuState, MicroStep, InstructionTrace, ToyProgram
@@ -95,6 +107,7 @@ src/
     play-search.ts        playSearch()
   hud/
     hud.tsx               buildHud(), hudState
+    pill-row.ts           pillRow() (pure, used by buildHud)
     short-hud.tsx         buildShortHud() for 1080 x 1920 lessons
     short-layout.ts       SHORT_SIZE, SHORT_ZONES, progressSegments() (pure)
     read-time.ts          readSeconds() (pure)

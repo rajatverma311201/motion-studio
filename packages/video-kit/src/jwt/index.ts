@@ -1,5 +1,22 @@
+export {base64Alphabet, base64Steps, toUrlSafe, type Base64Steps} from './base64-steps';
 export {decodeBase64Url, decodeBase64UrlText, encodeBase64Url} from './base64url';
+export {REGISTERED_CLAIMS, type RegisteredClaim, type RegisteredClaimName} from './claim-info';
+export {
+  ES256_HEADER,
+  ES256_HEADER_JSON,
+  ES256_JWK,
+  ES256_PAYLOAD,
+  ES256_SIGNATURE,
+  ES256_TOKEN,
+} from './jwt-es256-fixture';
 export {decodeJson, describeToken, splitToken, type SplitToken, type TokenDescription} from './jwt-parse';
+export {
+  validateClaims,
+  type ClaimCheck,
+  type ClaimCheckName,
+  type ValidateClaimsOptions,
+  type ValidateClaimsResult,
+} from './validate-claims';
 export {
   JWT_HEADER,
   JWT_HEADER_JSON,
