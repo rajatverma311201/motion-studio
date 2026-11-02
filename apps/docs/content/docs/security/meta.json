@@ -1,5 +1,5 @@
 {
   "title": "Security Basics",
   "root": true,
-  "pages": ["index", "jwt-short", "glossary"]
+  "pages": ["index", "jwt-short", "jwt", "glossary"]
 }
