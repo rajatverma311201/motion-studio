@@ -12,11 +12,12 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 export const LESSON_STATUSES = ['outline', 'animated', 'rendered', 'voiced', 'published'];
+export const LESSON_FORMATS = ['landscape', 'short'];
 
 const ROOT = process.env.MOTION_STUDIO_ROOT
   ? path.resolve(process.env.MOTION_STUDIO_ROOT)
   : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const COLUMNS = ['slug', 'status', 'duration', 'youtube'];
+const COLUMNS = ['slug', 'format', 'status', 'duration', 'youtube'];
 
 /** Read the flat `key: value` pairs between the leading `---` fences. */
 export function parseFrontmatter(source) {
@@ -71,8 +72,13 @@ export async function collectLessons(root = ROOT) {
     if (!data.video) continue;
 
     const relative = path.relative(root, file);
+    const format = data.format || 'landscape';
+    if (!LESSON_FORMATS.includes(format)) {
+      throw new Error(`${relative}: unknown format "${format}". Use one of ${LESSON_FORMATS.join(', ')}.`);
+    }
     lessons.push({
       slug: data.video,
+      format,
       status: validateStatus(data.status ?? 'outline', relative),
       duration: data.duration || 'TBD',
       youtube: data.youtube || '',
@@ -83,8 +89,13 @@ export async function collectLessons(root = ROOT) {
   return lessons.sort((a, b) => a.slug.localeCompare(b.slug, 'en'));
 }
 
+function cell(row, column) {
+  if (column === 'format') return row.format === 'short' ? 'SHORT' : '-';
+  return row[column] || '-';
+}
+
 export function formatTable(rows) {
-  const widths = COLUMNS.map(column => Math.max(column.length, ...rows.map(row => String(row[column] ?? '').length)));
+  const widths = COLUMNS.map(column => Math.max(column.length, ...rows.map(row => String(cell(row, column)).length)));
   const line = values =>
     values
       .map((value, index) => String(value).padEnd(widths[index]))
@@ -92,7 +103,7 @@ export function formatTable(rows) {
       .trimEnd();
   const separator = widths.map(width => '-'.repeat(width)).join('  ');
 
-  return [line(COLUMNS), separator, ...rows.map(row => line(COLUMNS.map(column => row[column] || '-')))].join('\n');
+  return [line(COLUMNS), separator, ...rows.map(row => line(COLUMNS.map(column => cell(row, column))))].join('\n');
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);

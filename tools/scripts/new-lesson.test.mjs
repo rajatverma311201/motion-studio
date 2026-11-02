@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {copyFile, cp, mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import {copyFile, cp, mkdir, mkdtemp, readFile, rm, stat, writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
@@ -60,6 +60,7 @@ test('generates a studio project, sections, lesson page and meta entry', async t
   const chapters = JSON.parse(await read(root, 'apps/studio/src/scenes', SLUG, 'chapters.json'));
   assert.equal(chapters.slug, SLUG);
   assert.equal(chapters.title, TITLE.toUpperCase());
+  assert.equal(chapters.format, undefined);
   assert.equal(chapters.theme, undefined);
   assert.equal(chapters.mode, undefined);
   assert.deepEqual(
@@ -118,10 +119,48 @@ test('generates a studio project, sections, lesson page and meta entry', async t
   const lessons = JSON.parse(await read(root, 'apps/docs/src/generated/lessons.json'));
   assert.ok(lessons[SLUG]);
   assert.equal(lessons[SLUG].chapters.length, 3);
+  assert.equal(lessons[SLUG].format, 'landscape');
   assert.deepEqual(lessons[SLUG].look, {theme: 'neubrutal', themeName: 'Neubrutal', mode: 'dark'});
+
+  await assert.rejects(stat(path.join(root, 'apps/studio/src/projects', `${SLUG}.meta`)));
 
   assert.match(result.stdout, new RegExp(`http://localhost:9000/src/projects/${SLUG}`));
   assert.match(result.stdout, /status: published/);
+});
+
+test('scaffolds a 1080 x 1920 short with its own format flag', async t => {
+  const root = await fixture();
+  t.after(() => rm(root, {recursive: true, force: true}));
+
+  const result = run(root, [SLUG, TITLE, '--course', 'databases', '--format', 'short', '--chapters', '6']);
+  assert.equal(result.status, 0, result.stderr);
+
+  const chapters = JSON.parse(await read(root, 'apps/studio/src/scenes', SLUG, 'chapters.json'));
+  assert.equal(chapters.format, 'short');
+
+  const meta = JSON.parse(await read(root, 'apps/studio/src/projects', `${SLUG}.meta`));
+  assert.deepEqual(meta.shared.size, {x: 1080, y: 1920});
+  assert.equal(meta.rendering.fps, 60);
+  assert.equal(meta.preview.fps, 30);
+  assert.equal(meta.shared.background, null);
+
+  const page = await read(root, 'apps/docs/content/docs/databases', `${SLUG}.mdx`);
+  assert.match(page, /^---\n[\s\S]*video: mvcc-and-isolation\nformat: short\n/);
+  assert.match(page, /status: outline/);
+
+  const lessons = JSON.parse(await read(root, 'apps/docs/src/generated/lessons.json'));
+  assert.equal(lessons[SLUG].format, 'short');
+
+  assert.match(result.stdout, /in short format/);
+});
+
+test('rejects an unknown format', async t => {
+  const root = await fixture();
+  t.after(() => rm(root, {recursive: true, force: true}));
+
+  const result = run(root, [SLUG, TITLE, '--course', 'databases', '--format', 'portrait']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unknown format "portrait"\. Available: landscape, short/);
 });
 
 test('writes the theme and mode flags into chapters.json', async t => {

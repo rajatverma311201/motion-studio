@@ -20,12 +20,14 @@ const ROOT = process.env.MOTION_STUDIO_ROOT
 const TSX = pathToFileURL(createRequire(import.meta.url).resolve('tsx')).href;
 const COLORS = ['lime', 'cyan', 'pink', 'yellow', 'violet', 'orange', 'red'];
 const MODES = ['dark', 'light'];
+const FORMATS = ['landscape', 'short'];
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const USAGE = `Usage:
-  pnpm new:lesson <slug> "<Title>" --course <course-slug> [--chapters 4] [--theme <id>] [--mode dark|light]
+  pnpm new:lesson <slug> "<Title>" --course <course-slug> [--chapters 4] [--format landscape|short] [--theme <id>] [--mode dark|light]
 
 Example:
-  pnpm new:lesson mvcc-and-isolation "MVCC and Isolation Levels" --course databases`;
+  pnpm new:lesson mvcc-and-isolation "MVCC and Isolation Levels" --course databases
+  pnpm new:lesson jwt-short "JWT in 60 Seconds" --course security --format short --chapters 6`;
 
 function fail(message) {
   console.error(`new-lesson: ${message}`);
@@ -45,6 +47,7 @@ function parseArgs(argv) {
   const positional = [];
   let course;
   let chapters = 4;
+  let format = 'landscape';
   let theme;
   let mode;
 
@@ -58,6 +61,10 @@ function parseArgs(argv) {
       chapters = Number(argv[++i]);
     } else if (arg.startsWith('--chapters=')) {
       chapters = Number(arg.slice('--chapters='.length));
+    } else if (arg === '--format') {
+      format = argv[++i];
+    } else if (arg.startsWith('--format=')) {
+      format = arg.slice('--format='.length);
     } else if (arg === '--theme') {
       theme = argv[++i];
     } else if (arg.startsWith('--theme=')) {
@@ -76,7 +83,7 @@ function parseArgs(argv) {
     }
   }
 
-  return {positional, course, chapters, theme, mode};
+  return {positional, course, chapters, format, theme, mode};
 }
 
 function chapterLabel(index) {
@@ -163,7 +170,35 @@ export default makeProject({name: resolveProjectName(lesson.slug, lesson), scene
 `;
 }
 
-function lessonPageSource({slug, title, chapters}) {
+/**
+ * Project metadata for a new lesson. It mirrors the committed `db-indexing.meta`
+ * fields and only changes the canvas size. A Short needs this at scaffold time
+ * because the portrait HUD must measure against 1080 x 1920 before the editor
+ * has ever opened the project.
+ */
+function projectMeta(size) {
+  return {
+    version: 0,
+    shared: {
+      background: null,
+      range: [0, null],
+      size,
+      audioOffset: 0,
+    },
+    preview: {fps: 30, resolutionScale: 1},
+    rendering: {
+      fps: 60,
+      resolutionScale: 1,
+      colorSpace: 'srgb',
+      exporter: {
+        name: '@motion-canvas/core/image-sequence',
+        options: {fileType: 'image/png', quality: 100, groupByScene: false},
+      },
+    },
+  };
+}
+
+function lessonPageSource({slug, title, chapters, format}) {
   const notes = chapters
     .map(
       (chapter, index) => `### ${String(index + 1).padStart(2, '0')} · ${chapter.name}
@@ -181,7 +216,7 @@ function lessonPageSource({slug, title, chapters}) {
 title: ${yamlString(title)}
 description: 'TODO: one sentence about this lesson.'
 video: ${slug}
-status: outline
+${format === 'short' ? 'format: short\n' : ''}status: outline
 duration: TBD
 ---
 
@@ -201,7 +236,7 @@ ${notes}
 `;
 }
 
-const {positional, course, chapters: chapterCount, theme, mode} = parseArgs(process.argv.slice(2));
+const {positional, course, chapters: chapterCount, format, theme, mode} = parseArgs(process.argv.slice(2));
 const [slug, title] = positional;
 
 if (!slug) fail(`missing <slug>\n\n${USAGE}`);
@@ -212,6 +247,9 @@ if (!course) fail(`--course <course-slug> is required\n\n${USAGE}`);
 if (!KEBAB.test(course)) fail(`course "${course}" must be kebab-case`);
 if (!Number.isInteger(chapterCount) || chapterCount < 1) {
   fail('--chapters must be a positive whole number');
+}
+if (!FORMATS.includes(format)) {
+  fail(`unknown format "${format}". Available: ${FORMATS.join(', ')}`);
 }
 if (theme !== undefined && !themeIds.includes(theme)) {
   fail(`unknown theme "${theme}". Available: ${themeIds.join(', ')}`);
@@ -238,6 +276,7 @@ if (pages.includes(slug)) {
 const sceneDir = path.join(ROOT, 'apps/studio/src/scenes', slug);
 const sectionsDir = path.join(sceneDir, 'sections');
 const projectFile = path.join(ROOT, 'apps/studio/src/projects', `${slug}.ts`);
+const projectMetaFile = path.join(ROOT, 'apps/studio/src/projects', `${slug}.meta`);
 const chaptersFile = path.join(sceneDir, 'chapters.json');
 const sceneFile = path.join(sceneDir, 'scene.tsx');
 const pageFile = path.join(courseDir, `${slug}.mdx`);
@@ -257,6 +296,7 @@ const sections = chapters.map((chapter, index) => ({
 
 const targets = [
   projectFile,
+  ...(format === 'short' ? [projectMetaFile] : []),
   chaptersFile,
   sceneFile,
   ...sections.map(section => path.join(sectionsDir, `${section.fileBase}.tsx`)),
@@ -276,6 +316,7 @@ if (await exists(sceneDir)) {
 const chaptersData = {
   slug,
   title: title.toUpperCase(),
+  ...(format === 'short' ? {format} : {}),
   ...(theme !== undefined ? {theme} : {}),
   ...(mode !== undefined ? {mode} : {}),
   summaryPoints: ['TODO'],
@@ -291,6 +332,7 @@ const generated = [
       ? introSectionSource({title})
       : chapterSectionSource({label: section.name, color: section.color, exportName: section.exportName, index}),
   ]),
+  ...(format === 'short' ? [[projectMetaFile, `${JSON.stringify(projectMeta({x: 1080, y: 1920}), null, 2)}\n`]] : []),
 ];
 
 for (const [file, content] of generated) {
@@ -298,7 +340,7 @@ for (const [file, content] of generated) {
   await writeFile(file, content, 'utf8');
 }
 
-await writeFile(pageFile, lessonPageSource({slug, title, chapters}), 'utf8');
+await writeFile(pageFile, lessonPageSource({slug, title, chapters, format}), 'utf8');
 
 meta.pages = [...pages, slug];
 await writeFile(metaFile, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
@@ -312,6 +354,7 @@ if (sync.status !== 0) fail(`sync-lessons.mjs failed (exit ${sync.status})`);
 
 const created = [
   projectFile,
+  ...(format === 'short' ? [projectMetaFile] : []),
   chaptersFile,
   sceneFile,
   ...sections.map(section => path.join(sectionsDir, `${section.fileBase}.tsx`)),
@@ -319,7 +362,7 @@ const created = [
 ];
 
 console.log('');
-console.log(`Created lesson "${slug}" with ${chapterCount} chapter(s).`);
+console.log(`Created lesson "${slug}" with ${chapterCount} chapter(s) in ${format} format.`);
 console.log('');
 console.log('Files:');
 for (const file of created) console.log(`  ${path.relative(ROOT, file)}`);

@@ -19,12 +19,12 @@ async function fixture(files) {
   return root;
 }
 
-function lessonPage({video, status, duration, youtube}) {
+function lessonPage({video, format, status, duration, youtube}) {
   return `---
 title: 'A lesson: with a colon'
 description: 'One sentence.'
 video: ${video}
-${status ? `status: ${status}\n` : ''}${duration ? `duration: ${duration}\n` : ''}${youtube ? `youtube: ${youtube}\n` : ''}---
+${format ? `format: ${format}\n` : ''}${status ? `status: ${status}\n` : ''}${duration ? `duration: ${duration}\n` : ''}${youtube ? `youtube: ${youtube}\n` : ''}---
 `;
 }
 
@@ -48,18 +48,29 @@ test('collectLessons lists pages with a video and defaults missing fields', asyn
   const root = await fixture({
     'one.mdx': lessonPage({video: 'db-one', status: 'voiced', duration: '12:40'}),
     'two.mdx': lessonPage({video: 'db-two'}),
+    'three.mdx': lessonPage({video: 'jwt-short', format: 'short', status: 'animated'}),
     'notes.mdx': '---\ntitle: Notes\n---\n',
   });
   t.after(() => rm(root, {recursive: true, force: true}));
 
   const lessons = await collectLessons(root);
   assert.deepEqual(
-    lessons.map(lesson => [lesson.slug, lesson.status, lesson.duration, lesson.youtube]),
+    lessons.map(lesson => [lesson.slug, lesson.format, lesson.status, lesson.duration, lesson.youtube]),
     [
-      ['db-one', 'voiced', '12:40', ''],
-      ['db-two', 'outline', 'TBD', ''],
+      ['db-one', 'landscape', 'voiced', '12:40', ''],
+      ['db-two', 'landscape', 'outline', 'TBD', ''],
+      ['jwt-short', 'short', 'animated', 'TBD', ''],
     ],
   );
+});
+
+test('an unknown format fails with the file name', async t => {
+  const root = await fixture({
+    'bad.mdx': lessonPage({video: 'db-bad', format: 'portrait'}),
+  });
+  t.after(() => rm(root, {recursive: true, force: true}));
+
+  await assert.rejects(() => collectLessons(root), /bad\.mdx: unknown format "portrait"/);
 });
 
 test('an unknown status fails with the file name', async t => {
@@ -72,15 +83,17 @@ test('an unknown status fails with the file name', async t => {
   assert.throws(() => validateStatus('nope', 'page.mdx'), /unknown status "nope"/);
 });
 
-test('formatTable prints the four columns', () => {
+test('formatTable prints the five columns and a SHORT marker', () => {
   const table = formatTable([
-    {slug: 'db-indexing', status: 'published', duration: '12:40', youtube: 'https://youtu.be/x'},
-    {slug: 'db-transactions', status: 'voiced', duration: 'TBD', youtube: ''},
+    {slug: 'db-indexing', format: 'landscape', status: 'published', duration: '12:40', youtube: 'https://youtu.be/x'},
+    {slug: 'db-transactions', format: 'landscape', status: 'voiced', duration: 'TBD', youtube: ''},
+    {slug: 'jwt-short', format: 'short', status: 'animated', duration: 'TBD', youtube: ''},
   ]);
 
-  assert.match(table, /^slug\s+status\s+duration\s+youtube/m);
-  assert.match(table, /db-indexing\s+published\s+12:40\s+https:\/\/youtu\.be\/x/);
-  assert.match(table, /db-transactions\s+voiced\s+TBD\s+-/);
+  assert.match(table, /^slug\s+format\s+status\s+duration\s+youtube/m);
+  assert.match(table, /db-indexing\s+-\s+published\s+12:40\s+https:\/\/youtu\.be\/x/);
+  assert.match(table, /db-transactions\s+-\s+voiced\s+TBD\s+-/);
+  assert.match(table, /jwt-short\s+SHORT\s+animated\s+TBD\s+-/);
 });
 
 test('the repository content has only known statuses', async () => {

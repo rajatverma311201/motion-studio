@@ -21,6 +21,7 @@ const OUT_FILE = path.join(ROOT, 'apps/docs/src/generated/lessons.json');
 const CONFIG_FILE = path.join(ROOT, 'video.config.json');
 const PALETTE = ['lime', 'pink', 'cyan', 'yellow', 'violet', 'orange', 'red'];
 const MODES = ['dark', 'light'];
+const FORMATS = ['landscape', 'short'];
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const AT = /^(?:[0-9]{1,2}:[0-5][0-9]|[0-9]+:[0-5][0-9]:[0-5][0-9])$/;
 
@@ -86,6 +87,9 @@ function validate(file, data) {
   }
   if (typeof data.title !== 'string') {
     fail(file, 'title must be a string');
+  }
+  if (data.format !== undefined && !FORMATS.includes(data.format)) {
+    fail(file, `format must be "landscape" or "short" when present (got ${JSON.stringify(data.format)})`);
   }
   if (data.theme !== undefined && (typeof data.theme !== 'string' || !themeIds.includes(data.theme))) {
     fail(file, `unknown theme "${data.theme}"`);
@@ -165,7 +169,7 @@ for (const file of files) {
     mode: selection.mode,
   };
 
-  lessons.set(data.slug, {...data, look});
+  lessons.set(data.slug, {...data, format: data.format ?? 'landscape', look});
 }
 
 const sorted = Object.fromEntries([...lessons.entries()].sort(([a], [b]) => a.localeCompare(b)));
