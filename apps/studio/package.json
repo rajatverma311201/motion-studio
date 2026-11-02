@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/scenes/jwt-short/layout.test.ts src/scenes/jwt/layout.test.ts"
+    "test": "node --import tsx --test src/scenes/jwt-short/layout.test.ts src/scenes/jwt/layout.test.ts src/scenes/jwt/shorten.test.ts"
   },
   "dependencies": {
     "@motion-canvas/2d": "^3.17.2",

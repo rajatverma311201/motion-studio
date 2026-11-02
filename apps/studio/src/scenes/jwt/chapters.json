@@ -15,57 +15,68 @@
     {
       "name": "INTRO",
       "color": "lime",
-      "summary": "You log in once but make hundreds of requests; a JWT is how the server keeps recognising you."
+      "summary": "You log in once but make hundreds of requests; a JWT is how the server keeps recognising you.",
+      "at": "0:00"
     },
     {
       "name": "WHY TOKENS",
       "color": "cyan",
-      "summary": "Sessions store state on the server; a token carries it with the request, and any server with the key can check it."
+      "summary": "Sessions store state on the server; a token carries it with the request, and any server with the key can check it.",
+      "at": "0:00"
     },
     {
       "name": "ANATOMY",
       "color": "pink",
-      "summary": "A JWT is a header, a payload of claims and a signature, joined by dots."
+      "summary": "A JWT is a header, a payload of claims and a signature, joined by dots.",
+      "at": "0:00"
     },
     {
       "name": "BASE64URL",
       "color": "yellow",
-      "summary": "Base64URL turns bytes into URL-safe text; it is encoding, so anyone can reverse it."
+      "summary": "Base64URL turns bytes into URL-safe text; it is encoding, so anyone can reverse it.",
+      "at": "0:00"
     },
     {
       "name": "ENCODE SIGN ENCRYPT",
       "color": "violet",
-      "summary": "Encoding changes format, signing proves integrity and origin, encryption hides content; a normal JWT is encoded and signed only."
+      "summary": "Encoding changes format, signing proves integrity and origin, encryption hides content; a normal JWT is encoded and signed only.",
+      "at": "0:00"
     },
     {
       "name": "SIGNING",
       "color": "orange",
-      "summary": "HS256 signs header and payload with a shared secret; the server recomputes to verify and rejects any tampering."
+      "summary": "HS256 signs header and payload with a shared secret; the server recomputes to verify and rejects any tampering.",
+      "at": "0:00"
     },
     {
       "name": "KEYS",
       "color": "red",
-      "summary": "A shared secret lets every verifier sign too; a key pair lets only the auth server sign, and JWKS publishes the public keys."
+      "summary": "A shared secret lets every verifier sign too; a key pair lets only the auth server sign, and JWKS publishes the public keys.",
+      "at": "0:00"
     },
     {
       "name": "CLAIMS",
       "color": "lime",
-      "summary": "A valid signature is not enough: the server checks exp, nbf, iss and aud, and short lifetimes limit damage."
+      "summary": "A valid signature is not enough: the server checks exp, nbf, iss and aud, and short lifetimes limit damage.",
+      "at": "0:00"
     },
     {
       "name": "IN PRACTICE",
       "color": "cyan",
-      "summary": "The login-to-API flow with a Bearer header, where to store the token, and how Quarkus verifies it."
+      "summary": "The login-to-API flow with a Bearer header, where to store the token, and how Quarkus verifies it.",
+      "at": "0:00"
     },
     {
       "name": "PITFALLS",
       "color": "pink",
-      "summary": "alg none, algorithm confusion, weak secrets, secrets in the payload and missing revocation."
+      "summary": "alg none, algorithm confusion, weak secrets, secrets in the payload and missing revocation.",
+      "at": "0:00"
     },
     {
       "name": "RECAP",
       "color": "yellow",
-      "summary": "A JWT is signed, not secret: verify the signature and the claims, pin the algorithm, keep tokens short."
+      "summary": "A JWT is signed, not secret: verify the signature and the claims, pin the algorithm, keep tokens short.",
+      "at": "0:00"
     }
   ]
 }

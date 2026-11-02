@@ -6,11 +6,11 @@ import {anatomySection} from './sections/03-anatomy';
 import {base64UrlSection} from './sections/04-base64url';
 import {encodeSignEncryptSection} from './sections/05-encode-sign-encrypt';
 import {signingSection} from './sections/06-signing';
-import {chapter7Section} from './sections/07-chapter-7';
-import {chapter8Section} from './sections/08-chapter-8';
-import {chapter9Section} from './sections/09-chapter-9';
-import {chapter10Section} from './sections/10-chapter-10';
-import {chapter11Section} from './sections/11-chapter-11';
+import {keysSection} from './sections/07-keys';
+import {claimsSection} from './sections/08-claims';
+import {inPracticeSection} from './sections/09-in-practice';
+import {pitfallsSection} from './sections/10-pitfalls';
+import {recapSection} from './sections/11-recap';
 
 loadFonts();
 
@@ -23,11 +23,11 @@ export default defineLesson({
     base64UrlSection,
     encodeSignEncryptSection,
     signingSection,
-    chapter7Section,
-    chapter8Section,
-    chapter9Section,
-    chapter10Section,
-    chapter11Section,
+    keysSection,
+    claimsSection,
+    inPracticeSection,
+    pitfallsSection,
+    recapSection,
   ],
   hud: {
     sectionChipX: -560,

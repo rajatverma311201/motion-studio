@@ -94,8 +94,8 @@ export const KEYS = {
   rotateArrow: box(0, -55, 100, 40),
   jwksPanel: box(-420, 0, 700, 580),
   urlChip: box(520, -230, 640, 64),
-  headerPanel: box(520, 10, 620, 180),
-  kidChip: box(520, 140, 420, 56),
+  headerPanel: box(520, 20, 620, 220),
+  kidChip: box(520, 160, 420, 56),
 };
 
 /** 07 CLAIMS — the time bar and checklist, then the refresh flow. */
