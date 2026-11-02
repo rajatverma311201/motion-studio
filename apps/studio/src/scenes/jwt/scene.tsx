@@ -1,11 +1,11 @@
 import {defineLesson, loadFonts, type ChaptersFile} from '@motion-studio/video-kit';
 import chapters from './chapters.json';
 import {introSection} from './sections/01-intro';
-import {chapter2Section} from './sections/02-chapter-2';
-import {chapter3Section} from './sections/03-chapter-3';
-import {chapter4Section} from './sections/04-chapter-4';
-import {chapter5Section} from './sections/05-chapter-5';
-import {chapter6Section} from './sections/06-chapter-6';
+import {whyTokensSection} from './sections/02-why-tokens';
+import {anatomySection} from './sections/03-anatomy';
+import {base64UrlSection} from './sections/04-base64url';
+import {encodeSignEncryptSection} from './sections/05-encode-sign-encrypt';
+import {signingSection} from './sections/06-signing';
 import {chapter7Section} from './sections/07-chapter-7';
 import {chapter8Section} from './sections/08-chapter-8';
 import {chapter9Section} from './sections/09-chapter-9';
@@ -18,11 +18,11 @@ export default defineLesson({
   chapters: chapters as ChaptersFile,
   sections: [
     introSection,
-    chapter2Section,
-    chapter3Section,
-    chapter4Section,
-    chapter5Section,
-    chapter6Section,
+    whyTokensSection,
+    anatomySection,
+    base64UrlSection,
+    encodeSignEncryptSection,
+    signingSection,
     chapter7Section,
     chapter8Section,
     chapter9Section,

@@ -116,10 +116,11 @@ export function sequenceDiagram(options: SequenceDiagramOptions): SequenceDiagra
   ) as Node;
 
   const transients: Node[] = [];
+  const rowTop = layout.lifelineTop + 60;
+  const rowGap = Math.min(88, Math.max(52, (layout.lifelineBottom - 40 - rowTop) / 5));
   let rowIndex = 0;
 
-  const nextRow = (): number =>
-    rowIndex < layout.rowY.length ? layout.rowY[rowIndex++] : layout.rowY[layout.rowY.length - 1] + rowIndex * 8;
+  const nextRow = (): number => rowTop + rowIndex++ * rowGap;
 
   function* message(
     from: string,
