@@ -29,8 +29,8 @@ export interface Base64Visual {
 const BYTE_Y = -190;
 const GROUP_Y = -40;
 const ALPHABET_Y = 118;
-const RESULT_Y = 248;
-const URL_Y = 318;
+const RESULT_Y = 235;
+const URL_Y = 300;
 
 /**
  * Animate the Base64 algorithm for one short string: bytes, bits, six-bit
