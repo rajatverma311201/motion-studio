@@ -27,9 +27,9 @@ export function stamp(text: string, color: string, options: StampOptions = {}): 
       radius={radius(14)}
       fill={colors.clear}
       rotation={options.rot ?? -4}
+      {...boxStyle(color, 8, 4)}
       stroke={color}
       lineWidth={borderWidth(6)}
-      {...boxStyle(color, 8, 4)}
     >
       <Rect
         layout
