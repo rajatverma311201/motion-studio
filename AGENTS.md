@@ -18,7 +18,7 @@ You are working in a pnpm monorepo that produces animated software-engineering e
 apps/studio        Motion Canvas app (Vite 4). Scenes + project files only.
 apps/docs          TanStack Start + Fumadocs app (Vite 8).
 packages/video-kit Reusable Motion Canvas building blocks. TypeScript source, no build step.
-tools/snapshots    Playwright capture + pixel compare.
+tools/snapshots    Playwright capture + pixel compare. Owner-run on request; steps never run it.
 tools/scripts      Node scripts (sync-themes, sync-lessons, new-lesson, new-theme, studio).
 ```
 
@@ -66,13 +66,31 @@ Video identity: dark neubrutalism, background `#0B0B10`, light cream borders `#F
 
 `type(scope): summary` in lowercase imperative, e.g. `feat(video-kit): add code panel component`. Use the exact message the prompt gives. Types used: `chore`, `feat`, `refactor`, `test`, `docs`, `build`.
 
-## 7. Final-message format for every step
+## 7. Verification policy (no slow checks)
+
+- Do not run `snap:capture`, `snap:compare`, `snap:quick`, `snap:themes` or `snap:shot`, and do not capture or compare frames, in any step unless the prompt of that step names the command explicitly or the owner asks. They play the editor in real time and take minutes.
+- `smoke:docs` is allowed only when a step changes the docs UI.
+- Verify with: `pnpm check` (typecheck, lint, tests, format), the unit tests of every pure model and helper, `pnpm videos:build`, and `pnpm docs:build` when docs changed.
+- Visual quality is protected by (a) one `layout.ts` per lesson holding every coordinate, (b) a layout sanity unit test (bounds, safe zones, no overlaps of the declared boxes), (c) the owner's review in the editor. Every video step ends with an "Owner review checklist": for each chapter the editor URL hash (`#s=N`), 2 or 3 times to scrub to, and what to look at.
+
+## 8. Video quality bar (applies to every video step)
+
+- Captions: one short line. Landscape at most 85 characters, portrait at most 60. Each caption stays on screen at least `max(2.5, characters / 14)` seconds (use the kit's `readSeconds`, added in step 21).
+- No more than about 7 distinct elements on screen at once. Reveal in order, staggered 0.12 to 0.35 s. Entrances use `pop`, moves use `easeInOutCubic` or `easeOutCubic`. Nothing animates faster than 0.25 s except at the `blur` speed.
+- A colour keeps one meaning for the whole video and series. Colours only through `colors.*`, fonts through `fonts.*`, boxes through `boxStyle` / `tintedSurface` / `radius` (and `outline` / `dimmedOpacity` / `highlightWidth` when the kit has them). No hex or `rgba(` literals. Every look (7 themes, dark and light) must stay readable.
+- Rendering must be deterministic: no `Math.random`, no `Date.now`, no real network or clock in scenes. Use the kit's seeded PRNG (`seededRandom`, step 21) when something must look random.
+- Facts and values live in tested pure TypeScript (fixtures, models). Scenes read them; they never retype values. Cryptographic fixtures are verified against Node's `crypto` in unit tests.
+- Reuse first: before creating a component, `grep -rn` the kit's `components/` and `animation/`. New reusable pieces go into `packages/video-kit` with a barrel export, JSDoc with an example, and a README line. Lesson-specific layout stays in the lesson folder.
+- Safe fonts sizes: landscape body text at least 22 px, portrait body text at least 36 px, portrait captions 52 px.
+
+## 9. Final-message format for every step
 
 End your last message with:
 
 ```
-STEP <n> DONE
+STEP <n> DONE   (or PHASE <n> DONE)
 Commits: <hash> <message> (one line per commit)
 Checks: <command> -> <result> (one line per check)
+Owner review checklist: <chapter> | open http://localhost:9000/src/projects/<slug>#s=<N> | scrub to ~<t> s | look at: <items>   (one line per chapter)
 Notes: <anything the owner must know, max 5 bullets>
 ```

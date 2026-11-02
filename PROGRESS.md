@@ -49,6 +49,7 @@ Commands:
 - The neubrutalist identity belongs to the videos only; `apps/docs` keeps the stock Fumadocs look with its light/dark toggle (step 16).
 - The toy ISA is fixed in `packages/video-kit/src/cpu`; the tests freeze its micro-step ids, texts and traces. The lesson animates the model, never re-implements the rules (step 20).
 - The `instruction-cycle` machine (`build.tsx`, `play.ts`) is lesson code for now. A generic version could move into the kit once a second architecture lesson needs it (step 20).
+- Steps never run snapshot capture or compare (AGENTS.md section 7); the owner reviews in the editor.
 
 ## Tech debt and open items
 

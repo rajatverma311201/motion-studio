@@ -81,7 +81,7 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 | `pnpm typecheck` / `pnpm lint` / `pnpm test`         | Run one check on its own.                                                                                                                                                                                |
 | `pnpm format` / `pnpm format:check`                  | Write or verify Prettier formatting.                                                                                                                                                                     |
 
-Snapshots need the studio dev server on port 9000 (`pnpm studio:dev`). The baseline lives in `.snapshots/baseline`, is git-ignored, and must be captured once on a machine before comparing.
+Snapshots need the studio dev server on port 9000 (`pnpm studio:dev`). The baseline lives in `.snapshots/baseline`, is git-ignored, and must be captured once on a machine before comparing. Run them when you want a pixel check: they are slow and optional, and the editor review is the normal verification.
 
 ## Themes
 
