@@ -11,6 +11,7 @@ export const docs = defineDocs({
         .string()
         .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
         .optional(),
+      format: z.enum(['landscape', 'short']).default('landscape'),
       status: z.enum(LESSON_STATUSES).default('outline'),
       duration: z.string().default('TBD'),
       youtube: z.string().url().optional(),

@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {lookLabel} from '@/lib/lessons';
+import type {StudioFormat} from '@/lib/studio-data';
 import {ChapterList} from './chapter-list';
 import type {PlayerMode} from './player-variables';
 import {StudioPanel} from './studio-panel';
@@ -8,6 +9,8 @@ import {VideoPlayer} from './video-player';
 
 export interface LessonVideoProps {
   slug: string;
+  /** Optional format override; the lesson's own format is used when omitted. */
+  format?: StudioFormat;
   /** Optional look override; the lesson's own look is used when omitted. */
   theme?: string;
   mode?: PlayerMode;
@@ -30,7 +33,7 @@ function scrollToChapterNotes(index: number) {
   window.scrollTo({top: Math.max(0, top), behavior: 'smooth'});
 }
 
-export function LessonVideo({slug, theme, mode}: LessonVideoProps) {
+export function LessonVideo({slug, format, theme, mode}: LessonVideoProps) {
   const [startSection, setStartSection] = useState(0);
   const lesson = getLesson(slug);
 
@@ -49,6 +52,7 @@ export function LessonVideo({slug, theme, mode}: LessonVideoProps) {
 
   const chapter = lesson.chapters[startSection];
   const look = lookLabel(lesson.look);
+  const resolvedFormat = format ?? lesson.format ?? 'landscape';
 
   function selectChapter(index: number) {
     setStartSection(index);
@@ -68,7 +72,14 @@ export function LessonVideo({slug, theme, mode}: LessonVideoProps) {
             Starting at chapter {String(startSection + 1).padStart(2, '0')}: {chapter.name}
           </p>
         ) : null}
-        <VideoPlayer slug={slug} startSection={startSection} autoPlay={startSection > 0} theme={theme} mode={mode} />
+        <VideoPlayer
+          slug={slug}
+          startSection={startSection}
+          format={resolvedFormat}
+          autoPlay={startSection > 0}
+          theme={theme}
+          mode={mode}
+        />
       </div>
       <ChapterList slug={slug} activeIndex={startSection} onSelect={selectChapter} />
       <StudioPanel slug={slug} />

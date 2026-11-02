@@ -1,5 +1,6 @@
 import type {Player} from '@motion-canvas/core';
 import {useEffect, useRef, useState} from 'react';
+import type {StudioFormat} from '@/lib/studio-data';
 import {buildPlayerVariables, type PlayerMode} from './player-variables';
 import {formatPlayerTime} from './player-time';
 import {getLesson} from './use-lessons';
@@ -9,6 +10,8 @@ import {videoSrc} from './video-source';
 export interface VideoPlayerProps {
   slug: string;
   startSection: number;
+  /** Portrait Shorts play at 9:16; everything else keeps the 16:9 frame. */
+  format?: StudioFormat;
   autoPlay?: boolean;
   /** Theme id passed to the lesson as the `theme` variable; omitted keeps the lesson's look. */
   theme?: string;
@@ -38,7 +41,15 @@ function absoluteVideoSrc(slug: string): string {
   return new URL(videoSrc(slug), window.location.href).href;
 }
 
-export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}: VideoPlayerProps) {
+export function VideoPlayer({
+  slug,
+  startSection,
+  format = 'landscape',
+  autoPlay = false,
+  theme,
+  mode,
+}: VideoPlayerProps) {
+  const isShort = format === 'short';
   const status = usePlayerReady();
   const [missing, setMissing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -94,8 +105,8 @@ export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}:
         return;
       }
 
-      element.setAttribute('width', '1920');
-      element.setAttribute('height', '1080');
+      element.setAttribute('width', isShort ? '1080' : '1920');
+      element.setAttribute('height', isShort ? '1920' : '1080');
 
       const player = element.player;
       if (!player) {
@@ -121,7 +132,7 @@ export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}:
       unsubscribers.forEach(unsubscribe => unsubscribe());
       playerApi.current = null;
     };
-  }, [slug, startSection, autoPlay, theme, mode, status, missing]);
+  }, [slug, startSection, isShort, autoPlay, theme, mode, status, missing]);
 
   async function copyBuildCommand() {
     try {
@@ -150,9 +161,17 @@ export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}:
   return (
     <div>
       <div
-        className="relative aspect-video w-full overflow-hidden rounded-lg border border-fd-border bg-black"
+        className={`relative overflow-hidden rounded-lg border border-fd-border bg-black ${
+          isShort ? 'mx-auto' : 'aspect-video w-full'
+        }`}
+        style={
+          isShort
+            ? {aspectRatio: '9 / 16', height: '80vh', maxHeight: '80vh', width: 'auto', maxWidth: '100%'}
+            : undefined
+        }
         role="region"
         aria-label={`Video: ${title}`}
+        data-video-format={format}
       >
         {missing ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-fd-card p-4 text-center text-sm">
@@ -181,7 +200,7 @@ export function VideoPlayer({slug, startSection, autoPlay = false, theme, mode}:
         ) : null}
         {ready ? (
           <motion-canvas-player
-            key={`${slug}-${startSection}-${theme ?? ''}-${mode ?? ''}`}
+            key={`${slug}-${startSection}-${format}-${theme ?? ''}-${mode ?? ''}`}
             ref={playerRef}
             style={{display: 'block', width: '100%', height: '100%'}}
           />

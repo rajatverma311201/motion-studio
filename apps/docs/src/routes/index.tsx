@@ -133,9 +133,19 @@ function TrackerPage() {
                       {String(lessons.indexOf(lesson) + 1).padStart(2, '0')}
                     </td>
                     <td className="px-3 py-3">
-                      <a href={lesson.url} className="font-medium text-fd-primary hover:underline">
-                        {lesson.title}
-                      </a>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <a href={lesson.url} className="font-medium text-fd-primary hover:underline">
+                          {lesson.title}
+                        </a>
+                        {lesson.format === 'short' ? (
+                          <span
+                            className="inline-flex items-center rounded-full border border-fd-border bg-fd-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-fd-muted-foreground"
+                            data-lesson-format="short"
+                          >
+                            SHORT
+                          </span>
+                        ) : null}
+                      </span>
                       {lesson.studio ? null : (
                         <span className="mt-0.5 block text-xs text-fd-muted-foreground">no studio project</span>
                       )}

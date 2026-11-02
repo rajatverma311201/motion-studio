@@ -1,6 +1,6 @@
 import type * as PageTree from 'fumadocs-core/page-tree';
 import type {LessonStatus} from '@/lib/status';
-import {getStudioLesson, type StudioLesson, type StudioLook} from '@/lib/studio-data';
+import {getStudioLesson, type StudioFormat, type StudioLesson, type StudioLook} from '@/lib/studio-data';
 import {source} from '@/lib/source';
 
 export type LessonLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -13,6 +13,7 @@ export interface Lesson {
   course: string;
   courseSlug: string;
   video: string;
+  format: StudioFormat;
   status: LessonStatus;
   duration: string;
   youtube?: string;
@@ -85,6 +86,7 @@ export function getLessons(): Lesson[] {
         course: courseName(page.slugs[0]),
         courseSlug: page.slugs[0] ?? '',
         video,
+        format: page.data.format,
         status: page.data.status,
         duration: page.data.duration,
         youtube: page.data.youtube,

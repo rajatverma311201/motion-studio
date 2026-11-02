@@ -13,9 +13,12 @@ export interface StudioLook {
   mode: 'dark' | 'light';
 }
 
+export type StudioFormat = 'landscape' | 'short';
+
 export interface StudioLesson {
   slug: string;
   title: string;
+  format?: StudioFormat;
   chapters: StudioChapter[];
   summaryPoints?: string[];
   look?: StudioLook;
