@@ -20,7 +20,9 @@ Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 - Instruction-cycle measured chapter lengths: 22.7 s intro, 91.5 s memory, 107.8 s CPU parts, 68.8 s loading, 80.5 s fetch, 50.5 s decode, 103.5 s execute, 60.9 s full run, 123.2 s jumps, 40.2 s recap (targets 25 / 95 / 110 / 70 / 80 / 60 / 120 / 75 / 110 / 45, all within ±25 %).
 - Docs video player: play/pause, restart and a filled seek bar for the selected chapter range; the controls stay visible in the sticky player after a chapter jump.
 - Course `Security Basics` in the docs, with the vertical Short `JWT in 60 Seconds` (1080 × 1920, six chapters, captions only) and a glossary. The player renders Shorts at 9:16 and the tracker shows a `SHORT` badge.
+- Full landscape lesson `JWT Explained` (slug `jwt`, 1920 × 1080, eleven chapters, about 10 minutes planned): intro, sessions vs tokens, anatomy, Base64URL, encode/sign/encrypt, HS256 signing, keys and JWKS, claims, Quarkus practice, pitfalls and recap. The docs page has summary points, per-chapter voiceover notes, the decoded token and both signatures, a cheat sheet, four practice questions and the YouTube description.
 - Shorts support in the kit: `ChaptersFile.format`, `buildShortHud` with a chapter progress bar, `SHORT_ZONES` / `progressSegments` / `readSeconds` (pure and tested), and the JWT pieces: pure Base64URL and token parsing, fixtures verified against Node's `crypto`, `tokenStrip`, `hmacMachine`, `keyIcon`, `lockIcon`, `stamp` and `slam`.
+- Step 22 kit additions: `base64Steps` / `base64Alphabet` / `toUrlSafe`, `validateClaims` and `REGISTERED_CLAIMS`, the generated ES256 fixture (`ES256_TOKEN`, `ES256_JWK`, `ES256_HEADER_JSON`), `sequenceDiagram` / `sequenceLayout`, `compareTable` / `tableLayout` / `wrapGrid`, `base64Visual`, `timeBar` / `timeToX`, the `properties` and `http` code languages, and `pillRow` (the HUD pill arithmetic, pure and tested).
 
 Commands:
 
@@ -29,6 +31,7 @@ Commands:
 - `pnpm studio:dev` — start the editor with no flags; the look comes from the lesson and config.
 - `pnpm new:lesson <slug> "<Title>" --course <course> [--format short]` — scaffold a lesson; `short` writes a 1080 × 1920 project meta.
 - `pnpm new:theme <id> "<Name>" --from <theme>` — copy and register a theme.
+- `pnpm gen:jwt-fixtures` — regenerate `jwt-es256-fixture.ts` from a fresh P-256 key pair; only the public JWK is written.
 - `pnpm status` — print slug, format (`SHORT`), status, duration and YouTube link for every lesson.
 - `pnpm snap:quick` — capture and compare the six quick frames.
 - `pnpm snap:themes` — two quick chapters × 14 looks; add `-- --only <id>`, `-- --mode dark|light` or `-- --full`.
@@ -51,6 +54,7 @@ Commands:
 - The neubrutalist identity belongs to the videos only; `apps/docs` keeps the stock Fumadocs look with its light/dark toggle (step 16).
 - The toy ISA is fixed in `packages/video-kit/src/cpu`; the tests freeze its micro-step ids, texts and traces. The lesson animates the model, never re-implements the rules (step 20).
 - The `instruction-cycle` machine (`build.tsx`, `play.ts`) is lesson code for now. A generic version could move into the kit once a second architecture lesson needs it (step 20).
+- The HUD pill x positions now come from `pillRow(count, options)`. With no options it reproduces the old right-aligned row exactly; the JWT lesson passes `{startX: 290, step: 60, width: 30, activeWidth: 64}` for its eleven pills. `pill-geometry.test.ts` checks bounds, spacing and clearance from the section chip.
 - Steps never run snapshot capture or compare (AGENTS.md section 7); the owner reviews in the editor.
 
 ## Tech debt and open items
@@ -89,6 +93,11 @@ Commands:
 - A Short's project `.meta` is written by `new:lesson --format short` with `shared.size` 1080 × 1920. This is the one allowed `.meta` write: the portrait HUD must measure the canvas before the editor first opens the project; afterwards the editor owns the file (step 21).
 - `instruction-cycle` is `status: animated`, `duration: TBD`; the MP4 render, timestamps and voiceover are still to do.
 - `jwt-short` is `status: animated`, `duration: TBD`; the MP4 render, timestamps, voiceover and the phone check of the Shorts safe zones are still to do.
+- `jwt` is `status: animated`, `duration: TBD`; chapter lengths are planned from the waits, not measured. All eleven `at` values are `0:00` placeholders; replace them after the first render. The MP4 and voiceover are still to do.
+- The signing chapter shows `header.payload` as the machine MESSAGE rather than the full 165-character signing input; the full input is represented by the chip above the machine. A wider machine or a truncated display would be needed to show the literal string.
+- `sequenceDiagram` uses a fixed 76 px message row from the top of the lifelines; more than about seven messages would run past the diagram box. `compareTable` uses a fixed row height per table; very long cells wrap but can still overflow if a row needs more than three lines.
+- The JWKS panel shortens the `x` and `y` coordinates with `shortenMiddle()` for display only; the fixture keeps the full values. The ES256 payload is the same JSON as the HS256 fixture, stored again in the generated file.
+- `base64Visual` is tuned to the three-byte `Man` demo; it handles other short inputs but its fixed vertical bands assume up to four six-bit groups.
 - The toy flag model is simplified: `LOAD` also sets Z, while real CPUs usually set flags from arithmetic or compare instructions (step 20).
 - The `Machine` helpers (`build.tsx`, `play.ts`) are candidates for the kit; they compose the kit primitives but are specific to this lesson (step 20).
 - The docs player reads the Motion Canvas player's internal `player` property for `requestSeek` and `togglePlayback`; the package exposes no seek API. The smoke test guards it, but re-check after upgrading `@motion-canvas/player`.

@@ -1,9 +1,11 @@
 ---
-title: 'JSON Web Tokens, Explained Properly'
-description: 'TODO: one sentence about this lesson.'
+title: 'JWT Explained: structure, signing and pitfalls'
+description: 'A JWT is three dotted parts; the first two are only Base64URL, the signature proves integrity, and the server must still check exp, nbf, iss and aud.'
 video: jwt
-status: outline
+status: animated
 duration: TBD
+level: beginner
+tags: [security, jwt, base64, hmac, jws, jwks, quarkus]
 ---
 
 <LessonVideo slug="jwt" />
@@ -18,101 +20,257 @@ duration: TBD
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- You log in once, and then your app makes hundreds of requests. Each one must prove who you are.
+- A JSON Web Token, a JWT, is the most common way to do that.
+- In this video we build one by hand, sign it, break it, and then secure it.
 
 </VoiceoverNotes>
 
-### 02 · CHAPTER 2
+You log in once but make hundreds of requests. A JWT is how the server keeps recognising you.
+
+### 02 · WHY TOKENS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- HTTP has no memory. Every request arrives on its own, with no idea who sent the last one.
+- With sessions, the server keeps a table of session IDs and looks one up on every request. That store has to be shared by every server.
+- With a token, the client carries its identity in the request and the server only has to check a signature. Any server holding the right key can do that.
+- The trade-off is revocation. A server can delete a session instantly, but a token stays valid until it expires.
 
 </VoiceoverNotes>
 
-### 03 · CHAPTER 3
+A session stores state on the server and every request costs a lookup. A token carries the state with the request, and any server with the key can verify it.
+
+### 03 · ANATOMY
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- A JWT is three Base64URL parts joined by dots: header, payload, signature.
+- The header names the algorithm (alg), the type (typ) and optionally the key to use (kid).
+- The payload is a set of claims. The registered ones are iss, sub, aud, exp, nbf, iat and jti. You can add your own, such as name and role.
+- The signature is not JSON. It is the output of a cryptographic function over the header and the payload.
 
 </VoiceoverNotes>
 
-### 04 · CHAPTER 4
+The three parts have one job each: the header says how the token is signed, the payload carries claims, and the signature seals the first two parts.
+
+### 04 · BASE64URL
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Base64 turns any bytes into text made of 64 safe characters.
+- Three bytes make 24 bits. Cut them into four groups of six bits, and each group picks a letter from the alphabet. Man becomes TWFu.
+- The URL-safe variant replaces + with - and / with \_, and drops the = padding so the token fits in URLs and headers.
+- Anyone can run it backwards. There is no key. This is encoding, not encryption.
 
 </VoiceoverNotes>
 
-### 05 · CHAPTER 5
+Base64URL turns bytes into safe text with a fixed 64-letter alphabet. Anyone can reverse it, which is why the payload is readable.
+
+### 05 · ENCODE, SIGN, ENCRYPT
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Encoding changes the format so systems can carry the data. No key, no secrecy.
+- Signing proves two things: who made the data, and that it has not changed. It does not hide anything.
+- Encryption hides the content so only a key holder can read it.
+- A normal JWT is a JWS: encoded and signed. The encrypted flavour is a JWE and is much rarer. A separate video covers these three in depth.
 
 </VoiceoverNotes>
 
-### 06 · CHAPTER 6
+Encoding changes the format, signing proves integrity and origin, encryption hides content. A normal JWT is encoded and signed only.
+
+### 06 · SIGNING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- To sign, join the encoded header and payload with a dot. That string is the signing input.
+- HS256 runs HMAC with SHA-256 over the signing input, keyed with a shared secret. The tag, in Base64URL, is the signature.
+- To verify, the server splits the token, recomputes the signature from the first two parts with its key, and compares. Use a constant-time comparison.
+- If someone changes even one character of the payload, the recomputed signature is completely different, and the token is rejected.
+- Without the key, an attacker cannot produce a matching signature.
 
 </VoiceoverNotes>
 
-### 07 · CHAPTER 7
+HS256 signs the string `header.payload` with a shared secret. The server recomputes the same value and rejects any token whose signature does not match.
+
+### 07 · KEYS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- With HS256 every service that can verify a token holds the same secret, so every one of them can also create tokens.
+- With RS256 or ES256 the auth server signs with a private key. Services verify with the public key and cannot sign.
+- Public keys are published as a JWKS document, usually at a well-known URL. The kid in the token header selects the right key.
+- Rotation means publishing a new key under a new kid and retiring the old one after old tokens expire.
 
 </VoiceoverNotes>
 
-### 08 · CHAPTER 8
+A shared secret lets every verifier sign too. A key pair keeps the private key on the auth server, and JWKS publishes only the public half.
+
+### 08 · CLAIMS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- A valid signature only says the token is authentic. The server must still check what it claims.
+- exp is the expiry, nbf is the earliest time it is valid, iat is when it was issued.
+- iss must be an issuer you trust, aud must be your service.
+- Allow a few seconds of clock skew between machines.
+- Short-lived access tokens limit the damage of a theft. A refresh token, stored and rotated on the server side, gets a new access token.
 
 </VoiceoverNotes>
 
-### 09 · CHAPTER 9
+After the signature, the server checks exp, nbf, iss and aud. Short access tokens limit the damage, and a refresh token gets a new one without another login.
+
+### 09 · IN PRACTICE
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- The client logs in, receives a token, and sends it in the Authorization header with the Bearer scheme.
+- The API verifies signature and claims locally, with no database call.
+- An HttpOnly cookie cannot be read by scripts but needs CSRF protection. localStorage is simple but exposes the token to any injected script.
+- In Quarkus, the SmallRye JWT extension verifies tokens from configuration (public key location and issuer), and @RolesAllowed uses the token's groups claim.
 
 </VoiceoverNotes>
 
-### 10 · CHAPTER 10
+The client logs in, sends `Authorization: Bearer <token>` on every call, and the API verifies locally. In Quarkus, SmallRye JWT does the checking and `@RolesAllowed` reads the roles.
+
+### 10 · PITFALLS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- alg none: never accept an algorithm the token chooses. The server pins what it accepts.
+- Algorithm confusion: an attacker switches RS256 to HS256 and signs with the public key as the secret. Pin the algorithm per key.
+- Weak secrets can be brute forced offline. Use long random keys.
+- The payload is readable, so keep secrets out of it.
+- A token cannot be revoked by itself. Keep lifetimes short and plan for a denylist or refresh token rotation.
 
 </VoiceoverNotes>
 
-### 11 · CHAPTER 11
+Never let the token choose the algorithm, pin one algorithm per key, use long random secrets, keep secrets out of the payload, and plan for revocation.
+
+### 11 · RECAP
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- A JWT is a header, a payload and a signature.
+- Base64URL is encoding, so the content is readable. The signature gives integrity.
+- Verify the signature and the claims, pin the algorithm, and keep tokens short-lived.
+- Signed is not secret.
 
 </VoiceoverNotes>
+
+Signed is not secret. Verify the signature, verify the claims, pin the algorithm and keep tokens short-lived.
+
+## The token, part by part
+
+The demo token is 187 characters. It is signed with `demo-secret-do-not-use`, a demo value; never use it for anything real.
+
+```text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzQyIiwibmFtZSI6IkFzaGEiLCJyb2xlIjoidXNlciIsImlhdCI6MTc2NzIyNTYwMCwiZXhwIjoxNzY3MjI5MjAwfQ.XpQ15Es-zDMCww0SYkNdghfxin0vTSzIGtKylaGqnvI
+```
+
+The header names the algorithm and the token type:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+The payload carries the user and the lifetime. `iat` is 2026-01-01T00:00:00Z and `exp` is one hour later:
+
+```json
+{
+  "sub": "user_42",
+  "name": "Asha",
+  "role": "user",
+  "iat": 1767225600,
+  "exp": 1767229200
+}
+```
+
+The signature is `base64url(HMAC-SHA256(secret, header + "." + payload))`. Changing `role` to `admin` changes the signing input, so the recomputed signature differs:
+
+| Signing input                        | HMAC-SHA256 signature (Base64URL)             |
+| ------------------------------------ | --------------------------------------------- |
+| `header.payload` (valid)             | `XpQ15Es-zDMCww0SYkNdghfxin0vTSzIGtKylaGqnvI` |
+| `header.tamperedPayload` (`"admin"`) | `_dyqMnm3m5YdyaMJ9eMfaPALsAVi29-pXUOoWxv_SEk` |
+
+The attacker keeps the first signature and changes the payload. The server recomputes the second row, sees a different value, and rejects the token.
+
+## Cheat sheet
+
+Registered claims, in the order the anatomy chapter lists them:
+
+| Claim | Meaning                    |
+| ----- | -------------------------- |
+| `iss` | who issued the token       |
+| `sub` | who the token is about     |
+| `aud` | which service it is for    |
+| `exp` | when it stops being valid  |
+| `nbf` | not valid before this time |
+| `iat` | when it was issued         |
+| `jti` | a unique token id          |
+
+The verification checklist, in order:
+
+| Check     | What the server does                                                             |
+| --------- | -------------------------------------------------------------------------------- |
+| Signature | Recompute it over `header.payload` and compare in constant time.                 |
+| `alg`     | Pin the accepted algorithms on the server; never read the choice from the token. |
+| `exp`     | Reject the token after the expiry, with a few seconds of clock skew.             |
+| `nbf`     | Reject the token before its not-before time.                                     |
+| `iss`     | Require an issuer you trust.                                                     |
+| `aud`     | Require your own service in the audience.                                        |
+
+Algorithms and keys:
+
+| Algorithm | Signing key     | Verification key | Typical use                                  |
+| --------- | --------------- | ---------------- | -------------------------------------------- |
+| `HS256`   | shared secret   | the same secret  | one trusted service; every verifier can sign |
+| `RS256`   | RSA private key | RSA public key   | auth server signs, services verify           |
+| `ES256`   | EC private key  | EC public key    | same, with smaller keys and signatures       |
+
+With `RS256` and `ES256`, publish the public keys as a JWKS document and let `kid` choose the right one. Rotate by publishing a new `kid`, then retire the old key after its tokens expire.
+
+## Try it yourself
+
+### Question 1
+
+Why can any server verify an HS256 token but only the auth server issue an ES256 token?
+
+<Callout type="info" title="Answer">
+  HS256 uses one shared secret for both signing and verifying, so every verifier can also sign; ES256 verification needs
+  only the public key, while signing needs the private key that stays on the auth server.
+</Callout>
+
+### Question 2
+
+A token's payload contains `"password": "hunter2"`. Is it safe because the token is signed?
+
+<Callout type="info" title="Answer">
+  No. The payload is only Base64URL encoded, so anyone can read it; a signature proves integrity, not secrecy.
+</Callout>
+
+### Question 3
+
+An attacker changes `role` to `admin` and keeps the old signature. What happens?
+
+<Callout type="info" title="Answer">
+  The recomputed signature differs from the one in the token, so verification fails and the token is rejected.
+</Callout>
+
+### Question 4
+
+Which header field should the server never trust to choose the verification algorithm?
+
+<Callout type="info" title="Answer">
+  `alg`. The server decides which algorithms it accepts.
+</Callout>
 
 ## YouTube description
 
 <YoutubeDescription slug="jwt" />
+
+The chapter list uses `0:00` placeholders. Replace them with the real timestamps in `chapters.json` (`at`) after the first render.
