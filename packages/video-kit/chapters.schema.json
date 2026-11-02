@@ -17,6 +17,11 @@
       "minLength": 1,
       "description": "Upper-case HUD title, e.g. \"DB INDEXING\"."
     },
+    "format": {
+      "type": "string",
+      "enum": ["landscape", "short"],
+      "description": "Rendering format. Omitted means landscape; short is 1080 x 1920 with the portrait HUD."
+    },
     "theme": {
       "type": "string",
       "description": "Optional theme id. Unknown ids are skipped with a console warning."

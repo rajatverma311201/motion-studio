@@ -19,6 +19,8 @@ export interface LessonChapter {
 export interface ChaptersFile {
   slug: string; // must equal the project file name, e.g. "db-indexing"
   title: string; // "DB INDEXING"  (HUD title)
+  /** Rendering format; defaults to "landscape" so older lessons are unchanged. */
+  format?: LessonFormat;
   /** Optional theme id. Unknown ids are skipped with a console.warn. */
   theme?: string;
   /** Optional theme mode; the theme's defaultMode wins when omitted. */
@@ -32,6 +34,9 @@ export interface ChaptersFile {
 export interface LessonSection extends LessonChapter {
   run: (view: View2D) => ThreadGenerator;
 }
+
+/** Landscape lessons use 1920 x 1080; Shorts use 1080 x 1920 with a portrait HUD. */
+export type LessonFormat = 'landscape' | 'short';
 
 export interface LessonConfig {
   chapters: ChaptersFile;

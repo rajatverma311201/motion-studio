@@ -2,7 +2,7 @@ import type {DescriptionOf} from '@motion-canvas/core';
 import {useScene, waitFor} from '@motion-canvas/core';
 import type {Scene2D} from '@motion-canvas/2d';
 import {makeScene2D} from '@motion-canvas/2d';
-import {buildHud, setSection} from '../hud';
+import {buildHud, buildShortHud, setSection} from '../hud';
 import {colors} from '../theme';
 import {parseLookHash, resolveThemeSelection, setActiveTheme} from '../themes/active-theme';
 import {readBuildLook, readLocationHash} from '../themes/build-look';
@@ -109,7 +109,11 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
     view.fill(colors.bg);
     const start = readStartSection(total);
     const hudDefs = resolveChapters(chapters).map(({name, color}) => ({name, color}));
-    buildHud(view, chapters.title, hudDefs, config.hud);
+    if (chapters.format === 'short') {
+      buildShortHud(view, chapters.title, hudDefs);
+    } else {
+      buildHud(view, chapters.title, hudDefs, config.hud);
+    }
 
     for (let i = start; i < total; i++) {
       yield* setSection(i);
