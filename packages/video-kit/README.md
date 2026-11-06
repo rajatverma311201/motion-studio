@@ -80,6 +80,11 @@ src/
       token-strip.tsx     tokenStrip()
       token-strip-layout.ts layoutToken() (pure)
       hmac-machine.tsx    hmacMachine()
+      process-machine.tsx processMachine() (generic inputs and outputs)
+      key-pair-card.tsx   keyPairCard() with showPublic(), handOut() and lockPrivate()
+      avalanche-grid.tsx  avalancheGrid() with showA() and morphToB()
+      avalanche-grid-layout.ts gridLayout() (pure)
+      avalanche-grid-layout.test.ts grid layout unit tests
       icons.tsx           keyIcon(), lockIcon()
       text-morph-card.tsx textMorphCard() with morphTo() and swap()
       base64-visual.tsx   base64Visual() with its step-by-step Base64 animation
@@ -412,6 +417,23 @@ yield * machine.run({message: 'header.payload', key: 'SECRET', tag: 'XpQ15Es-…
 `tokenStrip()` lays one `Txt` per same-colour run on a 0.6 em grid. `layoutToken(token, charsPerLine)` is the pure wrapper and is tested against the 187-character fixture. `hmacMachine()` never computes a signature: the caller passes the message, key and tag strings, and the machine only animates them. `stamp()` is a rotated double-bordered label; `slam()` scales it in and shakes it. `keyIcon()` and `lockIcon()` are vector shapes only; `lockIcon()` returns `{node, unlock(), lock()}`.
 
 `src/crypto-demo/` holds the encoding/signing/encryption demo values, the hash and signature fixtures, the story data and `scrambleFrame()`, all pure and verified against `node:crypto`. `hexToBits()` and `bitDiff()` drive the avalanche grid; `chunkHex()` splits a SHA-256 digest into four rows. `textMorphCard()` wraps one mono string in a card: `morphTo(to, dur, seed?)` scrambles it to the new string with `scrambleText()`, and `swap(to)` changes it with an accent flash. `verdictRow()` draws a closing label tile and value. Both reject literals: pass `colors.*` and the fixture constants.
+
+`processMachine()` generalises the sealing machine: labelled inputs on the left, a centre box and outputs on the right. It never computes anything; `run(values)` slides the strings in, pulses the box and moves the outputs out. `avalancheGrid()` draws a 16 by 16 bit grid and flips the differing cells red, and `keyPairCard()` holds one owner's public and private halves, can hand a copy of the public key to any scene position and can lock the private half.
+
+```ts
+const machine = processMachine({
+  x: 0,
+  y: 0,
+  w: 1100,
+  h: 420,
+  label: 'SHA-256',
+  color: colors.orange,
+  inputs: [{id: 'message', label: 'MESSAGE'}],
+  outputs: [{id: 'digest', label: 'DIGEST'}],
+});
+view.add(machine.node);
+yield * machine.run({message: DEMO_MESSAGE, digest: shortHex(DEMO_SHA256, 8)});
+```
 
 ```ts
 const card = textMorphCard({x: 0, y: -330, w: 920, text: DEMO_MESSAGE, color: colors.cyan, fontSize: 64});
