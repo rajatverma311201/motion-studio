@@ -1,6 +1,7 @@
 export * from './animation';
 export * from './components';
 export * from './cpu';
+export * from './crypto-demo';
 export * from './hud';
 export * from './jwt';
 export * from './lesson';

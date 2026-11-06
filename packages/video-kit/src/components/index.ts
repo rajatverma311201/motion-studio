@@ -7,6 +7,7 @@ export {
   keyIcon,
   layoutToken,
   lockIcon,
+  textMorphCard,
   tokenStrip,
   type Base64Visual,
   type Base64VisualOptions,
@@ -16,6 +17,8 @@ export {
   type KeyIconOptions,
   type LockIcon,
   type LockIconOptions,
+  type TextMorphCard,
+  type TextMorphCardOptions,
   type TokenLine,
   type TokenPart,
   type TokenRun,
@@ -71,6 +74,7 @@ export {statCard, type StatCard} from './stat-card';
 export {timelineLane, type TimelineLaneOptions} from './timeline-lane';
 export {titledPanel, type TitledPanelOptions} from './titled-panel';
 export {titleBlock, titlePill, type TitleBlockOptions, type TitlePillOptions} from './title-block';
+export {VERDICT_ROW_HEIGHT, verdictRow, type VerdictRowOptions} from './verdict-row';
 export {
   flyAlong,
   highlightRow,

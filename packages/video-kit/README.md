@@ -28,11 +28,17 @@ src/
     registry.ts           themes, themeIds, getThemeById(), registerTheme()
     active-theme.ts       setActiveTheme(), getTheme(), resolveThemeSelection()
     golden/               frozen default look for the golden test
+  crypto-demo/
+    crypto-fixtures.ts    demo message, Base64, hex, HMAC and AES-GCM values, shortHex()
+    crypto-fixtures.test.ts  recomputes every value with node:crypto
+    scramble.ts           scrambleFrame() (pure, deterministic text morph)
+    scramble.test.ts      scramble unit tests
   animation/
     pop.ts                pop()
     shake.ts              shake()
     slam.ts               slam()
     count-to.ts           countTo()
+    scramble-text.ts      scrambleText()
     seeded-random.ts      seededRandom() (deterministic scenes)
   components/
     account-card.tsx      accountCard()
@@ -67,6 +73,7 @@ src/
       token-strip-layout.ts layoutToken() (pure)
       hmac-machine.tsx    hmacMachine()
       icons.tsx           keyIcon(), lockIcon()
+      text-morph-card.tsx textMorphCard() with morphTo() and swap()
       base64-visual.tsx   base64Visual() with its step-by-step Base64 animation
     diagrams/
       sequence-diagram.tsx sequenceDiagram()
@@ -76,6 +83,7 @@ src/
       time-bar.tsx        timeBar()
       time-to-x.ts        timeToX() (pure)
     stamp.tsx             stamp()
+    verdict-row.tsx       verdictRow()
   jwt/
     base64url.ts          encodeBase64Url(), decodeBase64Url(), decodeBase64UrlText()
     base64-steps.ts       base64Steps(), base64Alphabet, toUrlSafe() (pure)
@@ -394,6 +402,14 @@ yield * machine.run({message: 'header.payload', key: 'SECRET', tag: 'XpQ15Es-…
 ```
 
 `tokenStrip()` lays one `Txt` per same-colour run on a 0.6 em grid. `layoutToken(token, charsPerLine)` is the pure wrapper and is tested against the 187-character fixture. `hmacMachine()` never computes a signature: the caller passes the message, key and tag strings, and the machine only animates them. `stamp()` is a rotated double-bordered label; `slam()` scales it in and shakes it. `keyIcon()` and `lockIcon()` are vector shapes only; `lockIcon()` returns `{node, unlock(), lock()}`.
+
+`src/crypto-demo/` holds the encoding/signing/encryption demo values and `scrambleFrame()`, all pure and verified against `node:crypto`. `textMorphCard()` wraps one mono string in a card: `morphTo(to, dur, seed?)` scrambles it to the new string with `scrambleText()`, and `swap(to)` changes it with an accent flash. `verdictRow()` draws a closing label tile and value. Both reject literals: pass `colors.*` and the fixture constants.
+
+```ts
+const card = textMorphCard({x: 0, y: -330, w: 920, text: DEMO_MESSAGE, color: colors.cyan, fontSize: 64});
+view.add(card.node);
+yield * card.morphTo(DEMO_BASE64, 1.2, 23);
+```
 
 ## TinyCPU model and primitives
 
