@@ -19,7 +19,10 @@ Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 - Course `Computer Organization` in the docs, with an overview, the `instruction-cycle` lesson and a glossary. The lesson has ten animated chapters; the page has summary points, per-chapter voiceover notes, a cheat sheet and four practice questions.
 - Instruction-cycle measured chapter lengths: 22.7 s intro, 91.5 s memory, 107.8 s CPU parts, 68.8 s loading, 80.5 s fetch, 50.5 s decode, 103.5 s execute, 60.9 s full run, 123.2 s jumps, 40.2 s recap (targets 25 / 95 / 110 / 70 / 80 / 60 / 120 / 75 / 110 / 45, all within ±25 %).
 - Docs video player: play/pause, restart and a filled seek bar for the selected chapter range; the controls stay visible in the sticky player after a chapter jump.
-- Course `Security Basics` in the docs, with the vertical Short `JWT in 60 Seconds` (1080 × 1920, six chapters, captions only) and a glossary. The player renders Shorts at 9:16 and the tracker shows a `SHORT` badge.
+- Course `Security Basics` in the docs, with two vertical Shorts and a glossary. The player renders Shorts at 9:16 and the tracker shows a `SHORT` badge.
+- `JWT in 60 Seconds` (slug `jwt-short`, 1080 × 1920, six chapters): three dotted parts, Base64URL, the HMAC signature and tampering.
+- `Encoding vs Signing vs Encryption in 60 Seconds` (slug `encode-sign-encrypt-short`, 1080 × 1920, five chapters, about 55 s): one message is Base64-encoded, HMAC-signed and AES-GCM-encrypted, with an encoding/signing/encryption verdict. Docs page, glossary terms and course cards are in place.
+- Step 23 kit additions: `crypto-demo/` fixtures verified with `node:crypto`, `scrambleFrame` / `scrambleText`, `textMorphCard` and `verdictRow`.
 - Full landscape lesson `JWT Explained` (slug `jwt`, 1920 × 1080, eleven chapters, about 10 minutes planned): intro, sessions vs tokens, anatomy, Base64URL, encode/sign/encrypt, HS256 signing, keys and JWKS, claims, Quarkus practice, pitfalls and recap. The docs page has summary points, per-chapter voiceover notes, the decoded token and both signatures, a cheat sheet, four practice questions and the YouTube description.
 - Shorts support in the kit: `ChaptersFile.format`, `buildShortHud` with a chapter progress bar, `SHORT_ZONES` / `progressSegments` / `readSeconds` (pure and tested), and the JWT pieces: pure Base64URL and token parsing, fixtures verified against Node's `crypto`, `tokenStrip`, `hmacMachine`, `keyIcon`, `lockIcon`, `stamp` and `slam`.
 - Step 22 kit additions: `base64Steps` / `base64Alphabet` / `toUrlSafe`, `validateClaims` and `REGISTERED_CLAIMS`, the generated ES256 fixture (`ES256_TOKEN`, `ES256_JWK`, `ES256_HEADER_JSON`), `sequenceDiagram` / `sequenceLayout`, `compareTable` / `tableLayout` / `wrapGrid`, `base64Visual`, `timeBar` / `timeToX`, the `properties` and `http` code languages, and `pillRow` (the HUD pill arithmetic, pure and tested).
@@ -55,6 +58,7 @@ Commands:
 - The toy ISA is fixed in `packages/video-kit/src/cpu`; the tests freeze its micro-step ids, texts and traces. The lesson animates the model, never re-implements the rules (step 20).
 - The `instruction-cycle` machine (`build.tsx`, `play.ts`) is lesson code for now. A generic version could move into the kit once a second architecture lesson needs it (step 20).
 - The HUD pill x positions now come from `pillRow(count, options)`. With no options it reproduces the old right-aligned row exactly; the JWT lesson passes `{startX: 290, step: 60, width: 30, activeWidth: 64}` for its eleven pills. `pill-geometry.test.ts` checks bounds, spacing and clearance from the section chip.
+- The `encode-sign-encrypt-short` layout test mirrors `SHORT_ZONES` locally. Importing the kit barrel under `node --import tsx` loads Motion Canvas and fails (`codeSignal is not a function`); keep the copy in sync with `hud/short-layout.ts` (step 23).
 - Steps never run snapshot capture or compare (AGENTS.md section 7); the owner reviews in the editor.
 
 ## Tech debt and open items
@@ -104,6 +108,10 @@ Commands:
 - The Short HUD safe zones are estimates of the YouTube Shorts UI. The layout test keeps content out of them, but check the first render on a phone before publishing (step 21).
 - `tokenStrip` creates one `Txt` per same-colour run per line; a much longer token would need a cheaper renderer. The 187-character fixture is five runs per line at 34 px (step 21).
 - `hmacMachine` always uses the lime tag chip. A red "recomputed" tag is the lesson's comparison chip and INVALID stamp, not a machine option (step 21).
+- `hmacMachine.run()` clears its transient tag on every run, so the signing chapter keeps the first tag as a separate comparison chip; the machine shows the second tag (step 23).
+- `textMorphCard` derives its height as `fontSize * 2` and never wraps. Its widest current string is 20 Base64 characters at 64 px inside a 920 px card (step 23).
+- `scrambleFrame` draws unresolved characters from a fixed Base64-ish glyph set, so the hex ciphertext morph also shows letters. It is deterministic and the glyph set is part of the look (step 23).
+- `encode-sign-encrypt-short` is `status: animated`, `duration: TBD`; the MP4 render, timestamps, voiceover and the phone safe-zone check are still to do (step 23).
 - The Shorts page appends `#Shorts #JWT #Security` as a visible tag line below `<YoutubeDescription>`; the copy button does not include them (step 21).
 
 ## Blocked

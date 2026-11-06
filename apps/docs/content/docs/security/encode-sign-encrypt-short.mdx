@@ -1,0 +1,105 @@
+---
+title: 'Encoding vs Signing vs Encryption in 60 Seconds'
+description: 'Encoding changes the format, signing proves nothing changed, encryption hides the message. One demo message shows what each one actually protects.'
+video: encode-sign-encrypt-short
+format: short
+status: animated
+duration: TBD
+level: beginner
+tags: [security, encoding, signing, encryption, shorts]
+---
+
+<LessonVideo slug="encode-sign-encrypt-short" />
+
+## Summary points
+
+<SummaryPoints slug="encode-sign-encrypt-short" />
+
+## Beats and voiceover notes
+
+### 01 · HOOK
+
+<VoiceoverNotes>
+
+- Three words that are mixed up all the time: encoding, signing and encryption.
+- They look similar because each one turns a message into something that looks different.
+- They solve three different problems.
+
+</VoiceoverNotes>
+
+### 02 · ENCODING
+
+<VoiceoverNotes>
+
+- Encoding changes how data is written so that systems can carry it. Base64 is the famous example.
+- There is no key and the rules are public, so anyone can reverse it.
+- It protects nothing.
+
+</VoiceoverNotes>
+
+### 03 · SIGNING
+
+<VoiceoverNotes>
+
+- Signing adds a tag computed from the message and a key.
+- If the message changes, the tag no longer matches, and without the key nobody can make a new matching tag.
+- The message itself stays readable. Signing is about trust, not secrecy.
+
+</VoiceoverNotes>
+
+### 04 · ENCRYPTION
+
+<VoiceoverNotes>
+
+- Encryption scrambles the message with a key. Anyone watching the network sees noise.
+- With the right key you get the message back; with the wrong key you get nothing useful.
+- Modern modes such as AES-GCM also add a tag, so they detect tampering too.
+
+</VoiceoverNotes>
+
+### 05 · VERDICT
+
+<VoiceoverNotes>
+
+- Encoding is for format, signing is for trust, encryption is for secrecy.
+- If you remember one thing: Base64 is not encryption.
+
+</VoiceoverNotes>
+
+## The numbers
+
+The demo message is 14 bytes: `pay 500 to Bob`. Encoding changes only how those bytes are written:
+
+| Form   | Value                          |
+| ------ | ------------------------------ |
+| Text   | `pay 500 to Bob`               |
+| Base64 | `cGF5IDUwMCB0byBCb2I=`         |
+| Hex    | `7061792035303020746f20426f62` |
+
+Signing keeps the message readable and adds a tag. HMAC-SHA256 with the demo key `demo-secret-do-not-use` gives:
+
+| Message          | HMAC-SHA256 (hex)                                                  |
+| ---------------- | ------------------------------------------------------------------ |
+| `pay 500 to Bob` | `806ec60a250deeaa0c1b8d80cc77510ac5461c905ce2696706d219a659c625c0` |
+| `pay 900 to Bob` | `14c6ef471d7555430c0550c5a7611c28f9b7bc93dadec1cd20c5cb83301f193e` |
+
+One digit changes, and the whole tag changes. The message is still readable either way.
+
+Encryption hides the message. AES-256-GCM uses a key derived as `SHA-256("demo-aes-key-do-not-use")` and the fixed IV `000102030405060708090a0b`:
+
+| Field            | Value                                                              |
+| ---------------- | ------------------------------------------------------------------ |
+| Key (hex)        | `bd8585be67b1731ea513f050e76edb9cf3cb76dc46b3122337f3d7498eed0212` |
+| IV (hex)         | `000102030405060708090a0b`                                         |
+| Ciphertext (hex) | `1e86c756966fd4fb24897b29496b` (14 bytes, same as the message)     |
+| Auth tag (hex)   | `b79e662dac101127d0a224bf05f5ced8`                                 |
+
+The right key decrypts back to `pay 500 to Bob`. A key derived from `wrong-key` fails authentication with `unable to authenticate data`.
+
+All keys, IVs and tags on this page are demo values. Never use them for anything real.
+
+## YouTube description
+
+<YoutubeDescription slug="encode-sign-encrypt-short" />
+
+Append the tags when you upload: `#Shorts` `#Security` `#Encryption`

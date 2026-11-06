@@ -1,5 +1,5 @@
 {
   "title": "Security Basics",
   "root": true,
-  "pages": ["index", "jwt-short", "jwt", "glossary"]
+  "pages": ["index", "jwt-short", "jwt", "encode-sign-encrypt-short", "glossary"]
 }

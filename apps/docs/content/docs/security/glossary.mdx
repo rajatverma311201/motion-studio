@@ -1,36 +1,47 @@
 ---
 title: Glossary
-description: The token and signature terms used across the security lessons, in one place.
+description: The token, signature and encryption terms used across the security lessons, in one place.
 ---
 
 <p className="eyebrow">Reference</p>
 
-Short definitions for the vocabulary of tokens, signatures and encoding.
+Short definitions for the vocabulary of tokens, signatures, encoding and encryption.
 
-| Term              | Meaning                                                                                |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| Algorithm (`alg`) | The signing algorithm named in the header, e.g. `HS256`.                               |
-| Audience (`aud`)  | The service the token is meant for.                                                    |
-| Base64URL         | A URL-safe text encoding of bytes; it is not encryption.                               |
-| Bearer token      | A token sent in the `Authorization` header; whoever holds it is treated as the bearer. |
-| Claim             | A key-value fact in the payload, e.g. `sub` or `role`.                                 |
-| Claim validation  | Checking `exp`, `nbf`, `iss` and `aud` after the signature.                            |
-| Clock skew        | Small time differences between servers; claim checks tolerate a few seconds.           |
-| Expiry (`exp`)    | The time after which the token must be rejected.                                       |
-| HMAC              | A keyed hash (HMAC-SHA256) used to sign a JWT with a shared secret.                    |
-| Header            | The first part: JSON that names the algorithm and token type.                          |
-| Issuer (`iss`)    | The service that created the token.                                                    |
-| JWE               | JSON Web Encryption: the encrypted flavour of a JWT, much rarer than JWS.              |
-| JWKS              | JSON Web Key Set: a document publishing the public keys used to verify tokens.         |
-| JWS               | JSON Web Signature: a signed JWT, the usual case.                                      |
-| JWT               | JSON Web Token: three Base64URL parts joined by dots.                                  |
-| Key pair          | A private key and its matching public key.                                             |
-| `kid`             | Key id in the header; selects the right key from a JWKS document.                      |
-| Private key       | The half of a key pair that signs; it never leaves the auth server.                    |
-| Public key        | The half of a key pair that verifies; safe to publish.                                 |
-| Payload           | The second part: JSON claims about the user and the token.                             |
-| Refresh token     | A long-lived token stored server side, used to get a new short access token.           |
-| Secret key        | The shared key only the server knows, used to sign and verify.                         |
-| Signature         | The third part: proof that header and payload were not changed.                        |
-| Subject (`sub`)   | The user or entity the token is about.                                                 |
-| Token             | A string a server issues and later checks instead of a password.                       |
+| Term                  | Meaning                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| AES-GCM               | AES in Galois/Counter Mode: authenticated encryption that hides the data and appends a tag for tampering.      |
+| Algorithm (`alg`)     | The signing algorithm named in the header, e.g. `HS256`.                                                       |
+| Asymmetric encryption | Encryption with a key pair: the public key encrypts, and only the private key decrypts.                        |
+| Audience (`aud`)      | The service the token is meant for.                                                                            |
+| Authentication tag    | The short check value AES-GCM appends; a changed byte or the wrong key makes verification fail.                |
+| Base64URL             | A URL-safe text encoding of bytes; it is not encryption.                                                       |
+| Bearer token          | A token sent in the `Authorization` header; whoever holds it is treated as the bearer.                         |
+| Ciphertext            | The scrambled output of encryption; without the key it looks like random bytes.                                |
+| Claim                 | A key-value fact in the payload, e.g. `sub` or `role`.                                                         |
+| Claim validation      | Checking `exp`, `nbf`, `iss` and `aud` after the signature.                                                    |
+| Clock skew            | Small time differences between servers; claim checks tolerate a few seconds.                                   |
+| Digital signature     | A value made with a private key that anyone holding the public key can verify; it proves origin and integrity. |
+| Encoding              | A reversible format change with public rules, such as Base64 or hex. No key, no secrecy.                       |
+| Expiry (`exp`)        | The time after which the token must be rejected.                                                               |
+| Hashing               | A one-way fingerprint of data with a fixed length; you cannot turn a hash back into the input.                 |
+| HMAC                  | A keyed hash (HMAC-SHA256) used to sign a JWT with a shared secret.                                            |
+| Header                | The first part: JSON that names the algorithm and token type.                                                  |
+| Issuer (`iss`)        | The service that created the token.                                                                            |
+| JWE                   | JSON Web Encryption: the encrypted flavour of a JWT, much rarer than JWS.                                      |
+| JWKS                  | JSON Web Key Set: a document publishing the public keys used to verify tokens.                                 |
+| JWS                   | JSON Web Signature: a signed JWT, the usual case.                                                              |
+| JWT                   | JSON Web Token: three Base64URL parts joined by dots.                                                          |
+| Key pair              | A private key and its matching public key.                                                                     |
+| `kid`                 | Key id in the header; selects the right key from a JWKS document.                                              |
+| MAC                   | Message Authentication Code: a keyed hash, such as HMAC, that proves integrity and origin to key holders.      |
+| Nonce (IV)            | A number used once per encryption; reusing it with the same key breaks the mode's guarantees.                  |
+| Plaintext             | The readable message before encryption.                                                                        |
+| Private key           | The half of a key pair that signs; it never leaves the auth server.                                            |
+| Public key            | The half of a key pair that verifies; safe to publish.                                                         |
+| Payload               | The second part: JSON claims about the user and the token.                                                     |
+| Refresh token         | A long-lived token stored server side, used to get a new short access token.                                   |
+| Secret key            | The shared key only the server knows, used to sign and verify.                                                 |
+| Signature             | The third part: proof that header and payload were not changed.                                                |
+| Subject (`sub`)       | The user or entity the token is about.                                                                         |
+| Symmetric encryption  | Encryption with one shared key for both directions, e.g. AES.                                                  |
+| Token                 | A string a server issues and later checks instead of a password.                                               |
