@@ -5,11 +5,11 @@ import {problemSection} from './sections/02-problem';
 import {encodingSection} from './sections/03-encoding';
 import {hashingSection} from './sections/04-hashing';
 import {signingSection} from './sections/05-signing';
-import {chapter6Section} from './sections/06-chapter-6';
-import {chapter7Section} from './sections/07-chapter-7';
-import {chapter8Section} from './sections/08-chapter-8';
-import {chapter9Section} from './sections/09-chapter-9';
-import {chapter10Section} from './sections/10-chapter-10';
+import {encryptionSection} from './sections/06-encryption';
+import {keyPairsSection} from './sections/07-key-pairs';
+import {combiningSection} from './sections/08-combining';
+import {mixUpsSection} from './sections/09-mix-ups';
+import {recapSection} from './sections/10-recap';
 
 loadFonts();
 
@@ -21,11 +21,11 @@ export default defineLesson({
     encodingSection,
     hashingSection,
     signingSection,
-    chapter6Section,
-    chapter7Section,
-    chapter8Section,
-    chapter9Section,
-    chapter10Section,
+    encryptionSection,
+    keyPairsSection,
+    combiningSection,
+    mixUpsSection,
+    recapSection,
   ],
   hud: {
     sectionChipX: -560,
