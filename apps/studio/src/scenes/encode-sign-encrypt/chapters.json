@@ -1,0 +1,76 @@
+{
+  "slug": "encode-sign-encrypt",
+  "title": "ENCODE · SIGN · ENCRYPT",
+  "format": "landscape",
+  "summaryPoints": [
+    "Encoding changes the format so data can travel; it needs no key and protects nothing.",
+    "A hash is a one-way fingerprint; it detects change, but anyone can recompute it.",
+    "Signing adds a keyed tag or a digital signature that proves origin and integrity; the message stays readable.",
+    "Encryption hides the content; symmetric encryption uses one shared key, asymmetric uses a key pair.",
+    "Real systems combine them: AES-GCM, HTTPS, signed JWTs.",
+    "Passwords are hashed with a slow salted function, not encrypted.",
+    "Base64 is not encryption, a hash is not encryption, and a signature is not secrecy."
+  ],
+  "chapters": [
+    {
+      "name": "INTRO",
+      "color": "lime",
+      "summary": "Encoding, hashing, signing and encryption sound alike but solve four different problems.",
+      "at": "0:00"
+    },
+    {
+      "name": "THE PROBLEM",
+      "color": "cyan",
+      "summary": "Alice, her bank and Eve: format, secrecy, integrity and authenticity are separate needs.",
+      "at": "0:00"
+    },
+    {
+      "name": "ENCODING",
+      "color": "pink",
+      "summary": "Encoding rewrites data in a public format; no key, so anyone can reverse it.",
+      "at": "0:00"
+    },
+    {
+      "name": "HASHING",
+      "color": "orange",
+      "summary": "A hash is a one-way fixed-size fingerprint; it detects change but proves no origin.",
+      "at": "0:00"
+    },
+    {
+      "name": "SIGNING",
+      "color": "yellow",
+      "summary": "A keyed tag (HMAC) or a digital signature proves origin and integrity; the message stays readable.",
+      "at": "0:00"
+    },
+    {
+      "name": "ENCRYPTION",
+      "color": "red",
+      "summary": "Symmetric encryption hides content with one shared key; the hard part is sharing it.",
+      "at": "0:00"
+    },
+    {
+      "name": "KEY PAIRS",
+      "color": "violet",
+      "summary": "Public and private keys solve key sharing: encrypt with the public key, sign with the private key.",
+      "at": "0:00"
+    },
+    {
+      "name": "COMBINING",
+      "color": "cyan",
+      "summary": "Real systems combine the tools: AES-GCM, HTTPS, JWTs and password storage.",
+      "at": "0:00"
+    },
+    {
+      "name": "MIX-UPS",
+      "color": "pink",
+      "summary": "Five common myths, each replaced by the truth.",
+      "at": "0:00"
+    },
+    {
+      "name": "RECAP",
+      "color": "yellow",
+      "summary": "Pick the tool for the problem you have.",
+      "at": "0:00"
+    }
+  ]
+}
