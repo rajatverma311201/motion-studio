@@ -75,6 +75,7 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 | `pnpm new:theme <id> "<Name>" --from <theme>`        | Copy an existing theme, register it and sync the docs data.                                                                                                                                              |
 | `pnpm gen:signature-fixture`                         | Regenerate the ECDSA P-256 public key and signature fixture used by the signing lesson.                                                                                                                  |
 | `pnpm status`                                        | Print slug, status, duration and YouTube link for every lesson page.                                                                                                                                     |
+| `pnpm voice:mux <slug>`                              | Lay the recorded voice clips onto the newest MP4 for the lesson; writes `<video>.voiced.mp4` next to it. Add `--video`, `--out` or `--no-normalize`.                                                     |
 | `pnpm snap:capture current [slug]`                   | Capture every section of every video (or one) to `.snapshots/current`.                                                                                                                                   |
 | `pnpm snap:compare [slug]`                           | Pixel-compare the current capture with `.snapshots/baseline`.                                                                                                                                            |
 | `pnpm snap:themes`                                   | Capture two quick showcase chapters in 7 themes × 2 modes; write `.snapshots/themes.html`. Add `-- --only <id>` for one theme, `-- --mode dark\|light` for one row, or `-- --full` for all six chapters. |
@@ -147,7 +148,9 @@ pnpm studio --pause chapter           # one pause at the first beat of each chap
 pnpm studio --pause off               # no slides at all
 ```
 
-Clips and manifests land in `apps/studio/voice/<slug>/` (git-ignored, local data — back it up). The default is `play` as soon as a manifest with clips exists, and the docs player bundle always runs with `voice: off`. The complete workflow is in `apps/docs/content/docs/production/recording-workflow.mdx`.
+Clips and manifests land in `apps/studio/voice/<slug>/` (git-ignored, local data — back it up). The default is `play` as soon as a manifest with clips exists, and the docs player bundle always runs with `voice: off`.
+
+After the MP4 render, `pnpm voice:mux <slug>` reads `manifest.json` and `timing.json`, places every clip at its beat start, and writes `<video>.voiced.mp4` next to the input. The video stream is copied, the audio is mixed with ffmpeg's `amix` and normalised with `loudnorm` unless `--no-normalize` is given. The complete workflow is in `apps/docs/content/docs/production/recording-workflow.mdx`.
 
 ## Adding a lesson
 

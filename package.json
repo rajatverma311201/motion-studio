@@ -22,6 +22,7 @@
     "gen:jwt-fixtures": "node --import tsx tools/scripts/gen-jwt-fixtures.mjs",
     "gen:signature-fixture": "node tools/scripts/gen-signature-fixture.mjs",
     "status": "node tools/scripts/lesson-status.mjs",
+    "voice:mux": "node --import tsx tools/scripts/voice-mux.mjs",
     "dump": "node tools/scripts/project-dump.mjs",
     "videos:build": "pnpm sync && pnpm studio:build",
     "videos:watch": "pnpm --filter @motion-studio/studio exec vite build --watch",
