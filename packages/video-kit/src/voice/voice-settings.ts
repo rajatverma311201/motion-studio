@@ -13,7 +13,10 @@ export type PauseMode = 'beat' | 'chapter' | 'off';
 /** Whether the scene records clips, plays them back, or ignores the voice track. */
 export type VoiceMode = 'off' | 'record' | 'play';
 
+/** Every valid pause mode, for CLI validation and tests. */
 export const PAUSE_MODES: readonly PauseMode[] = ['beat', 'chapter', 'off'];
+
+/** Every valid voice mode, for CLI validation and tests. */
 export const VOICE_MODES: readonly VoiceMode[] = ['off', 'record', 'play'];
 
 /** The two sources that can name a pause mode, plus an optional fallback. */

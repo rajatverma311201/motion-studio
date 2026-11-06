@@ -51,7 +51,15 @@ function extensionFor(mimeType: string): Extension {
   return 'webm';
 }
 
-/** One armed microphone plus one recorder per caption beat. */
+/**
+ * One armed microphone plus one recorder per caption beat.
+ *
+ * @example
+ * const recorder = new VoiceRecorder({slug: 'db-transactions'});
+ * await recorder.arm();
+ * recorder.start('01-01', '01-01 · Intro');
+ * recorder.stop();
+ */
 export class VoiceRecorder {
   private readonly slug: string;
   private readonly hooks: VoiceRecorderOptions;

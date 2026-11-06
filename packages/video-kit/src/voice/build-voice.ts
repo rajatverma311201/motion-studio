@@ -24,7 +24,12 @@ export function readBuildVoice(): BuildVoice {
   };
 }
 
-/** Whether a loaded manifest actually holds a clip. */
+/**
+ * Whether a loaded manifest actually holds a clip.
+ *
+ * @example
+ * hasClips({slug: 'demo', version: 1, clips: {}}); // false
+ */
 export function hasClips(manifest: VoiceManifest | null): boolean {
   return manifest !== null && Object.keys(manifest.clips).length > 0;
 }

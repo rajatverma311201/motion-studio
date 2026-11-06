@@ -56,7 +56,12 @@ const runtime = {
   hooks: {} as VoiceHooks,
 };
 
-/** Start a lesson run: reset the counters, timing table and previous beat. */
+/**
+ * Start a lesson run: reset the counters, timing table and previous beat.
+ *
+ * @example
+ * configureVoice({slug: 'demo', voice: 'play', pause: 'beat', manifest});
+ */
 export function configureVoice(setup: VoiceSetup): void {
   runtime.slug = setup.slug;
   runtime.voice = setup.voice;
@@ -68,37 +73,72 @@ export function configureVoice(setup: VoiceSetup): void {
   runtime.previous = null;
 }
 
-/** The active voice mode. */
+/**
+ * The active voice mode.
+ *
+ * @example
+ * getVoiceMode(); // 'record'
+ */
 export function getVoiceMode(): VoiceMode {
   return runtime.voice;
 }
 
-/** The active pause mode, already forced to `beat` in record mode. */
+/**
+ * The active pause mode, already forced to `beat` in record mode.
+ *
+ * @example
+ * getPauseMode(); // 'beat'
+ */
 export function getPauseMode(): PauseMode {
   return runtime.pause;
 }
 
-/** The loaded manifest, or `null` when the voice server had no clips. */
+/**
+ * The loaded manifest, or `null` when the voice server had no clips.
+ *
+ * @example
+ * getVoiceManifest()?.clips['03-02']?.seconds; // 6.42
+ */
 export function getVoiceManifest(): VoiceManifest | null {
   return runtime.manifest;
 }
 
-/** The current chapter number (1-based), or 0 before the first section. */
+/**
+ * The current chapter number (1-based), or 0 before the first section.
+ *
+ * @example
+ * getVoiceChapter(); // 3
+ */
 export function getVoiceChapter(): number {
   return runtime.chapter;
 }
 
-/** How many distinct beats this lesson run has marked so far. */
+/**
+ * How many distinct beats this lesson run has marked so far.
+ *
+ * @example
+ * getBeatCount(); // 7
+ */
 export function getBeatCount(): number {
   return runtime.timing.size;
 }
 
-/** Attach the recorder hooks. The panel calls this when it mounts. */
+/**
+ * Attach the recorder hooks. The panel calls this when it mounts.
+ *
+ * @example
+ * setVoiceHooks({onBeatStart: beat => recorder.start(beat.id, beat.name)});
+ */
 export function setVoiceHooks(hooks: VoiceHooks): void {
   runtime.hooks = hooks;
 }
 
-/** Remove the recorder hooks when the panel unmounts. */
+/**
+ * Remove the recorder hooks when the panel unmounts.
+ *
+ * @example
+ * clearVoiceHooks();
+ */
 export function clearVoiceHooks(): void {
   runtime.hooks = {};
 }
@@ -134,12 +174,22 @@ export function nextVoiceBeat(caption: string): VoiceBeat {
   };
 }
 
-/** The beat that started before the current one, across chapter boundaries. */
+/**
+ * The beat that started before the current one, across chapter boundaries.
+ *
+ * @example
+ * previousVoiceBeat()?.id; // '03-02'
+ */
 export function previousVoiceBeat(): BeatTiming | null {
   return runtime.previous;
 }
 
-/** The decoded length of a beat's clip, if one was recorded. */
+/**
+ * The decoded length of a beat's clip, if one was recorded.
+ *
+ * @example
+ * clipSeconds('03-02'); // 6.42
+ */
 export function clipSeconds(id: string | undefined): number | undefined {
   if (!id) return undefined;
   return runtime.manifest?.clips[id]?.seconds;
