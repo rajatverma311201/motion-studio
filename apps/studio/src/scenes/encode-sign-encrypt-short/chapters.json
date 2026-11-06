@@ -1,0 +1,38 @@
+{
+  "slug": "encode-sign-encrypt-short",
+  "title": "ENCODE · SIGN · ENCRYPT",
+  "format": "short",
+  "summaryPoints": [
+    "Encoding changes the format; anyone can reverse it, so it protects nothing.",
+    "Signing adds a tag only a key holder can create, so changes are detected, but the message stays readable.",
+    "Encryption hides the message so only a key holder can read it.",
+    "Base64 is not encryption, and a signature is not secrecy."
+  ],
+  "chapters": [
+    {
+      "name": "HOOK",
+      "color": "lime",
+      "summary": "Encoding, signing and encryption sound alike but solve three different problems."
+    },
+    {
+      "name": "ENCODING",
+      "color": "cyan",
+      "summary": "Encoding changes the format; there is no key, so anyone can undo it."
+    },
+    {
+      "name": "SIGNING",
+      "color": "yellow",
+      "summary": "A signature proves the message was not changed; the message stays readable."
+    },
+    {
+      "name": "ENCRYPTION",
+      "color": "pink",
+      "summary": "Encryption hides the message; only the key holder can read it."
+    },
+    {
+      "name": "VERDICT",
+      "color": "violet",
+      "summary": "Encoding is format, signing is trust, encryption is secrecy."
+    }
+  ]
+}
