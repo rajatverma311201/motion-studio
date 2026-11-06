@@ -83,6 +83,16 @@ export function getVoiceManifest(): VoiceManifest | null {
   return runtime.manifest;
 }
 
+/** The current chapter number (1-based), or 0 before the first section. */
+export function getVoiceChapter(): number {
+  return runtime.chapter;
+}
+
+/** How many distinct beats this lesson run has marked so far. */
+export function getBeatCount(): number {
+  return runtime.timing.size;
+}
+
 /** Attach the recorder hooks. The panel calls this when it mounts. */
 export function setVoiceHooks(hooks: VoiceHooks): void {
   runtime.hooks = hooks;

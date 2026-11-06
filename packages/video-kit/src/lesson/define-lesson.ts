@@ -8,6 +8,7 @@ import {parseLookHash, resolveThemeSelection, setActiveTheme} from '../themes/ac
 import {readBuildLook, readLocationHash} from '../themes/build-look';
 import {themeIds} from '../themes/registry';
 import {hasClips, readBuildVoice} from '../voice/build-voice';
+import {mountVoicePanel} from '../voice/panel';
 import type {VoiceManifest} from '../voice/timing';
 import {configureVoice, finishVoice, loadVoiceManifest, wantsVoiceManifest} from '../voice/voice-state';
 import {effectivePauseMode, resolvePauseMode, resolveVoiceMode} from '../voice/voice-settings';
@@ -124,6 +125,7 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
       : 'off';
     const pause = effectivePauseMode(resolvePauseMode({cli: buildVoice.cliPause, variable: pauseVariable}), voice);
     configureVoice({slug: chapters.slug, voice, pause, manifest});
+    if (voice === 'record') mountVoicePanel({slug: chapters.slug, manifest});
     if (voice !== 'off') {
       const clips = Object.keys(manifest?.clips ?? {}).length;
       console.info(`[video-kit] voice: ${voice}, pause: ${pause} (${clips} clip${clips === 1 ? '' : 's'})`);

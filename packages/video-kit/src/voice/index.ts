@@ -1,5 +1,7 @@
 export {beatId, parseBeatId, slideName, type BeatId} from './beat-ids';
 export {hasClips, readBuildVoice, type BuildVoice} from './build-voice';
+export {mountVoicePanel, type VoicePanelOptions} from './panel';
+export {VoiceRecorder, type RecordedClip, type RecorderStatus, type VoiceRecorderOptions} from './recorder';
 export {shouldPause, stretchWait} from './stretch';
 export {
   readManifest,
@@ -16,7 +18,9 @@ export {
   clipSeconds,
   configureVoice,
   finishVoice,
+  getBeatCount,
   getPauseMode,
+  getVoiceChapter,
   getVoiceManifest,
   getVoiceMode,
   loadVoiceManifest,
