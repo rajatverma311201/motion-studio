@@ -17,6 +17,7 @@ const ROOT = process.env.MOTION_STUDIO_ROOT
   : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const SCENES_DIR = path.join(ROOT, 'apps/studio/src/scenes');
 const PROJECTS_DIR = path.join(ROOT, 'apps/studio/src/projects');
+const DOCS_DIR = path.join(ROOT, 'apps/docs/content/docs');
 const OUT_FILE = path.join(ROOT, 'apps/docs/src/generated/lessons.json');
 const CONFIG_FILE = path.join(ROOT, 'video.config.json');
 const PALETTE = ['lime', 'pink', 'cyan', 'yellow', 'violet', 'orange', 'red'];
@@ -45,6 +46,82 @@ async function exists(file) {
   } catch {
     return false;
   }
+}
+
+async function mdxFiles(dir) {
+  let entries;
+  try {
+    entries = await readdir(dir, {withFileTypes: true});
+  } catch {
+    return [];
+  }
+
+  const files = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...(await mdxFiles(full)));
+    else if (entry.name.endsWith('.mdx')) files.push(full);
+  }
+  return files;
+}
+
+/**
+ * Read the `<VoiceoverNotes>` bullets of every chapter heading.
+ *
+ * A chapter heading is `### NN · NAME`; notes live in the following
+ * `<VoiceoverNotes>` block until the next heading. The result is keyed by the
+ * 1-based chapter number and keeps the bullet text verbatim (inline code stays
+ * in backticks).
+ */
+export function parseVoiceoverNotes(source) {
+  const notes = new Map();
+  const lines = source.split(/\r?\n/);
+  let current = null;
+  let inBlock = false;
+
+  for (const line of lines) {
+    const heading = /^###\s+(\d{2})\s+·/.exec(line);
+    if (heading) {
+      current = Number(heading[1]);
+      inBlock = false;
+      continue;
+    }
+    if (/^#{1,3}\s/.test(line)) {
+      current = null;
+      inBlock = false;
+      continue;
+    }
+    if (current === null) continue;
+
+    if (/^<VoiceoverNotes>\s*$/.test(line)) {
+      inBlock = true;
+      notes.set(current, []);
+      continue;
+    }
+    if (/^<\/VoiceoverNotes>\s*$/.test(line)) {
+      inBlock = false;
+      continue;
+    }
+    if (!inBlock) continue;
+
+    const bullet = /^\s*[-*]\s+(.*\S)\s*$/.exec(line);
+    if (bullet) notes.get(current).push(bullet[1]);
+  }
+
+  return notes;
+}
+
+async function readVoiceovers() {
+  const bySlug = new Map();
+  for (const file of await mdxFiles(DOCS_DIR)) {
+    const source = await readFile(file, 'utf8');
+    const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(source)?.[1];
+    if (!frontmatter) continue;
+    const video = /^video:\s*['"]?([a-z0-9-]+)['"]?\s*$/m.exec(frontmatter)?.[1];
+    if (!video || bySlug.has(video)) continue;
+    bySlug.set(video, parseVoiceoverNotes(source));
+  }
+  return bySlug;
 }
 
 async function chapterFiles() {
@@ -138,6 +215,7 @@ function validate(file, data) {
 
 const config = await readVideoConfig();
 const files = await chapterFiles();
+const voiceovers = await readVoiceovers();
 const lessons = new Map();
 
 for (const file of files) {
@@ -169,7 +247,23 @@ for (const file of files) {
     mode: selection.mode,
   };
 
-  lessons.set(data.slug, {...data, format: data.format ?? 'landscape', look});
+  const notesByChapter = voiceovers.get(data.slug);
+  if (!notesByChapter) {
+    console.warn(`[sync-lessons] ${data.slug}: no MDX page with "video: ${data.slug}"; the notes will be empty.`);
+  }
+
+  const chapters = data.chapters.map((chapter, index) => {
+    const notes = notesByChapter?.get(index + 1);
+    if (notesByChapter && !notes) {
+      console.warn(
+        `[sync-lessons] ${data.slug}: chapter ${String(index + 1).padStart(2, '0')} ` +
+          `(${chapter.name}) has no <VoiceoverNotes> block; using an empty list.`,
+      );
+    }
+    return {...chapter, notes: notes ?? []};
+  });
+
+  lessons.set(data.slug, {...data, chapters, format: data.format ?? 'landscape', look});
 }
 
 const sorted = Object.fromEntries([...lessons.entries()].sort(([a], [b]) => a.localeCompare(b)));

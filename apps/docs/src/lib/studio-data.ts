@@ -5,6 +5,8 @@ export interface StudioChapter {
   color: string;
   summary?: string;
   at?: string;
+  /** Voiceover bullets from the lesson page's `<VoiceoverNotes>` blocks. */
+  notes?: string[];
 }
 
 export interface StudioLook {
