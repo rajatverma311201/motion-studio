@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ThemesRouteImport } from './routes/themes'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
+import { Route as RecordSlugRouteImport } from './routes/record.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const DocsSplatRoute = DocsSplatRouteImport.update({
   path: '/docs/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecordSlugRoute = RecordSlugRouteImport.update({
+  id: '/record/$slug',
+  path: '/record/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/themes': typeof ThemesRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/record/$slug': typeof RecordSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/themes': typeof ThemesRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/record/$slug': typeof RecordSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/themes': typeof ThemesRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/record/$slug': typeof RecordSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/themes' | '/api/search' | '/docs/$'
+  fullPaths: '/' | '/themes' | '/api/search' | '/docs/$' | '/record/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/themes' | '/api/search' | '/docs/$'
-  id: '__root__' | '/' | '/themes' | '/api/search' | '/docs/$'
+  to: '/' | '/themes' | '/api/search' | '/docs/$' | '/record/$slug'
+  id: '__root__' | '/' | '/themes' | '/api/search' | '/docs/$' | '/record/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   ThemesRoute: typeof ThemesRoute
   ApiSearchRoute: typeof ApiSearchRoute
   DocsSplatRoute: typeof DocsSplatRoute
+  RecordSlugRoute: typeof RecordSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/record/$slug': {
+      id: '/record/$slug'
+      path: '/record/$slug'
+      fullPath: '/record/$slug'
+      preLoaderRoute: typeof RecordSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThemesRoute: ThemesRoute,
   ApiSearchRoute: ApiSearchRoute,
   DocsSplatRoute: DocsSplatRoute,
+  RecordSlugRoute: RecordSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

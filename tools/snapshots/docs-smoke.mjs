@@ -26,9 +26,15 @@ const STATUSES = ['outline', 'animated', 'rendered', 'voiced', 'published'];
 const lessons = JSON.parse(await readFile(path.join(ROOT, 'apps/docs/src/generated/lessons.json'), 'utf8'));
 const lesson = lessons[LESSON_SLUG];
 const firstChapter = lesson?.chapters?.[0]?.name;
+const TELEPROMPTER_SLUG = 'db-transactions';
+const teleprompterLesson = lessons[TELEPROMPTER_SLUG];
 
 if (!firstChapter) {
   console.log(`FAIL: no generated chapter data for ${LESSON_SLUG}; run pnpm sync`);
+  process.exit(1);
+}
+if (!teleprompterLesson?.chapters?.length) {
+  console.log(`FAIL: no generated chapter data for ${TELEPROMPTER_SLUG}; run pnpm sync`);
   process.exit(1);
 }
 
@@ -201,6 +207,12 @@ try {
   assert(body.includes(firstChapter), `page does not contain chapter 1 name "${firstChapter}"`);
   assert(body.includes('Renders in:'), 'lesson page does not show the render look line');
   assert(body.includes('Say this'), 'lesson page does not show the voiceover notes');
+  const teleprompterLink = lessonPage.locator('a', {hasText: 'Open teleprompter'});
+  assert((await teleprompterLink.count()) === 1, 'lesson page does not show the teleprompter link');
+  assert(
+    (await teleprompterLink.getAttribute('href'))?.endsWith(`/record/${LESSON_SLUG}`),
+    'the teleprompter link does not point at the lesson',
+  );
 
   await lessonPage.screenshot({path: path.join(SCREENSHOT_DIR, 'lesson-light-top.png')});
 
@@ -443,6 +455,90 @@ try {
   assert(galleryErrors.pageErrors.length === 0, `themes pageerror: ${galleryErrors.pageErrors[0]}`);
   assert(galleryErrors.consoleErrors.length === 0, `themes console error: ${galleryErrors.consoleErrors[0]}`);
   await galleryContext.close();
+
+  const teleprompterContext = await browser.newContext({
+    viewport: {width: 1440, height: 900},
+    colorScheme: 'light',
+  });
+  const teleprompterPage = await teleprompterContext.newPage();
+  const teleprompterErrors = watch(teleprompterPage);
+  const teleprompterUrl = `${DOCS_URL}/record/${TELEPROMPTER_SLUG}`;
+  const search = () =>
+    teleprompterPage.evaluate(() => {
+      const params = new URL(window.location.href).searchParams;
+      return {c: params.get('c'), b: params.get('b')};
+    });
+
+  await teleprompterPage.goto(teleprompterUrl, {waitUntil: 'networkidle'});
+  await waitForTheme(teleprompterPage, 'light');
+  await teleprompterPage.waitForSelector('[data-chapter-index]');
+
+  assert(
+    (await teleprompterPage.locator('motion-canvas-player').count()) === 0,
+    'teleprompter must not contain a video player',
+  );
+  const chipCount = await teleprompterPage.locator('[data-chapter-index]').count();
+  assert(
+    chipCount === teleprompterLesson.chapters.length,
+    `teleprompter shows ${chipCount} chips for ${teleprompterLesson.chapters.length} chapters`,
+  );
+  await noPageOverflow(teleprompterPage, 'teleprompter desktop light');
+
+  await teleprompterPage.keyboard.press('ArrowRight');
+  await teleprompterPage.waitForFunction(() => new URL(window.location.href).searchParams.get('c') === '2', null, {
+    timeout: 5000,
+  });
+  const afterChapter = await search();
+  assert(afterChapter.c === '2' && afterChapter.b === '1', `ArrowRight produced ${JSON.stringify(afterChapter)}`);
+
+  await teleprompterPage.keyboard.press('j');
+  await teleprompterPage.waitForFunction(() => new URL(window.location.href).searchParams.get('b') === '2', null, {
+    timeout: 5000,
+  });
+  assert((await search()).b === '2', 'J did not advance the bullet');
+
+  const lastChapter = teleprompterLesson.chapters.length;
+  const lastBullet = teleprompterLesson.chapters.at(-1).notes?.length || 1;
+  await teleprompterPage.goto(`${teleprompterUrl}?c=${lastChapter}&b=${lastBullet}`, {waitUntil: 'networkidle'});
+  const atEnd = await search();
+  await teleprompterPage.keyboard.press('j');
+  await teleprompterPage.waitForTimeout(300);
+  const afterEnd = await search();
+  assert(
+    afterEnd.c === atEnd.c && afterEnd.b === atEnd.b,
+    `J at the very end moved from ${JSON.stringify(atEnd)} to ${JSON.stringify(afterEnd)}`,
+  );
+
+  await teleprompterPage.reload({waitUntil: 'networkidle'});
+  const afterReload = await search();
+  assert(
+    afterReload.c === atEnd.c && afterReload.b === atEnd.b,
+    `reload lost the position: ${JSON.stringify(atEnd)} -> ${JSON.stringify(afterReload)}`,
+  );
+  await teleprompterPage.screenshot({path: path.join(SCREENSHOT_DIR, 'teleprompter-light.png')});
+
+  await teleprompterPage.evaluate(() => window.localStorage.setItem('theme', 'dark'));
+  await teleprompterPage.reload({waitUntil: 'networkidle'});
+  await waitForTheme(teleprompterPage, 'dark');
+  await noPageOverflow(teleprompterPage, 'teleprompter desktop dark');
+  await teleprompterPage.screenshot({path: path.join(SCREENSHOT_DIR, 'teleprompter-dark.png')});
+
+  await teleprompterPage.setViewportSize({width: 820, height: 1180});
+  await teleprompterPage.waitForTimeout(400);
+  await noPageOverflow(teleprompterPage, 'teleprompter 820');
+  await teleprompterPage.screenshot({path: path.join(SCREENSHOT_DIR, 'teleprompter-dark-820.png')});
+
+  await teleprompterPage.setViewportSize({width: 390, height: 844});
+  await teleprompterPage.waitForTimeout(400);
+  await noPageOverflow(teleprompterPage, 'teleprompter 390');
+  await teleprompterPage.screenshot({path: path.join(SCREENSHOT_DIR, 'teleprompter-dark-390.png')});
+
+  assert(teleprompterErrors.pageErrors.length === 0, `teleprompter pageerror: ${teleprompterErrors.pageErrors[0]}`);
+  assert(
+    teleprompterErrors.consoleErrors.length === 0,
+    `teleprompter console error: ${teleprompterErrors.consoleErrors[0]}`,
+  );
+  await teleprompterContext.close();
 } catch (error) {
   failure = String(error.message).split('\n')[0];
 } finally {

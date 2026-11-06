@@ -1,3 +1,4 @@
+import {Link} from '@tanstack/react-router';
 import {useState} from 'react';
 import {lookLabel} from '@/lib/lessons';
 import type {StudioFormat} from '@/lib/studio-data';
@@ -62,11 +63,22 @@ export function LessonVideo({slug, format, theme, mode}: LessonVideoProps) {
   return (
     <div className="contents">
       <div className="z-10 mt-6 bg-fd-background pb-3 lg:sticky lg:top-0" data-lesson-player-sticky="">
-        {look ? (
-          <p className="mb-2 text-sm text-fd-muted-foreground">
-            Renders in: <span className="font-medium text-fd-foreground">{look}</span>
-          </p>
-        ) : null}
+        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fd-muted-foreground">
+          {look ? (
+            <p>
+              Renders in: <span className="font-medium text-fd-foreground">{look}</span>
+            </p>
+          ) : null}
+          <Link
+            to="/record/$slug"
+            params={{slug}}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-fd-primary hover:underline"
+          >
+            Open teleprompter
+          </Link>
+        </div>
         {startSection > 0 && chapter ? (
           <p className="mb-2 text-sm text-fd-muted-foreground">
             Starting at chapter {String(startSection + 1).padStart(2, '0')}: {chapter.name}
