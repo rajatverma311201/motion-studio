@@ -49,6 +49,7 @@ Package names use the scope `@motion-studio/*` (`@motion-studio/studio`, `@motio
 - Each section of a lesson builds its own root `Node`, animates, then removes it (`leave(root)`). This is what lets a lesson start at any section. Keep it that way.
 - Nested `Txt` children do NOT flow inline in 3.17.2. The code panel therefore renders one `Txt` per token on a fixed monospace grid (0.6 em per glyph). Do not "simplify" this.
 - Reactive props use functions: `points={() => ...}`, `width={() => ...}` with `createSignal`.
+- `say()` registers a presenter slide before each caption (`beginSlide`), stretches beats to recorded clips in voice mode `play`, and records the timing table. Do not call `beginSlide` elsewhere unless a prompt asks. Voice data lives in `apps/studio/voice/` and is git-ignored.
 - `.meta` files are created by the editor next to every scene and project. **Commit them.** Never hand-edit them.
 - The editor allows only ONE open browser page at a time per project (the editor rewrites `.meta`, which hot-restarts other pages). Playwright runs must be sequential.
 - Console noise such as "Failed to fetch", font errors, or "Connection timeout when updating metadata" is harmless when offline or in a sandbox.

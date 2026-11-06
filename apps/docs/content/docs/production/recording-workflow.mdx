@@ -23,29 +23,79 @@ Check that line before you render. The full precedence is in [Render a video in 
 
 Open `http://localhost:9000/src/projects/<slug>` and play it once from the start. You are checking the pacing and the chapter boundaries, not only the look. If a section drags, fix the scene now; the `at` timestamps come later.
 
-## 3. Render the MP4
+Every `say(...)` caption is one **beat**. The kit registers a presenter slide before each beat, so the PRESENT window can wait there while you speak. Normal playback and the MP4 render never wait on those slides.
 
-In the editor, open **Render** → choose **Video (FFmpeg)** → press **Render**. The file lands in `apps/studio/output/`:
-
-```text
-apps/studio/output/<slug>--<theme>--<mode>.mp4
-```
-
-The built-in look still renders to `<slug>.mp4`. Nothing is committed from `output/`.
-
-## 4. Record the voiceover
-
-Start the docs:
+## 3. Record the voice
 
 ```sh
-pnpm docs:dev
+pnpm studio --voice record
 ```
 
-Open the lesson page and work down the chapter list. The player is sticky at the top of the content column on wide screens; the `Say this` blocks scroll underneath it. Click a chapter to restart the video there and bring its heading into view. Record one chapter at a time, re-listening to the render while you speak.
+Add `--theme` / `--mode` if the look matters. Open `http://localhost:9000/src/projects/<slug>` **on the Mac** — the microphone only works on `localhost` (a secure context).
 
-If the notes are wrong, edit the MDX page; the page is the source of truth for the voiceover, not the on-screen captions.
+1. In the **Video Settings** tab, open the dropdown beside **RENDER**, choose **PRESENT**, and press the button.
+2. Allow the microphone when the browser asks. The recorder panel sits bottom-left; expand it and press **Arm**.
+3. Press **Space**. The first beat plays and the video waits at the next caption. Speak the beat, then press Space for the next one. The slide list on the left shows names such as `01-01 · A transaction groups many steps…`.
+4. Re-take a beat by jumping to its slide in the presenter's slide list, switching **Overwrite** on, pressing Space, speaking, pressing Space again, and switching Overwrite off. The old clip is replaced.
 
-## 5. Fill the chapter timestamps
+The panel shows the current state, an input level, the current chapter's clips with `▶` and `✕`, and a `clips / beats` total. Clips live in `apps/studio/voice/<slug>/`; that folder is git-ignored and local to this Mac — back it up if the recording matters. A jump to a slide replays earlier `say` calls within milliseconds; clips shorter than 0.8 s are discarded on purpose, so those replays never overwrite a real take.
+
+## 4. Render with the voice stretched in
+
+Stop the recording and start the editor normally:
+
+```sh
+pnpm studio
+```
+
+Voice mode `play` is the default as soon as a manifest with clips exists. Render the MP4 in the editor as usual. Every beat now lasts at least as long as its recorded clip, and the render writes `timing.json` next to the manifest in `apps/studio/voice/<slug>/`.
+
+If you pass `--voice off`, the render does not wait for the clips. `--pause off` only removes the presenter slides; it does not disable the stretching.
+
+## 5. Add the voice
+
+```sh
+pnpm voice:mux <slug>
+```
+
+The script reads `manifest.json` and `timing.json`, places every clip at its beat start, mixes the track, and normalises it with `loudnorm` (skip that with `--no-normalize`). The video stream is copied, never re-encoded, and the input is never overwritten. The result is next to the input:
+
+```text
+apps/studio/output/<video>.voiced.mp4
+```
+
+The default video is the newest MP4 for the lesson in `apps/studio/output/` (`<slug>.mp4` for the built-in look, `<slug>--<theme>--<mode>.mp4` otherwise). Use `--video` and `--out` to override the paths. If the script reports an overlap, the render was made without the stretch (voice mode `off` or a stale `timing.json`): render again in `play` mode.
+
+## 6. Notes on an iPad
+
+Expose the docs dev server on the local network:
+
+```sh
+pnpm docs:dev --host
+```
+
+Vite prints a Network URL, for example `http://192.168.29.8:3000/`. On the iPad, on the same Wi-Fi, open:
+
+```text
+http://<mac-ip>:3000/record/<slug>
+```
+
+The teleprompter page has the chapter chips, the notes at a large size, `A−` / `A+` (remembered in the browser), `J` / `K` or `↓` / `↑` for bullets, `←` / `→` for chapters, `Home`, `F` for fullscreen, and `?` for the key legend. The four large buttons at the bottom and a left/right swipe change chapters. Plain HTTP is fine for reading; the iPad cannot record — the microphone needs the Mac and `localhost`.
+
+## 7. Pause modes and troubleshooting
+
+`--pause beat` (the default) pauses at every caption, `--pause chapter` only at the first beat of each chapter, and `--pause off` registers no slides at all. The slides only wait in the PRESENT window; normal playback and the MP4 render never stop for them. `--voice record` forces `pause=beat`, because every beat must be addressable.
+
+| Symptom                           | Cause and fix                                                                                                                                       |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The video does not pause          | You are not in the PRESENT window (Render and normal playback never wait), or you started with `--pause off`. Press PRESENT.                        |
+| No microphone prompt              | You opened the studio through a LAN IP or a built file. Recording only works on `http://localhost:9000`; allow the microphone in the browser.       |
+| The recorder panel is missing     | The editor did not start with `--voice record` (or a manifest silently made the mode `play` / `off`). Restart with `pnpm studio --voice record`.    |
+| `voice:mux` reports an overlap    | The MP4 was rendered without the beat stretch (voice mode `off`, or a stale `timing.json`). Render again with `pnpm studio` in `play` mode.         |
+| A clip disappeared                | Clips shorter than 0.8 s are ignored on purpose; the micro-clips from jumping between slides are discarded. Record the beat again with `Overwrite`. |
+| `voice:mux` cannot find the video | It looked in `apps/studio/output` for `<slug>.mp4` and `<slug>--<theme>--<mode>.mp4`. Pass `--video <file.mp4>`.                                    |
+
+## 8. Fill the chapter timestamps
 
 After the final render, put the start time of each chapter into `apps/studio/src/scenes/<slug>/chapters.json`:
 
@@ -61,11 +111,11 @@ pnpm sync
 
 The lesson page rebuilds the chapter list and clears the `timestamps missing` warning once every chapter has an `at`.
 
-## 6. Copy the YouTube description
+## 9. Copy the YouTube description
 
 On the lesson page, scroll to **YouTube description** and press **Copy**. It contains the page description, `In this video:` with the summary points, and `Chapters:` with the timestamps. Paste it into YouTube, then add your links in the empty line at the end.
 
-## 7. Upload and publish
+## 10. Upload and publish
 
 Upload the MP4, then update the lesson frontmatter:
 
@@ -77,7 +127,7 @@ recorded: 2026-11-02
 
 `recorded` is the day you recorded the voiceover. `youtube` is the public link. `pnpm status` and the tracker should both show the video as published with the link.
 
-## 8. Finish
+## 11. Finish
 
 ```sh
 pnpm check
@@ -88,10 +138,10 @@ Then commit the scene, `chapters.json`, the MDX page and any `.meta` files the e
 
 ## Status reference
 
-| Status      | When to set it                                |
-| ----------- | --------------------------------------------- |
-| `outline`   | The skeleton exists and the notes are TODO.   |
-| `animated`  | The sections are animated and previewable.    |
-| `rendered`  | The MP4 exists in `apps/studio/output/`.      |
-| `voiced`    | The voiceover is recorded.                    |
-| `published` | The video is on YouTube and `youtube` is set. |
+| Status      | When to set it                                           |
+| ----------- | -------------------------------------------------------- |
+| `outline`   | The skeleton exists and the notes are TODO.              |
+| `animated`  | The sections are animated and previewable.               |
+| `rendered`  | The MP4 exists in `apps/studio/output/`.                 |
+| `voiced`    | The voice clips exist and `<video>.voiced.mp4` is muxed. |
+| `published` | The video is on YouTube and `youtube` is set.            |

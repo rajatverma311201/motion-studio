@@ -15,6 +15,8 @@ Repo layout (six parts):
 
 Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 
+- Step 25 voice pipeline: every `say(...)` is a beat with a presenter slide, the studio page records one clip per beat, a render in voice mode `play` stretches each beat to its clip and writes `timing.json`, `pnpm voice:mux <slug>` lays the clips onto the MP4, and `/record/<slug>` is the iPad teleprompter. `pnpm sync` now carries the `<VoiceoverNotes>` bullets into `lessons.json`. Clips live in `apps/studio/voice/` (git-ignored, local only).
+
 - Docs gallery at `/themes`: all 14 video looks, a live preview of `theme-showcase`, and copy-ready command, `chapters.json` and `video.config.json` snippets.
 - Course `Computer Organization` in the docs, with an overview, the `instruction-cycle` lesson and a glossary. The lesson has ten animated chapters; the page has summary points, per-chapter voiceover notes, a cheat sheet and four practice questions.
 - Instruction-cycle measured chapter lengths: 22.7 s intro, 91.5 s memory, 107.8 s CPU parts, 68.8 s loading, 80.5 s fetch, 50.5 s decode, 103.5 s execute, 60.9 s full run, 123.2 s jumps, 40.2 s recap (targets 25 / 95 / 110 / 70 / 80 / 60 / 120 / 75 / 110 / 45, all within ±25 %).
@@ -32,8 +34,10 @@ Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 Commands:
 
 - `pnpm dev` — sync generated data, then the studio bundle watcher and the docs dev server.
-- `pnpm studio` — start the editor; add `--theme <id>` / `--mode dark|light` for this session.
+- `pnpm studio` — start the editor; add `--theme <id>` / `--mode dark|light` for this session, and `--pause beat|chapter|off` / `--voice off|record|play` for the voice pipeline.
 - `pnpm studio:dev` — start the editor with no flags; the look comes from the lesson and config.
+- `pnpm voice:mux <slug>` — place the recorded clips on the newest MP4 in `apps/studio/output` and write `<video>.voiced.mp4`; `--video`, `--out`, `--no-normalize`.
+- `pnpm docs:dev --host` — expose the docs (and `/record/<slug>`) on the LAN for the iPad; the extra `--` form passes a literal `--` and does not expose the server.
 - `pnpm new:lesson <slug> "<Title>" --course <course> [--format short]` — scaffold a lesson; `short` writes a 1080 × 1920 project meta.
 - `pnpm new:theme <id> "<Name>" --from <theme>` — copy and register a theme.
 - `pnpm gen:jwt-fixtures` — regenerate `jwt-es256-fixture.ts` from a fresh P-256 key pair; only the public JWK is written.
@@ -64,6 +68,12 @@ Commands:
 - The `encode-sign-encrypt` HUD uses the same ten-pill row (`{startX: 290, step: 60, width: 30, activeWidth: 64}`); its chapter 5 is red in the HUD while the encryption object stays pink, matching the video's colour meaning (encryption pink, danger red).
 - The `encode-sign-encrypt-short` layout test mirrors `SHORT_ZONES` locally. Importing the kit barrel under `node --import tsx` loads Motion Canvas and fails (`codeSignal is not a function`); keep the copy in sync with `hud/short-layout.ts` (step 23).
 - Steps never run snapshot capture or compare (AGENTS.md section 7); the owner reviews in the editor.
+- `beginSlide` (`@motion-canvas/core/lib/utils/beginSlide.js`) calls `Slides.register` and then `yield` before `Slides.shouldWait` (`scenes/Slides.js`). Outside presentation, `shouldWait` resumes at once (`targetId` is null), but the unconditional `yield` costs one frame and the left-over `waitsForId` makes `Player.run` (`app/Player.js`) pause once at every slide. `presenterSlide` in `voice/voice-state.ts` registers and resolves synchronously when the state is not `Presenting`, and uses the stock `beginSlide` only while presenting.
+- A promise can be yielded in a scene generator: `GeneratorScene.next()` (`scenes/GeneratorScene.js`) awaits `Promisable`/`Promise` values and calls `runner.next(value)`; `ThreadGenerator` includes `Promise<any>`. `defineLesson` loads the manifest with `yield loadVoiceManifest(...)`.
+- Scene time is `useThread().fixed` (seconds, frame-quantised), the same clock `Slides.register` stores; `voice-state` records beat starts from it and `usePlayback().fps` fills the timing table.
+- The FFmpeg exporter writes to the Vite plugin's default `output` folder (`@motion-canvas/vite-plugin/lib/main.js`: `output = './output'`), so renders land in `apps/studio/output/<project name>.mp4`; `resolveProjectName` chooses `<slug>` or `<slug>--<theme>--<mode>`.
+- `voice:mux` finds ffmpeg/ffprobe through `@motion-canvas/ffmpeg` (`@ffmpeg-installer/ffmpeg`, `@ffprobe-installer/ffprobe`) in `tools/scripts/ffmpeg-path.mjs`, then falls back to the PATH.
+- The voice server (`apps/studio/voice-server/`, Vite plugin `apply: 'serve'`) is dev-only and loopback-only. `server.watch.ignored: ['**/voice/**']` was verified with a Playwright marker: adding `apps/studio/voice/...` did not reload the editor; touching a project file did.
 
 ## Tech debt and open items
 
@@ -122,6 +132,10 @@ Commands:
 - `avalancheGrid` has 256 cells; `showA()` pops them in and `morphToB()` flips the 125 differing cells. The counter uses `countTo`, and both bit strings come from `hexToBits(DEMO_SHA256)` and `hexToBits(DEMO_SHA256_TAMPERED)`.
 - The signature fixture changes each time `pnpm gen:signature-fixture` runs; the docs page quotes the committed value, so regenerate the fixture and the page together.
 - The Shorts page appends `#Shorts #JWT #Security` as a visible tag line below `<YoutubeDescription>`; the copy button does not include them (step 21).
+- Voice clips are local to `apps/studio/voice/` and are not committed; back them up separately. There is no silence trim, noise reduction, multi-take comping or music.
+- The teleprompter is not synced to the editor (different origin), and the docs player never plays the voice track. The muxed `<video>.voiced.mp4` is the only artefact with voice.
+- The recorder panel is a plain DOM overlay; it mounts only in voice mode `record` and draws nothing in the canvas. The iPad cannot record (no secure context); it is only the teleprompter.
+- `pnpm docs:dev --host` is the LAN command; `pnpm docs:dev -- --host` does not expose the server.
 
 ## Blocked
 
