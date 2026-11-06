@@ -74,6 +74,7 @@ Commands:
 - The FFmpeg exporter writes to the Vite plugin's default `output` folder (`@motion-canvas/vite-plugin/lib/main.js`: `output = './output'`), so renders land in `apps/studio/output/<project name>.mp4`; `resolveProjectName` chooses `<slug>` or `<slug>--<theme>--<mode>`.
 - `voice:mux` finds ffmpeg/ffprobe through `@motion-canvas/ffmpeg` (`@ffmpeg-installer/ffmpeg`, `@ffprobe-installer/ffprobe`) in `tools/scripts/ffmpeg-path.mjs`, then falls back to the PATH.
 - The voice server (`apps/studio/voice-server/`, Vite plugin `apply: 'serve'`) is dev-only and loopback-only. `server.watch.ignored: ['**/voice/**']` was verified with a Playwright marker: adding `apps/studio/voice/...` did not reload the editor; touching a project file did.
+- `stamp()` carries no elevation shadow on purpose. Motion Canvas caches a node with a shadow together with its children and draws that whole bitmap again as the shadow, which ghosted every ring and the label text at the shadow offset. Do not spread `boxStyle` onto the stamp root; `stamp.test.ts` guards the tree shape and the empty shadow.
 
 ## Tech debt and open items
 

@@ -1,5 +1,5 @@
 import {Rect, Txt} from '@motion-canvas/2d';
-import {borderWidth, boxStyle, colors, fonts, radius} from '../theme';
+import {borderWidth, colors, fonts, radius} from '../theme';
 
 /** Options for {@link stamp}. */
 export interface StampOptions {
@@ -11,7 +11,9 @@ export interface StampOptions {
 
 /**
  * A rotated, double-bordered label for NOT ENCRYPTED, INVALID and friends.
- * The outer and inner outlines both use the supplied colour.
+ * The outer and inner outlines both use the supplied colour. It deliberately
+ * has no elevation shadow: Motion Canvas renders a shadowed node together with
+ * its children, which would draw a second, offset copy of the whole label.
  *
  * @example
  * const mark = stamp('NOT ENCRYPTED', colors.red, {rot: -5, fs: 48});
@@ -27,7 +29,6 @@ export function stamp(text: string, color: string, options: StampOptions = {}): 
       radius={radius(14)}
       fill={colors.clear}
       rotation={options.rot ?? -4}
-      {...boxStyle(color, 8, 4)}
       stroke={color}
       lineWidth={borderWidth(6)}
     >
