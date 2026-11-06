@@ -12,6 +12,7 @@ export default tseslint.config(
       'apps/docs/src/routeTree.gen.ts',
       'apps/docs/public/**',
       '.snapshots/**',
+      '.agents/**',
     ],
   },
   js.configs.recommended,

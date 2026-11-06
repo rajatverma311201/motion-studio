@@ -7,6 +7,10 @@ import {colors} from '../theme';
 import {parseLookHash, resolveThemeSelection, setActiveTheme} from '../themes/active-theme';
 import {readBuildLook, readLocationHash} from '../themes/build-look';
 import {themeIds} from '../themes/registry';
+import {hasClips, readBuildVoice} from '../voice/build-voice';
+import type {VoiceManifest} from '../voice/timing';
+import {configureVoice, finishVoice, loadVoiceManifest, wantsVoiceManifest} from '../voice/voice-state';
+import {effectivePauseMode, resolvePauseMode, resolveVoiceMode} from '../voice/voice-settings';
 import {resolveChapters} from './chapters';
 import type {LessonConfig} from './lesson-types';
 
@@ -68,10 +72,14 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
   return makeScene2D(function* (view) {
     let themeVariable = '';
     let modeVariable = '';
+    let pauseVariable = '';
+    let voiceVariable = '';
     try {
       const variables = useScene().variables;
       themeVariable = variables.get('theme', '')();
       modeVariable = variables.get('mode', '')();
+      pauseVariable = variables.get('pause', '')();
+      voiceVariable = variables.get('voice', '')();
     } catch {
       // Outside a running scene there are no variables; hash and chapters still work.
     }
@@ -106,6 +114,21 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
     setActiveTheme(themeId, mode);
     console.info(`[video-kit] look: ${themeId} / ${mode}  (theme from ${source.theme}, mode from ${source.mode})`);
 
+    const buildVoice = readBuildVoice();
+    const manifest =
+      buildVoice.dev && wantsVoiceManifest({cli: buildVoice.cliVoice, variable: voiceVariable})
+        ? ((yield loadVoiceManifest(chapters.slug)) as VoiceManifest | null)
+        : null;
+    const voice = buildVoice.dev
+      ? resolveVoiceMode({cli: buildVoice.cliVoice, variable: voiceVariable, hasClips: hasClips(manifest)})
+      : 'off';
+    const pause = effectivePauseMode(resolvePauseMode({cli: buildVoice.cliPause, variable: pauseVariable}), voice);
+    configureVoice({slug: chapters.slug, voice, pause, manifest});
+    if (voice !== 'off') {
+      const clips = Object.keys(manifest?.clips ?? {}).length;
+      console.info(`[video-kit] voice: ${voice}, pause: ${pause} (${clips} clip${clips === 1 ? '' : 's'})`);
+    }
+
     view.fill(colors.bg);
     const start = readStartSection(total);
     const hudDefs = resolveChapters(chapters).map(({name, color}) => ({name, color}));
@@ -121,5 +144,6 @@ export function defineLesson(config: LessonConfig): DescriptionOf<Scene2D> {
     }
 
     yield* waitFor(0.5);
+    yield* finishVoice();
   });
 }

@@ -36,6 +36,8 @@ function readConfigLook(): {theme: string; mode: string} {
 
 const cliTheme = process.env.VIDEO_THEME ?? '';
 const cliMode = process.env.VIDEO_MODE ?? '';
+const cliPause = process.env.VIDEO_PAUSE ?? '';
+const cliVoice = process.env.VIDEO_VOICE ?? '';
 
 if (cliTheme && !THEME_ID.test(cliTheme)) {
   throw new Error(
@@ -49,15 +51,25 @@ if (cliMode && !MODES.includes(cliMode)) {
 
 const configLook = readConfigLook();
 
-export default defineConfig({
+export default defineConfig(({command}) => ({
   define: {
     __VIDEO_CLI_THEME__: JSON.stringify(cliTheme),
     __VIDEO_CLI_MODE__: JSON.stringify(cliMode),
     __VIDEO_CONFIG_THEME__: JSON.stringify(configLook.theme),
     __VIDEO_CONFIG_MODE__: JSON.stringify(configLook.mode),
+    __VIDEO_CLI_PAUSE__: JSON.stringify(cliPause),
+    __VIDEO_CLI_VOICE__: JSON.stringify(cliVoice),
+    __VIDEO_DEV__: JSON.stringify(command === 'serve'),
   },
   plugins: [motionCanvas({project: ['./src/projects/*.ts']}), ffmpeg()],
   resolve: {dedupe: ['@motion-canvas/core', '@motion-canvas/2d']},
+  server: {
+    watch: {
+      // Voice clips are written while the editor runs. Watching them would
+      // reload the page in the middle of a recording.
+      ignored: ['**/voice/**'],
+    },
+  },
   build: {
     outDir: '../docs/public/videos',
     emptyOutDir: true,
@@ -68,4 +80,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

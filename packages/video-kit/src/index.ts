@@ -8,3 +8,4 @@ export * from './lesson';
 export * from './theme';
 export * from './themes';
 export * from './tree';
+export * from './voice';

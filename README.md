@@ -67,7 +67,7 @@ That builds every video bundle and then the docs site (`apps/docs/dist`).
 | `pnpm dev`                                           | Sync generated data, then run the studio bundle watcher and the docs dev server.                                                                                                                         |
 | `pnpm build`                                         | `videos:build` followed by the docs production build.                                                                                                                                                    |
 | `pnpm check`                                         | Typecheck, lint, tests and Prettier check in one go.                                                                                                                                                     |
-| `pnpm studio`                                        | Start the editor. Add `--theme <id>` / `--mode dark\|light` to pick the render look.                                                                                                                     |
+| `pnpm studio`                                        | Start the editor. Add `--theme <id>` / `--mode dark\|light` for the look, and `--pause beat\|chapter\|off` / `--voice off\|record\|play` for recording voiceover.                                        |
 | `pnpm studio:dev`                                    | Start the editor with no flags (the look still comes from the config and lesson).                                                                                                                        |
 | `pnpm videos:build`                                  | Sync generated data and build every project into `apps/docs/public/videos`.                                                                                                                              |
 | `pnpm sync`                                          | Regenerate `themes.json` and `lessons.json` (themes first).                                                                                                                                              |
@@ -136,6 +136,18 @@ pnpm new:theme midnight-purple "Midnight Purple" --from tokyo-night
 It copies both variants, rewrites the id, name and constant, registers the theme between the generated markers in `registry.ts`, and runs `pnpm sync:themes`.
 
 `NotebookLM` and `shadcn` here mean **inspired-by looks** built from public design ideas (Material tonal surfaces and Google's public colour tokens; zinc neutrals, 1 px borders and Tailwind colours). No logos, wordmarks or product UI are copied. The theme names shown in the UI are `Notebook` and `Shadcn`.
+
+## Voice recording
+
+Every `say(...)` call is one caption beat. The kit registers a presenter slide before each caption, records the beat start and — in voice mode `play` — stretches each beat to its recorded clip. The recording itself happens in the Motion Canvas PRESENT window:
+
+```sh
+pnpm studio --voice record            # force a presenter slide at every beat
+pnpm studio --pause chapter           # one pause at the first beat of each chapter
+pnpm studio --pause off               # no slides at all
+```
+
+Clips and manifests land in `apps/studio/voice/<slug>/` (git-ignored, local data — back it up). The default is `play` as soon as a manifest with clips exists, and the docs player bundle always runs with `voice: off`. The complete workflow is in `apps/docs/content/docs/production/recording-workflow.mdx`.
 
 ## Adding a lesson
 

@@ -59,3 +59,45 @@ test('rejects an unknown option', () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /unknown option --fast/);
 });
+
+test('prints the pause and voice flags', () => {
+  const result = run(['--pause', 'chapter', '--voice', 'record', '--print']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /VIDEO_PAUSE=chapter VIDEO_VOICE=record/);
+});
+
+test('prints empty pause and voice values without flags', () => {
+  const result = run(['--print']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /VIDEO_PAUSE= VIDEO_VOICE=/);
+});
+
+test('accepts --pause=<mode> and --voice=<mode>', () => {
+  const result = run(['--pause=off', '--voice=play', '--print']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /VIDEO_PAUSE=off VIDEO_VOICE=play/);
+});
+
+test('rejects an unknown pause mode', () => {
+  const result = run(['--pause', 'sometimes', '--print']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unknown pause mode "sometimes"\. Available: beat, chapter, off/);
+});
+
+test('rejects an unknown voice mode', () => {
+  const result = run(['--voice', 'loud', '--print']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unknown voice mode "loud"\. Available: off, record, play/);
+});
+
+test('rejects a pause flag without a value', () => {
+  const result = run(['--pause']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--pause needs a value/);
+});
+
+test('rejects a voice flag without a value', () => {
+  const result = run(['--voice']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--voice needs a value/);
+});

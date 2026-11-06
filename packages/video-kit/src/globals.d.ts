@@ -11,4 +11,7 @@ declare global {
   const __VIDEO_CLI_MODE__: string;
   const __VIDEO_CONFIG_THEME__: string;
   const __VIDEO_CONFIG_MODE__: string;
+  const __VIDEO_CLI_PAUSE__: string;
+  const __VIDEO_CLI_VOICE__: string;
+  const __VIDEO_DEV__: boolean;
 }
