@@ -1,9 +1,11 @@
 ---
 title: 'Encoding vs Hashing vs Signing vs Encryption'
-description: 'TODO: one sentence about this lesson.'
+description: 'Encoding, hashing, signing and encryption all change a message, but only some of them protect it. Follow one message from Alice to her bank and learn which tool solves which problem.'
 video: encode-sign-encrypt
-status: outline
+status: animated
 duration: TBD
+level: beginner
+tags: [security, encoding, hashing, signing, encryption, aes, hmac]
 ---
 
 <LessonVideo slug="encode-sign-encrypt" />
@@ -18,92 +20,257 @@ duration: TBD
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Encoding, hashing, signing and encryption all take a message and produce something that looks different. That is why people mix them up.
+- They solve four different problems. Today we separate them with one example.
 
 </VoiceoverNotes>
+
+Encoding, hashing, signing and encryption sound alike but solve four different problems.
 
 ### 02 · THE PROBLEM
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Alice tells her bank: pay 500 to Bob. Eve sits on the network and sees every message.
+- Four separate questions: can the system carry the data (format), can Eve read it (secrecy), can Eve change it (integrity), is it really from Alice (authenticity)?
+- Each tool answers some of these questions and ignores the others.
 
 </VoiceoverNotes>
+
+Alice, her bank and Eve: format, secrecy, integrity and authenticity are separate needs.
 
 ### 03 · ENCODING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Encoding rewrites data in another format so systems can store or transmit it: Base64, hex, URL encoding, UTF-8.
+- There is no key. The rules are public, so anyone can reverse it.
+- HTTP Basic auth is Base64 of user:password. Anyone who sees the header can read the password.
+- Encoding answers the format question and nothing else.
 
 </VoiceoverNotes>
+
+Encoding rewrites data in a public format; no key, so anyone can reverse it.
 
 ### 04 · HASHING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- A hash function maps any input to a fixed-size fingerprint. SHA-256 gives 256 bits.
+- The same input always gives the same fingerprint. Change one digit and about half of the bits flip: the avalanche effect.
+- It is one-way. You cannot recover the input, so it is not encryption.
+- Hashes detect accidental changes, like a corrupted download, and are the base of password storage when combined with a salt and a slow algorithm.
+- But anyone can compute a hash, including Eve. A hash alone does not prove who sent the message.
 
 </VoiceoverNotes>
+
+A hash is a one-way fixed-size fingerprint; it detects change but proves no origin.
 
 ### 05 · SIGNING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Signing makes the fingerprint depend on a secret key.
+- With HMAC, Alice and the bank share a key. The bank recomputes the tag and compares. Eve cannot make a matching tag for a changed message.
+- With a digital signature there are two keys: the private key signs, the public key verifies. Anyone can verify and only the owner can sign.
+- The message stays readable. Signing answers integrity and authenticity, not secrecy.
 
 </VoiceoverNotes>
+
+A keyed tag (HMAC) or a digital signature proves origin and integrity; the message stays readable.
 
 ### 06 · ENCRYPTION
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Symmetric encryption, such as AES, takes plaintext, a key and a nonce, and produces ciphertext.
+- Eve sees only the ciphertext. The same key decrypts it.
+- Never reuse a nonce with the same key.
+- The hard problem is sharing that key safely.
 
 </VoiceoverNotes>
+
+Symmetric encryption hides content with one shared key; the hard part is sharing it.
 
 ### 07 · KEY PAIRS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Asymmetric cryptography uses a public key and a private key that belong together.
+- Encrypt with the public key and only the private key can decrypt.
+- Signing reverses the roles: sign with the private key and verify with the public key.
+- It is slow, so HTTPS uses it to agree on a key and then switches to fast symmetric encryption. This is hybrid encryption.
 
 </VoiceoverNotes>
+
+Public and private keys solve key sharing: encrypt with the public key, sign with the private key.
 
 ### 08 · COMBINING
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- AES-GCM is authenticated encryption: it hides the content and adds a tag that detects changes.
+- HTTPS combines a signed certificate, a key agreement and AES-GCM.
+- A normal JWT is encoded and signed. The encrypted flavour is JWE.
+- Passwords are hashed with a slow, salted function, never encrypted.
 
 </VoiceoverNotes>
+
+Real systems combine the tools: AES-GCM, HTTPS, JWTs and password storage.
 
 ### 09 · MIX-UPS
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Base64 is not encryption.
+- A hash is not encrypted data, and it is not a secret.
+- A signature does not hide anything.
+- Encryption without authentication can be altered in transit. Use an authenticated mode.
+- Encoding twice is still encoding.
 
 </VoiceoverNotes>
+
+Five common myths, each replaced by the truth.
 
 ### 10 · RECAP
 
 <VoiceoverNotes>
 
-- TODO: first thing to say about this chapter
-- TODO: second point
+- Encoding is format. Hashing is a fingerprint. Signing is trust. Encryption is secrecy.
+- Choose the tool for the problem you actually have, and combine them when you have several.
 
 </VoiceoverNotes>
+
+Pick the tool for the problem you have.
+
+## The numbers
+
+The demo message is 14 bytes: `pay 500 to Bob`. Encoding changes only how those bytes are written:
+
+| Form         | Value                                       |
+| ------------ | ------------------------------------------- |
+| Text         | `pay 500 to Bob`                            |
+| Base64       | `cGF5IDUwMCB0byBCb2I=`                      |
+| Hex          | `7061792035303020746f20426f62`              |
+| URL encoding | `pay%20500%20to%20Bob`                      |
+| UTF-8 bytes  | `70 61 79 20 35 30 30 20 74 6f 20 42 6f 62` |
+
+HTTP Basic auth is Base64 of `user:password`. The classic example is `Aladdin:open sesame` → `QWxhZGRpbjpvcGVuIHNlc2FtZQ==`. Decoding it needs no key.
+
+SHA-256 of the message and of the tampered message:
+
+| Message          | SHA-256 (hex)                                                      |
+| ---------------- | ------------------------------------------------------------------ |
+| `pay 500 to Bob` | `528c8ed21cac490748fe6f0df5c173d7b57a402586f2d10810611c2427539d97` |
+| `pay 900 to Bob` | `5d823a8c1def49f4c1aa1b8b6a1d85b09554d44c602f654374a19d1d7a254664` |
+
+One digit changes, and 125 of the 256 bits differ. That is the avalanche effect; the video grid counts the 125 flipped cells.
+
+Signing with HMAC-SHA256 and the demo key `demo-secret-do-not-use`:
+
+| Message          | HMAC-SHA256 (hex)                                                  |
+| ---------------- | ------------------------------------------------------------------ |
+| `pay 500 to Bob` | `806ec60a250deeaa0c1b8d80cc77510ac5461c905ce2696706d219a659c625c0` |
+| `pay 900 to Bob` | `14c6ef471d7555430c0550c5a7611c28f9b7bc93dadec1cd20c5cb83301f193e` |
+
+A digital signature keeps the message readable and signs with a private key. This ECDSA P-256 signature over `pay 500 to Bob` is 64 bytes, in the P1363 `r || s` format (128 hex characters):
+
+```text
+b7fc9566f8728f0c20bc3028457e086472e0ec9f5c3d0c638023a3faf584dc484d5d569d6604fc734eae96f209a6d5fcb03f376362f2ac40055b3cbb1d7e1cd6
+```
+
+The matching public key is published as a JWK; the private key is never stored:
+
+```json
+{
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "oUUYu_9QiOP7H7A5HjgYg6cP2loFkN50ToTDv0Ld6Gw",
+  "y": "Cf1FJgCqivMtrWSpsRdGy8hTm4RiSjVA6q-Cy75V6GE"
+}
+```
+
+Run `pnpm gen:signature-fixture` to create a fresh pair and discard the private half.
+
+Encryption hides the message. AES-256-GCM uses a key derived as `SHA-256("demo-aes-key-do-not-use")` and the fixed 12-byte nonce `000102030405060708090a0b`:
+
+| Field            | Value                                                              |
+| ---------------- | ------------------------------------------------------------------ |
+| Key (hex)        | `bd8585be67b1731ea513f050e76edb9cf3cb76dc46b3122337f3d7498eed0212` |
+| Nonce (hex)      | `000102030405060708090a0b`                                         |
+| Ciphertext (hex) | `1e86c756966fd4fb24897b29496b` (14 bytes, same as the message)     |
+| Auth tag (hex)   | `b79e662dac101127d0a224bf05f5ced8`                                 |
+
+The right key decrypts back to `pay 500 to Bob`. A key derived from `wrong-key` fails authentication with `unable to authenticate data`.
+
+All keys, nonces, tags and signatures on this page are demo values. Never use them for anything real.
+
+## Cheat sheet
+
+The recap matrix, exactly as the video ends:
+
+| Tool       | Needs a key? | Reversible? | Hides content? | Detects change?                 |
+| ---------- | ------------ | ----------- | -------------- | ------------------------------- |
+| Encoding   | no           | yes         | no             | no                              |
+| Hashing    | no           | no          | no             | yes (but anyone can recompute)  |
+| Signing    | yes          | no          | no             | yes                             |
+| Encryption | yes          | yes         | yes            | only with an authentication tag |
+
+Which tool for which problem:
+
+| Problem                                             | Tool                                                                          |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| The system cannot carry the bytes                   | Encoding: Base64, hex, URL encoding, UTF-8                                    |
+| You need to detect an accidental change             | Hashing: a SHA-256 checksum                                                   |
+| You need to prove who sent it and that it is intact | Signing: HMAC with a shared key, or a digital signature with a key pair       |
+| You need to hide the content                        | Encryption: AES-GCM with a shared key                                         |
+| You need to hide the content and detect changes     | Authenticated encryption: AES-GCM                                             |
+| You need secrecy and proof of origin                | Sign, then encrypt; or encrypt with an authenticated mode and sign the result |
+
+## Try it yourself
+
+### Question 1
+
+A server stores passwords as Base64. Is that safe?
+
+<Callout type="info" title="Answer">
+  No. Base64 is encoding; anyone can decode it. Store a slow, salted hash.
+</Callout>
+
+### Question 2
+
+Eve intercepts a message and its SHA-256 hash, edits the message and recomputes the hash. Does the receiver notice?
+
+<Callout type="info" title="Answer">
+  No, because anyone can compute a hash. A keyed tag (HMAC) or a digital signature is needed.
+</Callout>
+
+### Question 3
+
+Which key signs and which verifies in a digital signature?
+
+<Callout type="info" title="Answer">
+  The private key signs; the public key verifies.
+</Callout>
+
+### Question 4
+
+Why do HTTPS connections switch from public-key cryptography to AES?
+
+<Callout type="info" title="Answer">
+  Public-key operations are slow; they are used to agree on a key, and AES carries the bulk data fast.
+</Callout>
+
+### Question 5
+
+Does encrypting a message guarantee nobody can change it?
+
+<Callout type="info" title="Answer">
+  No. Use authenticated encryption such as AES-GCM, which adds a tag that detects changes.
+</Callout>
 
 ## YouTube description
 
 <YoutubeDescription slug="encode-sign-encrypt" />
+
+The chapter list uses `0:00` placeholders. Replace them with the real timestamps in `chapters.json` (`at`) after the first render.

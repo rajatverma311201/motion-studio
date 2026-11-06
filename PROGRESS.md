@@ -24,6 +24,8 @@ Tags: `v0.1.0`, `v0.2.0`, `v0.3.0`.
 - `Encoding vs Signing vs Encryption in 60 Seconds` (slug `encode-sign-encrypt-short`, 1080 × 1920, five chapters, about 55 s): one message is Base64-encoded, HMAC-signed and AES-GCM-encrypted, with an encoding/signing/encryption verdict. Docs page, glossary terms and course cards are in place.
 - Step 23 kit additions: `crypto-demo/` fixtures verified with `node:crypto`, `scrambleFrame` / `scrambleText`, `textMorphCard` and `verdictRow`.
 - Full landscape lesson `JWT Explained` (slug `jwt`, 1920 × 1080, eleven chapters, about 10 minutes planned): intro, sessions vs tokens, anatomy, Base64URL, encode/sign/encrypt, HS256 signing, keys and JWKS, claims, Quarkus practice, pitfalls and recap. The docs page has summary points, per-chapter voiceover notes, the decoded token and both signatures, a cheat sheet, four practice questions and the YouTube description.
+- Full landscape lesson `Encoding vs Hashing vs Signing vs Encryption` (slug `encode-sign-encrypt`, 1920 × 1080, ten chapters, about 10 minutes planned): intro, the problem, encoding, hashing, signing, encryption, key pairs, combining, mix-ups and recap. The docs page has summary points, per-chapter voiceover notes, the numbers (the SHA-256 pair with a 125-bit difference, both HMAC tags, the AES-256-GCM key/nonce/ciphertext/tag, the ECDSA signature and its public JWK), a cheat sheet, five practice questions and the YouTube description.
+- Step 24 kit additions: `hash-fixtures` / `bits` / `story`, the generated ECDSA P-256 signature fixture and `pnpm gen:signature-fixture`, `avalancheGrid` / `gridLayout`, `keyPairCard` and `processMachine`.
 - Shorts support in the kit: `ChaptersFile.format`, `buildShortHud` with a chapter progress bar, `SHORT_ZONES` / `progressSegments` / `readSeconds` (pure and tested), and the JWT pieces: pure Base64URL and token parsing, fixtures verified against Node's `crypto`, `tokenStrip`, `hmacMachine`, `keyIcon`, `lockIcon`, `stamp` and `slam`.
 - Step 22 kit additions: `base64Steps` / `base64Alphabet` / `toUrlSafe`, `validateClaims` and `REGISTERED_CLAIMS`, the generated ES256 fixture (`ES256_TOKEN`, `ES256_JWK`, `ES256_HEADER_JSON`), `sequenceDiagram` / `sequenceLayout`, `compareTable` / `tableLayout` / `wrapGrid`, `base64Visual`, `timeBar` / `timeToX`, the `properties` and `http` code languages, and `pillRow` (the HUD pill arithmetic, pure and tested).
 
@@ -35,6 +37,7 @@ Commands:
 - `pnpm new:lesson <slug> "<Title>" --course <course> [--format short]` — scaffold a lesson; `short` writes a 1080 × 1920 project meta.
 - `pnpm new:theme <id> "<Name>" --from <theme>` — copy and register a theme.
 - `pnpm gen:jwt-fixtures` — regenerate `jwt-es256-fixture.ts` from a fresh P-256 key pair; only the public JWK is written.
+- `pnpm gen:signature-fixture` — regenerate `signature-fixture.ts` from a fresh P-256 key pair; only the public JWK and the signature are written.
 - `pnpm status` — print slug, format (`SHORT`), status, duration and YouTube link for every lesson.
 - `pnpm snap:quick` — capture and compare the six quick frames.
 - `pnpm snap:themes` — two quick chapters × 14 looks; add `-- --only <id>`, `-- --mode dark|light` or `-- --full`.
@@ -57,7 +60,8 @@ Commands:
 - The neubrutalist identity belongs to the videos only; `apps/docs` keeps the stock Fumadocs look with its light/dark toggle (step 16).
 - The toy ISA is fixed in `packages/video-kit/src/cpu`; the tests freeze its micro-step ids, texts and traces. The lesson animates the model, never re-implements the rules (step 20).
 - The `instruction-cycle` machine (`build.tsx`, `play.ts`) is lesson code for now. A generic version could move into the kit once a second architecture lesson needs it (step 20).
-- The HUD pill x positions now come from `pillRow(count, options)`. With no options it reproduces the old right-aligned row exactly; the JWT lesson passes `{startX: 290, step: 60, width: 30, activeWidth: 64}` for its eleven pills. `pill-geometry.test.ts` checks bounds, spacing and clearance from the section chip.
+- The HUD pill x positions now come from `pillRow(count, options)`. With no options it reproduces the old right-aligned row exactly; the JWT lesson passes `{startX: 290, step: 60, width: 30, activeWidth: 64}` for its eleven pills. `pill-geometry.test.ts` checks bounds, spacing and clearance from the section chip, for both ten and eleven pills.
+- The `encode-sign-encrypt` HUD uses the same ten-pill row (`{startX: 290, step: 60, width: 30, activeWidth: 64}`); its chapter 5 is red in the HUD while the encryption object stays pink, matching the video's colour meaning (encryption pink, danger red).
 - The `encode-sign-encrypt-short` layout test mirrors `SHORT_ZONES` locally. Importing the kit barrel under `node --import tsx` loads Motion Canvas and fails (`codeSignal is not a function`); keep the copy in sync with `hud/short-layout.ts` (step 23).
 - Steps never run snapshot capture or compare (AGENTS.md section 7); the owner reviews in the editor.
 
@@ -109,9 +113,14 @@ Commands:
 - `tokenStrip` creates one `Txt` per same-colour run per line; a much longer token would need a cheaper renderer. The 187-character fixture is five runs per line at 34 px (step 21).
 - `hmacMachine` always uses the lime tag chip. A red "recomputed" tag is the lesson's comparison chip and INVALID stamp, not a machine option (step 21).
 - `hmacMachine.run()` clears its transient tag on every run, so the signing chapter keeps the first tag as a separate comparison chip; the machine shows the second tag (step 23).
-- `textMorphCard` derives its height as `fontSize * 2` and never wraps. Its widest current string is 20 Base64 characters at 64 px inside a 920 px card (step 23).
+- `textMorphCard` derives its height as `fontSize * 2` and never wraps. Its widest current string is the 28-character AES-GCM ciphertext at 48 px inside a 920 px card (step 24); the Short keeps 20 Base64 characters at 64 px (step 23).
 - `scrambleFrame` draws unresolved characters from a fixed Base64-ish glyph set, so the hex ciphertext morph also shows letters. It is deterministic and the glyph set is part of the look (step 23).
 - `encode-sign-encrypt-short` is `status: animated`, `duration: TBD`; the MP4 render, timestamps, voiceover and the phone safe-zone check are still to do (step 23).
+- `encode-sign-encrypt` is `status: animated`, `duration: TBD`; chapter lengths are planned from the waits, not measured. All ten `at` values are `0:00` placeholders; replace them after the first render. The MP4 and voiceover are still to do.
+- The asymmetric ciphertext in chapter 6 is illustrative: `seededRandom` produces the bytes and the card carries an `ILLUSTRATIVE BYTES` chip. Only the AES-256-GCM values in chapter 5 are real `node:crypto` fixtures.
+- `processMachine` is generic and computes nothing; the caller supplies every input and output string. `keyPairCard.handOut()` copies are children of the card, so they disappear with the card; the key-pairs scene keeps the card until the hand-out beat ends.
+- `avalancheGrid` has 256 cells; `showA()` pops them in and `morphToB()` flips the 125 differing cells. The counter uses `countTo`, and both bit strings come from `hexToBits(DEMO_SHA256)` and `hexToBits(DEMO_SHA256_TAMPERED)`.
+- The signature fixture changes each time `pnpm gen:signature-fixture` runs; the docs page quotes the committed value, so regenerate the fixture and the page together.
 - The Shorts page appends `#Shorts #JWT #Security` as a visible tag line below `<YoutubeDescription>`; the copy button does not include them (step 21).
 
 ## Blocked
