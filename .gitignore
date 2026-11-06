@@ -29,3 +29,6 @@ apps/docs/src/generated
 
 # local repository dumps
 project-dump*.md
+
+# local voice recordings (clips, manifest.json, timing.json)
+apps/studio/voice

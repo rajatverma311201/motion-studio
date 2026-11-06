@@ -3,6 +3,7 @@ import path from 'node:path';
 import {defineConfig} from 'vite';
 import motionCanvas from '@motion-canvas/vite-plugin';
 import ffmpeg from '@motion-canvas/ffmpeg';
+import {voiceServerPlugin} from './voice-server/plugin.mjs';
 
 const THEME_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MODES = ['dark', 'light'];
@@ -61,7 +62,7 @@ export default defineConfig(({command}) => ({
     __VIDEO_CLI_VOICE__: JSON.stringify(cliVoice),
     __VIDEO_DEV__: JSON.stringify(command === 'serve'),
   },
-  plugins: [motionCanvas({project: ['./src/projects/*.ts']}), ffmpeg()],
+  plugins: [motionCanvas({project: ['./src/projects/*.ts']}), ffmpeg(), voiceServerPlugin()],
   resolve: {dedupe: ['@motion-canvas/core', '@motion-canvas/2d']},
   server: {
     watch: {
